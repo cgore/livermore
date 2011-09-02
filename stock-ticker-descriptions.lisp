@@ -160,13 +160,10 @@
                *us-commodities-indices*
                *misc-stocks*))
 
-(defmethod stock-description ((ticker-symbol string))
-  (gethash (string-downcase ticker-symbol) *ticker-descriptions*))
+(defgeneric stock-description (item))
 
-(defmethod stock-description-from-wallst.com ((ticker-symbol string))
-  (wget "-O" (concatenate 'simple-string
-                          (string-downcase ticker-symbol)
-                          "-wallst.com-ratios.html")
-        (concatenate 'simple-string
-                     "http://invester.reuters.wallst.com/stocks/Ratios.asp?ticker="
-                     (string-upcase ticker-symbol))))
+(defmethod stock-description ((string string))
+  (gethash (string-downcase string) *ticker-descriptions*))
+
+(defmethod stock-description ((symbol symbol))
+  (stock-description (symbol-name symbol)))

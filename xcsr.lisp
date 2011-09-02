@@ -1,4 +1,11 @@
-(load "xcs")
+;;;; Christopher Mark Gore.
+;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281.
+;;;; WWW: <http://www.cgore.com>.
+;;;; E-mail: <chris-gore@earthlink.net>.
+;;;; Last edited Monday, February 4, AD 2008; xb.
+;;;; Copyright (C) 2005 -- 2008, all rights reserved.
+
+(unless (find-package 'xcs) (load "xcs"))
 (in-package "XCS")
 
 (defclass range-predicate ()

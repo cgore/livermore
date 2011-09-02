@@ -1,41 +1,17 @@
+;;;; Copyright (C) 2005 -- 2008, all rights reserved.
 ;;;; Christopher Mark Gore.
 ;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281.
 ;;;; WWW: <http://www.cgore.com>.
 ;;;; E-mail: <chris-gore@earthlink.net>.
-;;;;
-;;;; Last edited Sunday, August 27, AD 2006; xb.
-;;;;
-;;;; Copyright (C) 2005, 2006.
-;;;; All rights reserved.
-;;;;
-;;;; The compilation of software is distributed under the following terms:
-;;;; 
-;;;; Redistribution and use in source and binary forms, with or without
-;;;; modification, are permitted provided that the following conditions
-;;;; are met:
-;;;; 1. Redistributions of source code must retain the above copyright
-;;;;    notice, this list of conditions and the following disclaimer.
-;;;; 2. Redistributions in binary form must reproduce the above copyright
-;;;;    notice, this list of conditions and the following disclaimer in the
-;;;;    documentation and/or other materials provided with the distribution.
-;;;; 
-;;;; THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-;;;; ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-;;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-;;;; ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
-;;;; FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-;;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-;;;; OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-;;;; HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-;;;; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-;;;; OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-;;;; SUCH DAMAGE.
+;;;; $Date: 2008-09-14 18:04:29 -0500 (Sun, 14 Sep 2008) $
+;;;; $HeadURL: file:///var/svn/trading/trunk/utilities.lisp $
+;;;; $Revision: 545 $
 
 (unless (find-package 'utilities)
   (defpackage :utilities
     (:nicknames :util)
     (:use :common-lisp #+cmu :extensions #+sbcl :sb-ext)
-    (:export :alias
+    (:export :function-alias
              :fractional-value
              :fractional-part
              :nth-from-end
@@ -62,6 +38,7 @@
              :do-while
              :do-until
              :for
+             :it
              :a?if
              :aif
              :a?when
@@ -70,6 +47,9 @@
              :awhile
              :a?and
              :aand
+             :acond
+             :alambda
+             :ablock
              :set-nthcdr
              :opf
              :multf
@@ -132,15 +112,14 @@
              :read-lines
              :string-concatenate
              :deletef
-             :operator-to-function)))
+             :operator-to-function
+             :replace-char
+             :stringify)))
 (in-package :utilities)
 
-(defgeneric alias (alias original))
-
-(defmethod alias (alias function)
-  "This produces an alias for a function, an alternate name (usually a shorter one)."
-  `(setf (fdefinition ,alias)
-         (fdefinition ,function)))
+(defun function-alias (alias function)
+  "This produces an alias for a function, an alternate name."
+  (setf (fdefinition alias) (fdefinition function)))
 
 (defun fractional-value (number)
   "This is the fractional value formula most familiar to most mathematicians.
@@ -272,22 +251,20 @@
 (defmacro a?if (anaphor conditional t-action &optional nil-action)
   "This is an anaphoric IF that allows for specification of the anaphor."
   `(let ((,anaphor ,conditional))
-     (if ,anaphor
-       ,t-action
-       ,nil-action)))
+     (if ,anaphor ,t-action ,nil-action)))
 
 (defmacro aif (conditional t-action &optional nil-action)
   "This is anaphoric IF, from Paul Graham's ``On Lisp'' page 190."
-  `(a?if 'it ,conditional ,t-action ,nil-action))
+  `(let ((it ,conditional))
+     (if it ,t-action ,nil-action)))
 
 (defmacro a?when (anaphor test-form &body body)
   "This is an anaphoric WHEN that allows for the specification of the anaphor."
-  `(a?if ,anaphor ,test-form
-         (progn ,@body)))
+  `(a?if ,anaphor ,test-form (progn ,@body)))
 
 (defmacro awhen (test-form &body body)
   "This is anaphoric WHEN, from Paul Graham's ``On Lisp'' page 191."
-  `(a?when 'it ,test-form ,@body))
+  `(aif ,test-form (progn ,@body)))
 
 (defmacro a?while (anaphor expression &body body)
   "This is an anaphoric WHILE that allows for the specification of the anaphor."
@@ -297,7 +274,9 @@
 
 (defmacro awhile (expression &body body)
   "This is anaphoric WHILE, from Paul Graham's ``On Lisp'' page 191."
-  `(a?while 'it ,expression ,@body))
+  `(do ((it ,expression ,expression))
+       ((not it))
+     ,@body))
 
 (defmacro a?and (anaphor &rest arguments)
   "This is an anaphoric AND that allows for the specification of the anaphor."
@@ -308,12 +287,37 @@
 
 (defmacro aand (&rest arguments)
   "This is anaphoric AND, from Paul Graham's ``On Lisp'' page 191."
-  `(a?and 'it ,@arguments))
+  (cond ((null arguments) t)
+        ((null (rest arguments)) (first arguments))
+        (t `(aif ,(first arguments)
+                  (aand ,@(rest arguments))))))
 
-;(defmacro a?cond (anaphor &rest clauses)
-;  (if (null clauses)
-;    nil
-;    (let ;;TODO
+(defmacro acond (&rest clauses)
+  "This is anaphoric COND, from Paul Graham's ``On Lisp'' page 191."
+  (if (null clauses)
+    nil
+    (let ((cl1 (car clauses))
+          (sym (gensym)))
+      `(let ((,sym ,(car cl1)))
+            (if ,sym
+              (let ((it ,sym)) ,@(cdr cl1))
+              (acond ,@(cdr clauses)))))))
+
+(defmacro alambda (parms &body body)
+  "This is anaphoric LAMBDA, from Paul Graham's ``On Lisp'' page 193."
+  `(labels ((self ,parms ,@body))
+           #'self))
+
+(defmacro ablock (tag &rest args)
+  "This is anaphoric COND, from Paul Graham's ``On Lisp'' page 193."
+  `(block ,tag
+          ,(funcall (alambda (args)
+                             (case (length args)
+                               (0 nil)
+                               (1 (car args))
+                               (t `(let ((it ,(car args)))
+                                        ,(self (cdr args))))))
+                    args)))
 
 (defmacro set-nthcdr (n list new-value)
   `(progn (assert (nonnegative-integer? ,n))
@@ -457,22 +461,22 @@
   "This reduces MAX onto the sequence provided."
   (reduce #'max sequence :key key :start start :end end))
 
-(defgeneric minimum? (sequence &key key start end))
+(defgeneric minimum? (sequence &key position key start end))
 
 (defmethod minimum? ((sequence sequence)
-                      &key (elt nil) (key #'identity) (start 0) (end nil))
-  (when (null elt)
-    (setf elt (1- (length sequence))))
-  (<= (funcall key (elt sequence elt))
+                      &key (position nil) (key #'identity) (start 0) (end nil))
+  (when (null position)
+    (setf position (1- (length sequence))))
+  (<= (funcall key (elt sequence position))
       (minimum sequence :key key :start start :end end)))
 
-(defgeneric maximum? (sequence &key key start end))
+(defgeneric maximum? (sequence &key position key start end))
 
 (defmethod maximum? ((sequence sequence)
-                     &key (elt nil) (key #'identity) (start 0) (end nil))
-  (when (null elt)
-    (setf elt (1- (length sequence))))
-  (>= (funcall key (elt sequence elt))
+                     &key (position nil) (key #'identity) (start 0) (end nil))
+  (when (null position)
+    (setf position (1- (length sequence))))
+  (>= (funcall key (elt sequence position))
       (maximum sequence :key key :start start :end end)))
 
 (defun random-in-range (lower upper)
@@ -732,7 +736,7 @@
                    separators
                    &key
                    (key #'identity)
-                   (test #'eql)
+                   (test #'string=)
                    (remove-separators? t))
   (mapcar (rcurry #'coerce 'string)
           (split (coerce string 'list) separators
@@ -1146,3 +1150,14 @@
 (defun operator-to-function (operator)
   (lambda (&rest rest)
     (eval `(,operator ,@rest))))
+
+(defun replace-char (string from-char to-char)
+  "Replaces every instance of FROM-CHAR with TO-CHAR."
+  (assert (stringp string))
+  (loop for i from 0 to (1- (length string)) do
+        (if (char= (char string i) from-char)
+          (setf (char string i) to-char)))
+  string)
+
+(defun stringify (argument)
+  (format nil "~A" argument))

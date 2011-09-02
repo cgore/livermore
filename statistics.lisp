@@ -1,4 +1,13 @@
-(load "utilities")
+;;;; Copyright (C) 2005 -- 2008, all rights reserved.
+;;;; Christopher Mark Gore.
+;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281.
+;;;; WWW: <http://www.cgore.com>.
+;;;; E-mail: <chris-gore@earthlink.net>.
+;;;; $Date: 2008-05-20 22:42:09 -0500 (Tue, 20 May 2008) $
+;;;; $HeadURL: file:///var/svn/trading/trunk/statistics.lisp $
+;;;; $Revision: 471 $
+
+(unless (find-package 'utilities) (load "utilities"))
 (unless (find-package 'statistics)
   (defpackage "STATISTICS"
     (:nicknames "STAT")
@@ -12,21 +21,25 @@
            unbiased-sample-standard-deviation
            stat-report))
 
+(defgeneric arithmetic-mean (sequence &key key start end))
+
 (defmethod arithmetic-mean 
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
-  "The arithmetic mean is what most people mean when they use the
-  word ``mean.''  This is also called the ``sample mean,'' and is
-  what is usually meant by the word ``average'' in conventional
-  English usage.  It is usually notated as x with an overbar."
+  "The arithmetic mean is what most people mean when they use the word
+  ``mean''  This is also called the ``sample mean,'' and is what is usually
+  meant by the word ``average'' in conventional English usage.  It is usually
+  written as x with an overbar."
   (let ((subsequence (subseq sequence start end)))
     (unless (empty-sequence? subsequence)
       (/ (sum subsequence :key key)
          (length subsequence)))))
 
+(defgeneric sample-variance (sequence &key key start end))
+
 (defmethod sample-variance
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
-  "The sample variance is also the second central moment and is usually
-  written as m_2 or s^2_N."
+  "The sample variance is also the second central moment and is usually written
+  as m_2 or s^2_N."
   (let* ((subsequence (subseq sequence start end))
          (xbar (arithmetic-mean subsequence :key key)))
     (unless (or (null xbar)
@@ -37,10 +50,12 @@
                             key))
          (length subsequence)))))
 
+(defgeneric unbiased-sample-variance (sequence &key key start end))
+
 (defmethod unbiased-sample-variance
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
-  "The sample variance is also the second central moment as adjusted to be
-  an unbiased estimator and is usually written as s^2_{N-1}."
+  "The sample variance is also the second central moment as adjusted to be an
+  unbiased estimator and is usually written as s^2_{N-1}."
   (let ((subsequence (subseq sequence start end)))
     (unless (>= 1 (length subsequence))
       (let ((xbar (arithmetic-mean subsequence :key key)))
@@ -48,6 +63,8 @@
                                               (expt (- xi xbar) 2))
                                           key))
            (1- (length subsequence)))))))
+
+(defgeneric sample-standard-deviation (sequence &key key start end))
 
 (defmethod sample-standard-deviation
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -57,6 +74,8 @@
     (unless (null variance)
       (sqrt variance))))
 
+(defgeneric unbiased-sample-standard-deviation (sequence &key key start end))
+
 (defmethod unbiased-sample-standard-deviation
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
   "The unbiased sample standard deviation is the square root of the unbiased
@@ -65,6 +84,10 @@
           (unbiased-sample-variance sequence :key key :start start :end end)))
     (unless (null variance)
       (sqrt variance))))
+
+(defgeneric stat-report (destination data
+                          &key key start end
+                            pre-string format-string post-string))
 
 (defmethod stat-report
   (destination (data sequence)

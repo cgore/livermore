@@ -192,7 +192,7 @@
                 previous-action current-action
                 actions correct-actions
                 positive-actions negative-actions) stocks-xcs-analyzer
-    (let ((time (universal-time (current-record stocks-xcs-analyzer))))
+    (let ((time (opening-time (current-record stocks-xcs-analyzer))))
       (when (zerop (mod current-index *stocks-xcs-report-days*))
         (format *stocks-xcs-output*
           "~&~A: ~A [~D]: $~8,2F, ~A action [~(~5A~)], ~5,2F% correct, change: ~5,2F%.~%"
@@ -255,8 +255,9 @@
                    *stock-starting-index*))
          (b&h (buy-and-hold *table* :start start))
          (tf (trend-following *table* :start start))
-         (start-utime (universal-time (nth start (records *table*))))
-         (end-utime (universal-time (nth (current-index *analyzer*) (records *table*)))))
+         (start-utime (opening-time (nth start (records *table*))))
+         (end-utime (closing-time (nth (current-index *analyzer*)
+                                     (records *table*)))))
     (format t "~&~A (~A).~%"
             (description *table*)
             (string-upcase (ticker-symbol *table*)))
