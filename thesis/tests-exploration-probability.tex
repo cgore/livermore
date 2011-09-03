@@ -1,0 +1,42 @@
+\subsubsection{Exploration Probabilities}
+After this we looked at the exploration probability, which we describe in \S\ref{sec:exploration-probability}.
+We investigated the possible values of 0.1, 0.2, 0.3, and 0.4, using our previous results for the rest of the parameters.
+
+For an exploration probability of $P_{explr}=0.1$, we observed the results as described in Table~\ref{tab:pexplr0.1} over 42 trials.
+
+\begin{cgoreErt}{TSC results for $P_{explr}=0.1$.}{tab:pexplr0.1}
+arith mean & 762 & 50.795\% & \$1,849,187.80 & 0.67358 & 10.92\%pa \\
+std dev & 28.9 & 1.925\% & \$233,230.42 & 0.08496 & 1.38\%pa \\
+max & 810 & 54.000\% & \$2,446,262.50 & 0.89107 & 16.27\%pa \\
+min & 691 & 46.067\% & \$1,210,933.40 & 0.44109 & 3.28\%pa
+\end{cgoreErt}
+
+An exploration probability of $P_{explr}=0.2$ was used in the previous situation, so we can borrow the results from the $\mu=0.15$ run; refer to Table~\ref{tab:mu0.15}.
+
+\begin{cgoreErt}{TSC results for $P_{explr}=0.15$.}{tab:pexplr0.15}
+\hline
+arith mean & 763 & 50.908\% & \$2,037,007.90 & 0.74200 & 12.74\%pa \\
+std dev & 22.3 & 1.487\% & \$320,506.80 & 0.11675 & 2.00\%pa \\
+max & 804 & 53.600\% & \$2,975,396.80 & 1.08381 & 20.17\%pa \\
+min & 719 & 47.933\% & \$1,406,036.50 & 0.51216 & 5.91\%pa
+\end{cgoreErt}
+
+For an exploration probability of $P_{explr}=0.3$, we observed the results as described in Table~\ref{tab:pexplr0.3} over 40 trials.
+
+\begin{cgoreErt}{TSC results for $P_{explr}=0.3$.}{tab:pexplr0.3}
+arith mean & 765 & 50.985\% & \$2,090,409.40 & 0.76145 & 13.23\%pa \\
+std dev & 22.8 & 1.521\% & \$295,592.78 & 0.10768 & 1.87\%pa \\
+max & 817 & 54.467\% & \$2,848,646.30 & 1.03764 & 19.29\%pa \\
+min & 725 & 48.333\% & \$1,536,175.30 & 0.55956 & 7.50\%pa
+\end{cgoreErt}
+
+For an exploration probability of $P_{explr}=0.4$, we observed the results as described in Table~\ref{tab:pexplr0.4} over 47 trials.
+
+\begin{cgoreErt}{TSC results for $P_{explr}=0.4$.}{tab:pexplr0.4}
+arith mean & 767 & 51.119\% & \$1,950,627.60 & 0.71053 & 11.92\%pa \\
+std dev & 19.5 & 1.299\% & \$196,644.44 & 0.07163 & 1.20\%pa \\
+max & 806 & 53.733\% & \$2,395,224.50 & 0.87248 & 15.86\%pa \\
+min & 730 & 48.667\% & \$1,637,668.40 & 0.59653 & 8.67\%pa
+\end{cgoreErt}
+
+We can now easily observe that an exploration probability of $P_{explr}=0.3$ offers the best results with an arithmetic mean of 13.23\%pa, and we therefore use that value.

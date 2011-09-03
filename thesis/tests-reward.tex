@@ -1,0 +1,119 @@
+\subsubsection{Reward Methods}
+Several different possible reward methods for use in the stock market were considered, and we analyzed their relative performance.
+We refer to these different reward methods as $a_1$, $a_2$, $b$, $c$, $d_{opt}$, and $d_{pess}$.
+
+Reward method $a_1$ is very simple:
+\begin{algorithmic}[1]
+\IF{the correct action is taken}
+   \RETURN a reward of 1,000.
+\ELSE
+   \RETURN a reward of 0,
+\ENDIF
+\end{algorithmic}
+
+It had the results as described in Table~\ref{tab:reward-a1} over 36 trials.
+
+\begin{cgoreErt}{TSC results for reward method $a_1$.}{tab:reward-a1}
+arith mean & 754 & 50.256\% & \$1,853,080.30 & 0.67500 & 10.96\%pa \\
+std dev & 22.3 & 1.489\% & \$333,964.25 & 0.12165 & 1.98\%pa \\
+max & 797 & 53.133\% & \$2,527,462.80 & 0.92065 & 16.91\%pa \\
+min & 697 & 46.467\% & \$1,117,451.00 & 0.40704 & 1.89\%pa
+\end{cgoreErt}
+
+Reward method $a_2$ is almost identical to $a_1$:
+\begin{algorithmic}[1]
+\IF{the correct action is taken}
+   \RETURN a reward of 1,000.
+\ELSE
+   \RETURN a reward of -200.
+\ENDIF
+\end{algorithmic}
+
+It had the results as described in Table~\ref{tab:reward-a2} over 44 trials.
+
+\begin{cgoreErt}{TSC results for reward method $a_2$.}{tab:reward-a2}
+arith mean & 748 & 49.867\% & \$1,863,365.60 & 0.67875 & 11.06\%pa \\
+std dev & 23.4 & 1.557\% & \$294,466.10 & 0.10726 & 1.75\%pa \\
+max & 790 & 52.667\% & \$2,571,187.50 & 0.93657 & 17.25\%pa \\
+min & 693 & 46.2\% & \$1,358,889.10 & 0.49499 & 5.31\%pa
+\end{cgoreErt}
+
+Reward method $b$ offers slightly more incentive for good-performing rules:
+\begin{algorithmic}[1]
+\LETARROW{$\$_{ratio}$, the money ratio} $\frac{\$_{t+1}}{\$_t}$, the ratio of the money the classifier has immediately one time-step in the future to the money it currently has.
+\IF{$\$_{ratio} > 1.005$}
+   \RETURN a reward of 1,000.
+\ELSE
+   \RETURN a reward of 0.
+\ENDIF
+\end{algorithmic}
+
+It had the results as described in Table~\ref{tab:reward-b} over 57 trials.
+
+\begin{cgoreErt}{TSC results for reward method $b$.}{tab:reward-b}
+arith mean & 750 & 49.992\% & \$1,792,041.90 & 0.65276 & 10.33\%pa \\
+std dev & 27.9\% & 1.8631344 & \$378,179.50 & 0.13775 & 2.18\%pa \\
+max & 815 & 54.333\% & \$2,820,059.80 & 1.02723 & 19.09\%pa \\
+min & 692 & 46.133\% & \$1,219,942.60 & 0.44437 & 3.41\%pa
+\end{cgoreErt}
+
+Reward method $c$ tries to scale the reward:
+\begin{algorithmic}[1]
+\LET $\$_{ratio}$ be the money ratio as previously defined.
+\LETARROW{$m$} 1000, a multiplier.
+\LETARROW{$e$} 2, an exponent.
+\LETARROW{$s$} 1.015, a threshold term.
+\RETURN $m \cdot (\$_{ratio}-s)^e$
+\end{algorithmic}
+
+It had the results as described in Table~\ref{tab:reward-c} over 30 trials.
+
+\begin{cgoreErt}{TSC results for reward method $c$.}{tab:reward-c}
+arith mean  & 747 & 49.791\% & \$1,795,971.30 & 0.65420 & 10.37\%pa \\
+std dev & 20.2 & 1.345\% & \$300,842.88 & 0.10958 & 1.74\%pa \\
+max & 790 & 52.667\% & \$2,407,121.50 & 0.87681 & 15.95\%pa \\
+min & 702 & 46.8\% & \$1,340,345.30 & 0.48823 & 5.07\%pa
+\end{cgoreErt}
+
+\newpage
+Reward method $d$ is slightly more complex than the rest:
+\begin{algorithmic}[1]
+\INPUT $cu$, the amount of reward if the classifier is correct on an up day.
+\INPUT $cd$, the amount of reward if the classifier is correct on an down day.
+\INPUT $iu$, the amount of reward if the classifier is incorrect on an up day.
+\INPUT $id$, the amount of reward if the classifier is incorrect on an down day.
+\COMMENT{Days that are not up are viewed as down days here.}
+\IF{the classifier has chosen the correct action $\land$ it is an up day}
+   \RETURN $cu$.
+\ELSIF{the classifier has chosen the correct action $\land$ it is a down day}
+   \RETURN $cd$.
+\ELSIF{the classifier has chosen the incorrect action $\land$ it is an up day}
+   \RETURN $iu$.
+\ELSIF{the classifier has chosen the incorrect action $\land$ it is a down day}
+   \RETURN $id$.
+\ENDIF
+\end{algorithmic}
+From this we have the two reward methods $d_{opt}$, which is optimistic, and $d_{pess}$, which is pessimistic.
+
+Reward method $d_{opt}$ calls $d$ with the values of $cu=1000, cd=750, iu=0, id=200$.
+It had the results as described in Table~\ref{tab:reward-dopt} over 45 trials.
+
+\begin{cgoreErt}{TSC results for reward method $d_{opt}$.}{tab:reward-dopt}
+arith mean & 728 & 48.526\% & \$1,624,189.40 & 0.59162 & 8.52\%pa \\
+std dev & 22.2 & 1.477\% & \$223,009.56 & 0.08123 & 1.17\%pa \\
+max & 786 & 52.4\% & \$2,122,616.30 & 0.77318 & 13.52\%pa \\
+min & 689 & 45.933\% & \$1,163,151.90 & 0.42369 & 2.58\%pa
+\end{cgoreErt}
+
+Reward method $d_{pess}$ calls $d$ with the values of $cu=750, cd=1000, iu=200, id=0$.
+It had the results as described in Table~\ref{tab:reward-dpess} over 45 trials.
+
+\begin{cgoreErt}{TSC results for reward method $d_{pess}$.}{tab:reward-dpess}
+arith mean & 728 & 48.526\% & \$1,624,189.40 & 0.59162 & 8.52\%pa \\
+std dev & 22.2\% & 1.477 & \$223,009.56 & 0.08123 & 1.17\%pa \\
+max & 786 & 52.4\% & \$2,122,616.30 & 0.77318 & 13.52\%pa \\
+min & 689 & 45.933\% & \$1,163,151.90 & 0.42369 & 2.58\%pa
+\end{cgoreErt}
+
+From these experiments we see that the $a$ methods are the best performing, although there is no effective difference between the performance of $a_1$ and $a_2$: this is because the scaling of the reward should not effect the outcome of the reward method at all.
+We arbitrarily choose of the two to employ $a_2$ for the remaining experiments.

@@ -1,0 +1,53 @@
+\subsubsection{Mutation Probabilities}
+Using all of our previous results, we then looked into the mutation probability, described earlier in \S\ref{sec:mutation-probability}.
+We looked at values of 0.04, 0.06, 0.08, 0.10, 0.15, and 0.20.
+
+A mutation probability $\mu=0.04$ was used in the previous situation, so we can borrow the results from the $\chi = 0.9$ run; refer to Table~\ref{tab:chi0.9}.
+
+For a mutation probability $\mu=0.06$, we observed the results as described in Table~\ref{tab:mu0.06} over 34 trials.
+
+\begin{cgoreErt}{TSC results for $\mu=0.06$.}{tab:mu0.06}
+arith mean & 762 & 50.831\% & \$1,972,095.00 & 0.71835 & 12.13\%pa \\
+std dev & 21.5 & 1.433\% & \$255,299.13 & 0.09299 & 1.57\%pa \\
+max & 792 & 52.800\% & \$2,734,496.80 & 0.99606 & 18.47\%pa \\
+min & 704 & 46.933\% & \$1,579,600.50 & 0.57538 & 8.01\%pa
+\end{cgoreErt}
+
+For a mutation probability $\mu=0.08$, we observed the results as described in Table~\ref{tab:mu0.08} over 39 trials.
+
+\begin{cgoreErt}{TSC results for $\mu=0.08$.}{tab:mu0.08}
+arith mean & 754 & 50.285\% & \$1,905,925.10 & 0.69425 & 11.48\%pa \\
+std dev & 29.79326 & 1.986\% & \$285,127.30 & 0.10386 & 1.72\%pa \\
+max & 806 & 53.733\% & \$2,421,790.30 & 0.88216 & 16.07\%pa  \\
+min & 668 & 44.533\% & \$1,230,840.30 & 0.44834 & 3.56\%pa
+\end{cgoreErt}
+
+For a mutation probability $\mu=0.10$, we observed the results as described in Table~\ref{tab:mu0.10} over 36 trials.
+
+\begin{cgoreErt}{TSC results for $\mu=0.10$.}{tab:mu0.10}
+arith mean & 761 & 50.744\% & \$1,950,889.10 & 0.71063 & 11.92\%pa \\
+std dev & 22.6 & 1.506\% & \$299,845.56 & 0.10922 & 1.83\%pa \\
+max & 796 & 53.067\% & \$2,891,320.00 & 1.05319 & 19.59\%pa \\
+min & 709 & 47.267\% & \$1,250,508.00 & 0.45551 & 3.84\%pa
+\end{cgoreErt}
+
+For a mutation probability $\mu=0.15$, we observed the results as described in Table~\ref{tab:mu0.15} over 32 trials.
+
+\begin{cgoreErt}{TSC results for $\mu=0.15$.}{tab:mu0.15}
+arith mean & 763 & 50.908\% & \$2,037,007.90 & 0.74200 & 12.74\%pa \\
+std dev & 22.299\% & 1.487\% & \$320,506.80 & 0.11675 & 2.00\%pa \\
+max & 804 & 53.600\% & \$2,975,396.80 & 1.08381 & 20.17\%pa \\
+min & 719 & 47.933\% & \$1,406,036.50 & 0.51216 & 5.91\%pa
+\end{cgoreErt}
+
+For a mutation probability $\mu=0.20$, we observed the results as described in Table~\ref{tab:mu0.20} over 36 trials.
+
+\enlargethispage{2\baselineskip}
+\begin{cgoreErt}{TSC results for $\mu=0.20$.}{tab:mu0.20}
+arith mean & 762 & 50.800\% & \$1,889,297.80 & 0.68819 & 11.42\%pa \\
+std dev & 24.369835 & 1.625\% & \$232,916.92 & 0.08484 & 1.40\%pa \\
+max & 803 & 53.533\% & \$2,708,086.00 & 0.98644 & 18.28\%pa \\
+min & 697 & 46.467\% & \$1,502,196.10 & 0.54719 & 7.10\%pa
+\end{cgoreErt}
+
+We can now easily observe that a mutation probability of $\mu=0.15$ offers the best results with a arithmetic mean of 12.74\%pa, and we therefore use that value for all remaining experiments.

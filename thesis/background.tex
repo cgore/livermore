@@ -1,0 +1,23 @@
+\subsection{Background}
+The system presented here is derived from Wilson's XCSR, which is an extension of Wilson's XCS, which in turn was derived from Wilson's ZCS.
+ZCS, XCS, XCSR, and this system are all learning classifier systems (LCS's), a crossover of the fields of evolutionary computation (EC) and reinforcement learning (RL), both of which are quite large fields on their own.
+We will describe in this section the previous works this system was built upon.
+
+\input{reinforcement-learning}
+
+\input{evolutionary-algorithms}
+
+\subsubsection{Learning Classifier Systems}
+A learning classifier system is a type of EA in which a description of a current situation is used in an attempt to map that description to some classification or action.
+This is achieved through simulated evolutionary processes, where the population being evolved consists of various rules;
+our entire population forms a rule set, and we apply concepts from Darwinism to our individual rules.
+This is known in learning classifiers as the \emph{Michigan approach} \cite{EibenSmith}.
+The other primary method employed, where each individual is an entire solution, and therefore a whole rule set, is known as the \emph{Pittsburgh approach}.
+We use a modification of XCSR here, which uses the Michigan approach, and therefore so do we.
+
+\input{zcs}
+
+\newpage
+\input{xcs}
+
+\input{xcsr}

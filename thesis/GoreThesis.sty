@@ -1,0 +1,40 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{GoreThesis}
+
+%%% Various packages we need.
+\RequirePackage{algorithmic}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsthm}
+\RequirePackage{colordvi}
+\RequirePackage{mathrsfs}
+\RequirePackage{textcomp}
+
+%%% We want an index.
+\RequirePackage{makeidx}
+\RequirePackage{showidx}
+\makeindex
+
+% No Computer Modern fonts for us.
+\RequirePackage{times}
+\RequirePackage{mathptmx}
+
+\bibliographystyle{acm}
+
+\title{TSCS:\\
+  A Learning Classifier System\\
+  for Interrelated Time-Series Data}
+\author{Christopher Mark Gore\\
+  University of Missouri -- Rolla\\
+  \texttt{chris-gore@earthlink.net}\\
+  \texttt{http://www.cgore.com}}
+\date{--- \textsc{Incomplete Draft}: \today{} ---}
+
+%%% apmk: Array path marker command.
+%%% We use this to indicate which elements we are talking about in an array.
+\newcommand{\apmk}[1]{\Red{{#1}^\star}}
+
+%%% The signum function
+\newcommand{\sgn}{\mathrm{sgn}}
+
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}

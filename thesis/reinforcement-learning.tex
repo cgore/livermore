@@ -1,0 +1,25 @@
+\subsection{Reinforcement Learning}
+Reinforcement learning \cite{SuttonBarto:1998a} is the process of learning how to map situations to actions to maximize a numerical reward.
+The learning system is not told which actions to take, as in most forms of machine learning, but instead must discover which actions yield the most reward by exploration.
+In the most interesting and challenging cases, actions may affect not only the immediate reward but also the next situation and, through that, all subsequent rewards.  
+The two primary distinguishing characteristics of reinforcement learning are:
+\begin{enumerate}
+\item trial-and-error search and
+\item delayed reward.
+\end{enumerate}
+Reinforcement learning is defined not by characterizing learning methods, but by characterizing a learning problem.
+We consider any method that is well suited to solving that problem to be a reinforcement learning method.
+The idea is to capture the most important aspects of the problem facing the learning agent interacting with its environment to achieve its goal.
+Such an agent must be able to:
+\begin{enumerate}
+\item perceive the state of the environment,
+\item act on the environment, and
+\item have a goal or goals relating to the state of the environment.
+\end{enumerate}
+Tersely put: \textit{sensation}, \textit{action}, and \textit{goal}.
+
+\subsubsection{Exploration versus Exploitation}
+A primary challenge is the trade-off between exploration and exploitation.  A reinforcement learning agent will prefer actions that it has tried in the past and found to be effective in producing reward in order to reliably obtain more reward.  But to discover such actions, it has to try actions that it has not selected before.  The agent has to \textit{exploit} existing knowledge to obtain reward, but it also must \textit{explore} to make better action selections in the future.  Neither exploration nor exploitation can be pursued exclusively without failure.  The agent must try a variety of actions and progressively favor those that appear to be best.  On a stochastic task, each action must be tried many times to gain a reliable estimate of its expected reward.
+
+\subsubsection{The Whole Problem}
+Reinforcement learning explicitly considers the whole problem of a goal-directed agent interacting with an uncertain environment,  starting with a complete, interactive, goal-seeking agent, instead of considering subproblems without addressing how they might fit into a larger picture.  All reinforcement learning agents have explicit goals, can sense aspects of their environments, and can choose actions to influence their environments.  From the beginning, the agent operates with significant uncertainty about its environment.  For learning research to make progress, important subproblems have to be isolated and studied, but they should be subproblems that play clear roles in complete, interactive, goal-seeking agents, even if all the details of the complete agent cannot yet be filled in.

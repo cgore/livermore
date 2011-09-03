@@ -1,0 +1,25 @@
+\noindent Table \hfill Page
+\contentsline {table}{\numberline {4.1}{\ignorespaces Initial parameters for the TSC.}}{36}
+\contentsline {table}{\numberline {4.2}{TSC results for reward method $a_1$.}}{37}
+\contentsline {table}{\numberline {4.3}{TSC results for reward method $a_2$.}}{37}
+\contentsline {table}{\numberline {4.4}{TSC results for reward method $b$.}}{38}
+\contentsline {table}{\numberline {4.5}{TSC results for reward method $c$.}}{38}
+\contentsline {table}{\numberline {4.6}{TSC results for reward method $d_{opt}$.}}{39}
+\contentsline {table}{\numberline {4.7}{TSC results for reward method $d_{pess}$.}}{40}
+\contentsline {table}{\numberline {4.8}{TSC results for a GA threshold of 35.}}{40}
+\contentsline {table}{\numberline {4.9}{TSC results for a GA threshold of 45.}}{41}
+\contentsline {table}{\numberline {4.10}{TSC results for a GA threshold of 50.}}{41}
+\contentsline {table}{\numberline {4.11}{TSC results for $\chi =0.3$.}}{42}
+\contentsline {table}{\numberline {4.12}{TSC results for $\chi =0.5$.}}{42}
+\contentsline {table}{\numberline {4.13}{TSC results for $\chi =0.7$.}}{43}
+\contentsline {table}{\numberline {4.14}{TSC results for $\chi =0.9$.}}{43}
+\contentsline {table}{\numberline {4.15}{TSC results for $\mu =0.06$.}}{44}
+\contentsline {table}{\numberline {4.16}{TSC results for $\mu =0.08$.}}{44}
+\contentsline {table}{\numberline {4.17}{TSC results for $\mu =0.10$.}}{45}
+\contentsline {table}{\numberline {4.18}{TSC results for $\mu =0.15$.}}{45}
+\contentsline {table}{\numberline {4.19}{TSC results for $\mu =0.20$.}}{45}
+\contentsline {table}{\numberline {4.20}{TSC results for $P_{explr}=0.1$.}}{46}
+\contentsline {table}{\numberline {4.21}{TSC results for $P_{explr}=0.15$.}}{46}
+\contentsline {table}{\numberline {4.22}{TSC results for $P_{explr}=0.3$.}}{47}
+\contentsline {table}{\numberline {4.23}{TSC results for $P_{explr}=0.4$.}}{47}
+\contentsline {table}{\numberline {5.1}{\ignorespaces TSC Final Parameters}}{48}

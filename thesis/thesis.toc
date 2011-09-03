@@ -1,0 +1,66 @@
+\hfill Page
+\contentsline {chapter}{\uppercase {Abstract}}{iii}
+\contentsline {chapter}{\uppercase {Acknowledgments}}{iv}
+\contentsline {chapter}{LIST OF ILLUSTRATIONS}{vii}
+\contentsline {chapter}{LIST OF TABLES}{viii}
+\contentsline {chapter}{LIST OF ALGORITHMS}{ix}
+\parindent 0pt\vskip 12pt SECTION
+\contentsline {section}{\numberline {1.}\uppercase {Introduction}}{1}
+\contentsline {subsection}{\numberline {1.1.}\uppercase {Motivation}}{1}
+\contentsline {subsection}{\numberline {1.2.}\uppercase {Background}}{2}
+\contentsline {subsection}{\numberline {1.3.}\uppercase {Reinforcement Learning}}{2}
+\contentsline {subsubsection}{\numberline {1.3.1.}Exploration versus Exploitation}{3}
+\contentsline {subsubsection}{\numberline {1.3.2.}The Whole Problem}{3}
+\contentsline {subsection}{\numberline {1.4.}\uppercase {Evolutionary Algorithms}}{3}
+\contentsline {subsubsection}{\numberline {1.4.1.}Learning Classifier Systems}{4}
+\contentsline {subsubsection}{\numberline {1.4.2.}ZCS}{5}
+\contentsline {subsubsection}{\numberline {1.4.3.}XCS}{8}
+\contentsline {subsubsection}{\numberline {1.4.4.}XCSR}{10}
+\contentsline {section}{\numberline {2.}\uppercase {Time Series Prediction}}{12}
+\contentsline {subsection}{\numberline {2.1.}\uppercase {ARIMA and Other Statistical Methods}}{12}
+\contentsline {subsection}{\numberline {2.2.}\uppercase {Artificial Neural Networks}}{13}
+\contentsline {subsection}{\numberline {2.3.}\uppercase {Non-LCS Evolutionary Approaches}}{14}
+\contentsline {subsection}{\numberline {2.4.}\uppercase {LCS-Based Approaches}}{14}
+\contentsline {subsubsection}{\numberline {2.4.1.}XCS}{14}
+\contentsline {subsubsection}{\numberline {2.4.2.}XCSF}{14}
+\contentsline {section}{\numberline {3.}\uppercase {Approach and Design of the Time Series Classifier}}{16}
+\contentsline {subsection}{\numberline {3.1.}\uppercase {Fundamental Operations}}{16}
+\contentsline {subsubsection}{\numberline {3.1.1.}The \emph {Sort On} Algorithm}{16}
+\contentsline {subsubsection}{\numberline {3.1.2.}The \emph {Sort Order} Algorithm}{17}
+\contentsline {subsubsection}{\numberline {3.1.3.}Rasterized Linear Paths Through Arrays}{17}
+\contentsline {paragraph}{\numberline {3.1.3.1.}A purely horizontal path.}{18}
+\contentsline {paragraph}{\numberline {3.1.3.2.}A purely vertical path.}{18}
+\contentsline {paragraph}{\numberline {3.1.3.3.}A traditional diagonal path.}{18}
+\contentsline {paragraph}{\numberline {3.1.3.4.}Non-equal diagonal paths.}{19}
+\contentsline {paragraph}{\numberline {3.1.3.5.}The Raster Line Algorithm.}{19}
+\contentsline {subsubsection}{\numberline {3.1.4.}List Slices}{20}
+\contentsline {subsection}{\numberline {3.2.}\uppercase {Data Representation}}{21}
+\contentsline {subsection}{\numberline {3.3.}\uppercase {Rule Representation}}{22}
+\contentsline {subsection}{\numberline {3.4.}\uppercase {Mutation}}{22}
+\contentsline {subsection}{\numberline {3.5.}\uppercase {Crossover}}{23}
+\contentsline {subsection}{\numberline {3.6.}\uppercase {Learning Parameters}}{23}
+\contentsline {subsubsection}{\numberline {3.6.1.}From XCS}{23}
+\contentsline {paragraph}{\numberline {3.6.1.1.}General Parameters}{23}
+\contentsline {paragraph}{\numberline {3.6.1.2.}Recalculating Fitness}{24}
+\contentsline {paragraph}{\numberline {3.6.1.3.}Multi-Step Specific}{24}
+\contentsline {paragraph}{\numberline {3.6.1.4.}GA Specific}{24}
+\contentsline {paragraph}{\numberline {3.6.1.5.}Rule Set Specific}{25}
+\contentsline {subsubsection}{\numberline {3.6.2.}From XCSR}{26}
+\contentsline {subsubsection}{\numberline {3.6.3.}New in TSC}{27}
+\contentsline {subsection}{\numberline {3.7.}\uppercase {Trivially Modified Algorithms}}{27}
+\contentsline {subsection}{\numberline {3.8.}\uppercase {The \emph {Match?} Predicate}}{30}
+\contentsline {subsection}{\numberline {3.9.}\uppercase {The \emph {Generate Covering Classifier} Algorithm}}{31}
+\contentsline {subsection}{\numberline {3.10.}\uppercase {The \emph {More General?} Predicate}}{31}
+\contentsline {section}{\numberline {4.}\uppercase {Experimental Results}}{33}
+\contentsline {subsection}{\numberline {4.1.}\uppercase {The Nature of a Realistic Time Series}}{33}
+\contentsline {subsection}{\numberline {4.2.}\uppercase {The Simplistic Increasing/Decreasing Tests}}{33}
+\contentsline {subsection}{\numberline {4.3.}\uppercase {The Stock Market}}{34}
+\contentsline {subsubsection}{\numberline {4.3.1.}Reward Methods}{36}
+\contentsline {subsubsection}{\numberline {4.3.2.}GA Thresholds}{40}
+\contentsline {subsubsection}{\numberline {4.3.3.}Crossover Probabilities}{41}
+\contentsline {subsubsection}{\numberline {4.3.4.}Mutation Probabilities}{43}
+\contentsline {subsubsection}{\numberline {4.3.5.}Exploration Probabilities}{46}
+\contentsline {section}{\numberline {5.}\uppercase {Conclusions and Final Results}}{48}
+\contentsline {section}{\numberline {6.}\uppercase {Future Work}}{50}
+\contentsline {chapter}{\uppercase {BIBLIOGRAPHY}}{53}
+\contentsline {chapter}{\uppercase {VITA}}{56}

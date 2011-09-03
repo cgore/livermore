@@ -1,0 +1,311 @@
+\section{The Classifier System}
+
+\subsection{Parameters}
+
+There are numerous parameters used in XCS, and a few more still here.
+Choosing their values wisely can be very important in some problem domains unfortunately.
+This subsection gives brief descriptions of the important parameters and specifies sensible default values for typical problems.
+It is important that any results described should also list the parameter settings used.
+
+\paragraph{Maximum total numerosity.}
+\index{maximum total numerosity}
+\index{N@$N$|see{maximum total numerosity}}
+This is $N$ in \cite{ButzWilson}.
+It specifies the maximum size of the population in micro-classifiers,
+that is, the maximum sum of the numerosities of the classifiers.
+This should be a positive integer, normally in the hundreds or at most the thousands.
+
+\paragraph{Learning rate.}
+\index{learning rate}
+\index{beta@$\beta$|see{learning rate}}
+This is $\beta$ in \cite{ButzWilson}.
+It is used as the learning rate for the predicted payoff,
+prediction error estimate, GA fitness, and action set size estimate
+for the classifiers.
+This should be in $[0.1, 0.2]$ for most problems, and in $[0, 1)$ always.
+
+\paragraph{Multiplier parameter.}
+\index{multiplier parameter}
+\index{alpha@$\alpha$|see{multiplier parameter}}
+This is $\alpha$ in \cite{ButzWilson}.
+This is the multiplier used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{update-fitness}
+It is usually around 0.1.
+
+\paragraph{Equal error threshold.}
+\index{equal error threshold}
+\index{epsilon 0@$\epsilon_0$|see{equal error threshold}}
+This is $\epsilon_0$ in \cite{ButzWilson}.
+This is the threshold used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{update-fitness} to decide if the errors are essentially the same.
+It is usually around 1\% of the $\rho$, the reward.
+
+\paragraph{Power parameter.}
+\index{power parameter}
+\index{nu@$\nu$|see{power parameter}}
+This is $\nu$ in \cite{ButzWilson}.
+This is the exponent used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{update-fitness}
+It is typically 5.
+
+\paragraph{Discount factor.}
+\index{discount factor}
+\index{gamma@$\gamma$|see{discount factor}}
+This is $\gamma$ in \cite{ButzWilson}.
+It is the discount factor used in multi-step problems when updating the classifier predictions.
+It is typically around 0.71.
+
+\paragraph{GA Threshold.}
+\index{GA threshold}
+\index{theta GA@$\theta_{GA}$|see{GA threshold}}
+This is $\theta_{GA}$ in \cite{ButzWilson}.
+The GA is run whenever the average number of generations since the last time the GA was run is greater than this threshold.
+It is typically in $[25, 50]$, and should always be in $\mathbb{Z}^+$.
+
+\paragraph{Crossover probability.}
+\index{crossover probability}
+\index{chi@$\chi$|see{crossover probability}}
+This is $\chi$ in \cite{ButzWilson}.
+It is the probability of applying the crossover operator during the GA.
+It is typically  in $[0.5, 1.0]$.
+
+\paragraph{Mutation probability.}
+\index{mutation probability}
+\index{mu@$\mu$|see{mutation probability}}
+This is $\mu$ in \cite{ButzWilson}.
+It is the probability of applying the mutation operator during the GA.
+It is typically in $[0.01, 0.05]$.
+
+\paragraph{Deletion threshold.}
+\index{deletion threshold}
+\index{theta del@$\theta_{del}$|see{deletion threshold}}
+This is $\theta_{del}$ in \cite{ButzWilson}.
+It is the threshold for classifier deletion.
+If a classifier's experience is greater than this parameter then it may be considered for deletion.
+It is typically 20.
+
+\paragraph{Fitness fraction threshold.}
+\index{fitness fraction threshold}
+\index{delta@$\delta$|see{fitness fraction threshold}}
+This is $\delta$ in \cite{ButzWilson}.
+It is the fraction of the mean fitness of the population below which the fitness of a classifier may be considered in its probability of deletion.
+It is typically around 0.1.
+
+\paragraph{Minimum subsumption experience.}
+\index{minimal subsumption experience}
+\index{theta sub@$\theta_{sub}$|see{minimal subsumption experience}}:
+This is $\theta_{sub}$ in \cite{ButzWilson}.
+The experience of a classifier must be greater than this threshold for it to subsume another classifier.
+It should be in $\mathbb{N}$, and is typically $\ge 20$.
+
+\paragraph{Covering probability.}
+\index{covering probability}
+\index{P \#@$P_\#$|see{covering probability}}
+This is $P_\#$ in \cite{ButzWilson}.
+It is the probability of using the covering element in a single attribute.
+It is typically around 0.33.
+
+\paragraph{Initial prediction.}
+\index{initial prediction}
+\index{p I@$p_I$|see{initial prediction}}
+This is $p_I$ in \cite{ButzWilson}.
+It is used as the initial value of the predicted payoff for the newly-created classifiers.
+This is typically slightly more than zero.
+
+\paragraph{Initial prediction error.}
+\index{initial prediction error}
+\index{epsilon I@$\epsilon_I$|see{initial prediction error}}
+This is $\epsilon_I$ in \cite{ButzWilson}.
+It is used as the initial value of the estimated prediction error for the newly-created classifiers.
+It is typically only slightly more than zero.
+
+\paragraph{Initial fitness.}
+\index{initial fitness}
+\index{F I@$F_I$|see{initial fitness}}
+This is $F_I$ in \cite{ButzWilson}.
+It is used as the initial value of the fitness used by the GA for the newly-created classifiers. 
+It is typically only slightly more than zero.
+
+\paragraph{Exploration probability.}
+\index{exploration probability}
+\index{P explr@$P_{explr}$|see{exploration probability}}
+This is $P_{explr}$ in \cite{ButzWilson}.
+It specifies the probability of exploration during the action selection phase.
+It is typically around 0.5.
+
+\paragraph{Minimal number of actions.}
+\index{minimal number of actions}
+\index{theta mna@$\theta_{mna}$|see{minimal number of actions}}
+This is $\theta_{mna}$ in \cite{ButzWilson}.
+This should be in $\mathbb{N}$, and is typically equal to the number of possible actions, so that complete covering will take place.
+
+\paragraph{Maximum number of steps.}
+
+\paragraph{GA subsumption?}
+\index{GA subsumption?}
+\index{doGASubsumption|see{GA subsumption?}}
+This is \emph{doGASubsumption} in \cite{ButzWilson}.
+It is a boolean parameter specifying if the offspring are to be tested for possible logical subsumption by the parents.
+It is usually best to set this to $true$.
+
+\paragraph{Action set subsumption?}
+\index{action set subsumption?}
+\index{doActionSetSubsumption|see{action set subsumption?}}
+This is \emph{doActionSetSubsumption} in \cite{ButzWilson}.
+It is a boolean parameter specifying if action sets are to be tested for subsuming classifiers.
+It is usually best to set this to $true$.
+
+\paragraph{Possible actions.}
+\index{possible actions}
+\index{A@$\mathpzc{A}$|see{possible actions}}
+This is $\mathpzc{A}$, the set of all of the possible actions that the classifier rules may take for values of $a$.
+
+\subsection{Initialization}
+
+\subsection{The Main Loop: Run-Experiment}
+
+\subsection{The \emph{Generate Match Set} Algorithm}
+
+\subsection{The \emph{Match?} Predicate}
+\label{match?}
+\index{match? predicate@\emph{match?} predicate}
+
+This is based upon the algorithm called \emph{DOES MATCH} in \cite{ButzWilson}, but it has been generalized in order to suit our needs here.
+Assume a classifier $r$ and a situation $\sigma$.
+In traditional learning classifiers, $\sigma \in \{false, true\}$ which is usually represented $\{0,1\}$,
+and therefore it is only necessary to see if every element in the condition part of the classifier $r$,  that is $r_c$, is either equal to each other or a covering symbol in $r$:
+$$\left( r_{c_i} = \sigma_i \bigvee r_{c_i} = \# \right)
+\forall i \in \mathbb{Z}_{|r_c| = |\sigma|}.$$
+For us, is is slightly more involved due to the more complex nature of the conditions used in the construction of the classifiers.
+
+\paragraph{The \emph{match?} predicate for ternary values.}
+For ternary values as used in traditional learning classifiers, a ternary predicate $t$ matches a situation element $x$ when either
+$t = x$ or $t = \#$, the covering symbol.
+Similarly, a ternary predicate $t$ matches a second ternary predicate $u$ when $t$ matches all of the situations matched by $u$;
+that is, when $t = u \bigvee t = \#$.
+
+\paragraph{The \emph{match?} predicate for ranges.}
+
+\paragraph{The \emph{match?} predicate for integral sets.}
+
+\paragraph{The \emph{match?} predicate for a time-series.}
+
+\paragraph{The \emph{match?} predicate for a collection of interrelated time-series.}
+
+\paragraph{The \emph{match?} predicate for situations.}
+
+Two situations $\sigma_1$ and $\sigma_2$ match if every one of their elements match element-wise:
+$$\mathrm{match?}\left( \sigma_{1_i}, \sigma_{2_i} \right) = true \;
+\forall i \in \mathbb{Z}_{|\sigma_1| = |\sigma_2|}.$$
+
+\paragraph{The \emph{match?} predicate for classifiers and situations.}
+A classifier $r$ matches a situation $\sigma$
+if $r_1$ and $r_2$ match,
+as decided by the \emph{match?} predicate described in \S\ref{match?},
+and at least one of the elements of the classifier is more general in $r_1$ than in $r_2$.
+
+\paragraph{The \emph{match?} predicate for classifiers.}
+A classifier $r_1$ matches another classifier $r_2$
+if the environment condition of $r_1$ matches the environment condition of the classifier $r_2$.
+
+\subsection{The \emph{Generate Covering Classifier} Algorithm}
+
+\subsection{The \emph{Generate Prediction Array} Algorithm}
+
+\subsection{The \emph{Select Action} Algorithm}
+
+\subsection{The \emph{Generate Action Set} Algorithm}
+
+\subsection{The \emph{Update Set} Algorithm}
+
+\subsection{The \emph{Update Fitness} Algorithm}
+\label{update-fitness}
+
+\subsection{The \emph{Run GA} Algorithm}
+
+\subsection{The \emph{Select Offspring} Algorithm}
+
+\subsection{The \emph{Apply Crossover} Algorithm}
+
+\subsection{The \emph{Apply Mutation} Algorithm}
+
+\subsection{The \emph{Insert into the Population} Algorithm}
+\index{insert into the population algorithm@\emph{insert into the population} algorithm}
+
+This is the \emph{INSERT IN POPULATION} algorithm in \cite{ButzWilson}.
+It is slightly more complex than just pushing the new classifier into the population list:
+we need to check to see if it is already present in the population, and if so, increment that classifier's numerosity instead.
+For a new classifier $r$, find an $r' \in P$,
+\index{population}
+with $P$ being the entire population,
+such that $r$ and $r'$ are identical.
+If such an $r'$ exists, increment $r'_n$;
+otherwise insert $r$ into $P$.
+
+\subsection{The \emph{Delete from Population} Algorithm}
+
+\subsection{The \emph{Deletion Vote} Algorithm}
+\label{deletion-vote}
+\index{deletion vote algorithm@\emph{deletion vote} algorithm}
+
+This is the \emph{DELETION VOTE} algorithm in \cite{ButzWilson}.
+The deletion vote for a classifier $r$ is dependant upon its action set size estimate.
+\index{action set size estimate}
+Let $F_{average}$ be the average fitness in the entire population.
+We want classifiers with sufficient experience an signifagantly lower than average fitness than the rest of the population to be deleted before others. 
+$$r_{exp} > \theta_{del} \bigwedge \frac{r_F}{r_n} < \delta F_{average}$$
+\index{experience}
+\index{deletion threshold}
+\index{GA fitness}
+\index{numerosity}
+then this returns
+$$\frac{r_{as} r_n F_{average}}
+       {\left( \frac{r_F}{r_n} \right)}
+=\frac{r_{as} r_n^2 F_{average}}{r_F}$$
+\index{action set size estimate}
+as the deletion vote for this classifier $r$;
+otherwise it returns
+$$r_{as} r_n$$
+as the deletion vote for this classifier $r$.
+
+\subsection{The \emph{Do Action Set Subsumption} Algorithm}
+
+\subsection{The \emph{Could Subsume?} Predicate}
+\label{could-subsume?}
+
+We say that a specific classifier $r$ is capable of subsuming others if it has both sufficient accuracy and sufficient experience.
+That is, if the experience of the classifier is greater than the
+minimal subsumption experience threshold\index{minimal subsumption experience},
+and the prediction error of the classifier is less than the equal error threshold.
+In symbols:
+$$r_{exp} > \theta_{sub} \bigwedge r_{\epsilon} < \epsilon_0.$$
+
+\subsection{The \emph{More General?} Predicate}
+\label{more-general?}
+
+\paragraph{The \emph{more general?} predicate for a condition element.}
+
+\paragraph{The \emph{more general?} predicate for classifiers.}
+This is based upon the algorithm called \emph{IS MORE GENERAL} in \cite{ButzWilson}, but it has been generalized in order to suit our needs here.
+In traditional learning classifiers, it is only necessary to count the occurances of the covering symbol, $\#$, in order to determine which of two classifiers is more general: the one with the creater number of occurances of it.
+For us, is is slightly more involved due to the more complex nature of the conditions used in the construction of the classifiers.
+A classifier $r_1$ is more general than another classifier $r_2$
+if $r_1$ and $r_2$ match,
+as decided by the \emph{match?} predicate described in \S\ref{match?},
+and at least one of the elements of the classifier is more general in $r_1$ than in $r_2$.
+
+\subsection{The \emph{Subsume?} Predicate}
+
+This is called \emph{DOES SUBSUME} in \cite{ButzWilson}.
+A classifier $r_1$ subsumes another classifier $r_2$ if the following conditions are all met.
+\begin{enumerate}
+\item
+Their actions are identical:
+$r_{1\,a} = r_{2\,a}$.
+\item
+The classifier $r_1$ is capable of subsumption,
+(as decided by the \emph{could subsume?} predicate described in \S\ref{could-subsume?}.
+\item
+The classifier $r_1$ is more general than the classifier $r_2$,
+as decided by the \emph{more general?} predicate described in \S\ref{more-general?}.
+\end{enumerate}

@@ -1,0 +1,243 @@
+\subsection{Learning Parameters}
+\label{sec:parameters}
+There are numerous parameters used in XCS, a few added by XCSR, and a few more still added here.
+Choosing their values wisely can be very important in some problem domains unfortunately.
+This subsection gives brief descriptions of the important parameters and specifies sensible default values for typical problems.
+It is important that any results described should also list the parameter settings used.
+
+\subsubsection{From XCS}
+These are the parameters that are present in XCS.
+As such, they are also present in XCSR and TSC.
+
+\paragraph{General Parameters}
+These are parameters related to the general operation of XCS.
+
+\begin{description}
+\item [Maximum total numerosity.]
+\index{maximum total numerosity}
+\index{N@$N$|see{maximum total numerosity}}
+This is $N$ in \cite{ButzWilson}.
+It specifies the maximum size of the population in micro-classifiers,
+that is, the maximum sum of the numerosities of the classifiers.
+This should be a positive integer, normally in the hundreds or at most the thousands.
+\item [Learning rate.]
+\index{learning rate}
+\index{beta@$\beta$|see{learning rate}}
+This is $\beta$ in \cite{ButzWilson}.
+It is used as the learning rate for the predicted payoff,
+prediction error estimate, GA fitness, and action set size estimate
+for the classifiers.
+This should be in the range $[0.1, 0.2]$ for most problems, and always in the range $[0, 1)$.
+\item [Possible actions.]
+\index{possible actions}
+\index{A@$\mathpzc{A}$|see{possible actions}}
+This is $\mathpzc{A}$, the set of all of the possible actions that the classifier rules may take for values of $a$.
+\end{description}
+
+\paragraph{Recalculating Fitness}
+These parameters are used in XCS while recalculating the fitness of the rules in the population.
+
+\begin{description}
+\item [Multiplier parameter.]
+\index{multiplier parameter}
+\index{alpha@$\alpha$|see{multiplier parameter}}
+This is $\alpha$ in \cite{ButzWilson}.
+This is the multiplier used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{sec:update-fitness}.
+It is usually around 0.1.
+\item [Equal error threshold.]
+\index{equal error threshold}
+\index{epsilon 0@$\epsilon_0$|see{equal error threshold}}
+This is $\epsilon_0$ in \cite{ButzWilson}.
+This is the threshold used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{sec:update-fitness} to decide if the errors are essentially the same.
+It is usually around 1\% of the $\rho$, the reward.
+\item [Power parameter.]
+\index{power parameter}
+\index{nu@$\nu$|see{power parameter}}
+This is $\nu$ in \cite{ButzWilson}.
+This is the exponent used in recalculating the fitness of the classifiers in the
+\emph{update fitness} algorithm from \S\ref{sec:update-fitness}.
+It is typically set to 5.
+\end{description}
+
+\paragraph{Multi-Step Specific}
+These are parameters that are only used in multi-step problems.
+
+\begin{description}
+\item [Discount factor.]
+\index{discount factor}
+\index{gamma@$\gamma$|see{discount factor}}
+This is $\gamma$ in \cite{ButzWilson}.
+It is the discount factor used in multi-step problems when updating the classifier predictions.
+It is typically around 0.71.
+\end{description}
+
+\paragraph{GA Specific}
+These parameters are only used by the GA within XCS.
+
+\begin{description}
+\item [GA Threshold.]
+\label{sec:ga-threshold}
+\index{GA threshold}
+\index{theta GA@$\theta_{GA}$|see{GA threshold}}
+This is $\theta_{GA}$ in \cite{ButzWilson}.
+The GA is run whenever the average number of generations since the last time the GA was run is greater than this threshold.
+It is typically in the range $[25, 50]$, and should always be in $\mathbb{N^*}$.
+\item [Crossover probability.]
+\label{sec:crossover-probability}
+\index{crossover probability}
+\index{chi@$\chi$|see{crossover probability}}
+This is $\chi$ in \cite{ButzWilson}.
+It is the probability of applying the crossover operator while executing the GA.
+It is typically  in the range $[0.5, 1.0]$.
+\item [Mutation probability.]
+\label{sec:mutation-probability}
+\index{mutation probability}
+\index{mu@$\mu$|see{mutation probability}}
+This is $\mu$ in \cite{ButzWilson}.
+It is the probability of applying the mutation operator while executing the GA.
+It is typically in the range $[0.01, 0.05]$.
+\item [Deletion threshold.]
+\index{deletion threshold}
+\index{theta del@$\theta_{del}$|see{deletion threshold}}
+This is $\theta_{del}$ in \cite{ButzWilson}.
+It is the threshold for classifier deletion.
+If a classifier's experience is greater than this parameter then it may be considered for deletion.
+It is typically 20.
+\item [Fitness fraction threshold.]
+\index{fitness fraction threshold}
+\index{delta@$\delta$|see{fitness fraction threshold}}
+This is $\delta$ in \cite{ButzWilson}.
+It is the fraction of the mean fitness of the population below which the fitness of a classifier may be considered in its probability of deletion.
+It is typically around 0.1.
+\item [Initial fitness.]
+\index{initial fitness}
+\index{F I@$F_I$|see{initial fitness}}
+This is $F_I$ in \cite{ButzWilson}.
+It is used as the initial value of the fitness used by the GA for the newly-created classifiers. 
+It is typically only slightly more than zero.
+\end{description}
+
+\paragraph{Rule Set Specific}
+These parameters deal with the rule set as a whole.
+
+\begin{description}
+\item [Minimum subsumption experience.]
+\index{minimal subsumption experience}
+\index{theta sub@$\theta_{sub}$|see{minimal subsumption experience}}
+This is $\theta_{sub}$ in \cite{ButzWilson}.
+The experience of a classifier must be greater than this threshold for it to subsume another classifier.
+It must hold that $\theta_{sub} \in \mathbb{N^*}$, and typically we have $\theta_{sub} \ge 20$.
+\item [Covering probability.]
+\label{sec:covering-probability}
+\index{covering probability}
+\index{P \#@$P_\#$|see{covering probability}}
+This is $P_\#$ in \cite{ButzWilson}.
+It is the probability of using the covering element in a single attribute.
+It is typically around 0.33.
+\item [Initial prediction.]
+\index{initial prediction}
+\index{p I@$p_I$|see{initial prediction}}
+This is $p_I$ in \cite{ButzWilson}.
+It is used as the initial value of the predicted payoff for the newly-created classifiers.
+This is typically slightly more than zero.
+\item [Initial prediction error.]
+\index{initial prediction error}
+\index{epsilon I@$\epsilon_I$|see{initial prediction error}}
+This is $\epsilon_I$ in \cite{ButzWilson}.
+It is used as the initial value of the estimated prediction error for the newly-created classifiers.
+It is typically only slightly more than zero.
+\item [Exploration probability.]
+\label{sec:exploration-probability}
+\index{exploration probability}
+\index{P explr@$P_{explr}$|see{exploration probability}}
+This is $P_{explr}$ in \cite{ButzWilson}.
+It specifies the probability of exploration during the action selection phase.
+It is typically around 0.5.
+\item [Minimal number of actions.]
+\index{minimal number of actions}
+\index{theta mna@$\theta_{mna}$|see{minimal number of actions}}
+This is $\theta_{mna}$ in \cite{ButzWilson}.
+This should be in $\mathbb{N}$, and is typically equal to the number of possible actions, so that complete covering will take place.
+\item [Maximum number of steps.]
+\index{maximum number of steps}
+This is the maximum number of steps that a multistep problem can spend in one trial.
+This variable is not mentioned in \cite{ButzWilson}, but it is present in Butz's XCS code written in the C programming language.
+\item [GA subsumption?]
+\index{GA subsumption?}
+\index{doGASubsumption|see{GA subsumption?}}
+This is \emph{doGASubsumption} in \cite{ButzWilson}.
+It is a boolean parameter specifying if the offspring are to be tested for possible logical subsumption by the parents.
+It is usually best to set this to $true$.
+\item [Action set subsumption?]
+\index{action set subsumption?}
+\index{doActionSetSubsumption|see{action set subsumption?}}
+This is \emph{doActionSetSubsumption} in \cite{ButzWilson}.
+It is a boolean parameter specifying if action sets are to be tested for subsuming classifiers.
+It is usually best to set this to $true$.
+\end{description}
+
+\subsubsection{From XCSR}
+These are the learning parameters that are added to an XCS system by XCSR.
+Since our system derives from XCSR, we use these as well.
+The variables used here are slightly different from those in a traditional XCSR.
+
+\begin{description}
+\item [Problem range.]
+\index{problem range}
+This is a two-element list of the lower and upper values that the input is expected to lie within.
+As the input violates this, this range is expanded automatically.
+As an example, if it is known for a specific problem that the input should always lie within the real-valued range $[0,1]$, then this should be set to the list $\{0.0,1.0\}$.
+\item [Covering maximum.]
+\index{covering maximum}
+This is how large of a fraction of the range can be added to both the lower and upper bounds combined in the covering.
+The current default value we are using is 0.1.
+Thus, if we wish to cover $[0.3,0.5]$,  which has a spread of $0.5-0.3=0.2$, the largest allowable spread would be
+$(1 + covering_{maximum}) spread = (1+0.1) 0.2 = 0.22$.
+\item [Mutation maximum.]
+\index{mutation maximum}
+This is how large of a fraction of the range may be added or subtracted from the lower and upper bounds in the mutation method.
+The current default value we are using is 0.1.
+For example, if we are mutating a rule which matches the bounds $[0.3,0.72]$, which has a spread of $0.72-0.3=0.42$, we would have a maximum change of 0.042, so our mutated rule would now match bounds determined randomly from $[0.3 \pm 0.042, 0.72 \pm 0.042]$, but enforced to be within the problem bounds.
+\item [Initial spread limit.]
+\index{initial spread limit}
+This is $s_0$ in \cite{WilsonXCSR}.
+It is the maximum initial spread when a new predicate is created through the covering operator.
+\end{description}
+
+\subsubsection{New in TSC}
+These parameters are introduced here in TSC.
+
+\begin{description}
+\item [Maximum environment condition length.]
+\label{sec:maximum-environment-condition-length}
+\index{maximum environment condition length}
+This is how many predicates we may have at the maximum in any individual classifier.
+It should always be a positive integer.
+\item [Maximum temporal mutation.]
+\label{sec:maximum-temporal-mutation}
+\index{maximum temporal mutation}
+This is the most that the temporal element of the position may be randomly perturbed during the mutation process.
+It should always be a positive integer.
+\item [Maximum position mutation.]
+\label{sec:maximum-position-mutation}
+\index{maximum position mutation}
+This is the most any dimensional element of a position may be randomly perturbed during the mutation process.
+It should always be a positive integer.
+\item [Valid operations.]
+\index{valid operations}
+This is a list of all the valid operations for the classifier, the $\omega$'s, a list of first-order lexical closures.
+A first-order lexical closure is, roughly speaking, a function and its associated scope.
+These $\omega$'s each must be capable of operating on any arbitrary list of data extracted from the data set, and these lists of data are extracted by following the raster paths through the data.
+\item [Valid fields.]
+\index{valid fields}
+This is the list of valid fields for the classifier, the $\phi$'s, a list of first-order lexical closures.
+These $\phi$'s must be capable of operating on a single time instance of the data.
+\item [Visible time range.]
+\index{visible time range}
+This is the range in time that is visible to the classifiers.
+None of the classifiers are allowed to look beyond this window.
+This also is generally how much of a history should be generated before the classifier system is allowed to start.
+This is a set interval.
+\end{description}

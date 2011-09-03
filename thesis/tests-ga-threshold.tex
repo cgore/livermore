@@ -1,0 +1,35 @@
+\subsubsection{GA Thresholds}
+After deciding on $a_2$ as the best reward method and keeping it for the rest of these tests, we turn our attention to optimizing the GA threshold $\theta_{GA}$, which is described earlier in \S\ref{sec:ga-threshold}.
+We chose to look at the possible values for this parameter of 25,  35, 45, and 50.
+
+A GA threshold of 25 was used in the previous situation, so we can borrow the results from that $a_2$ run; refer to Table~\ref{tab:reward-a2}.
+
+For a GA threshold value of 35, we observed the results as described in Table~\ref{tab:gathreshold35} over 30 trials.
+
+\enlargethispage{2\baselineskip}
+\begin{cgoreErt}{TSC results for a GA threshold of 35.}{tab:gathreshold35}
+arith mean & 759 & 50.571\% & \$1,874,746.50 & 0.68289 & 11.17\%pa \\
+std dev & 22.7 & 1.513\% & \$315,092.60 & 0.11477 & 1.88\%pa \\
+max & 806 & 53.733\% & \$2,627,517.80 & 0.95709 & 17.68\%pa \\
+min & 719 & 47.933\% & \$1,346,346.10 & 0.49042 & 5.14\%pa
+\end{cgoreErt}
+
+For a GA threshold value of 45, we observed the results as described in Table~\ref{tab:gathreshold45} over 31 trials.
+
+\begin{cgoreErt}{TSC results for a GA threshold of 45.}{tab:gathreshold45}
+arith mean & 760  & 50.688\% & \$1,881,119.10 & 0.68521 & 11.24\%pa \\
+std dev    & 25.6 &  1.706\% &   \$217,843.06 & 0.07935 & 1.30\%pa \\
+max        & 816  & 54.4\%   & \$2,297,796.00 & 0.83699 & 15.05\%pa \\
+min        & 699  & 46.6\%   & \$1,250,916.30 & 0.45566 & 3.85\%pa
+\end{cgoreErt}
+
+For a GA threshold value of 50, we observed the results as described in Table~\ref{tab:gathreshold50} over 30 trials.
+
+\begin{cgoreErt}{TSC results for a GA threshold of 50.}{tab:gathreshold50}
+arith mean & 763 & 50.891\% & \$1,885,079.90 & 0.68665 & 11.28\%pa \\
+std dev & 21.1 & 1.405\% & \$293,885.56 & 0.10705 & 1.76\%pa \\
+max & 808 & 53.867\% & \$2,425,741.30 & 0.88359 & 16.10\%pa \\
+min & 713 & 47.533\% & \$1,329,746.00 & 0.48437 & 4.91\%pa
+\end{cgoreErt}
+
+There was no significant effect on the results of the algorithm based on the GA threshold: all of the other means fall well within $1\over4$ of a standard deviation relative to the initial value of $\theta_{GA} = 25$, so we will employ that value for all remaining experiments.

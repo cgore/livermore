@@ -1,0 +1,39 @@
+\subsection{Evolutionary Algorithms}
+In artificial intelligence (AI), evolutionary algorithms (EA's) are a style of generic population-based meta-heuristic optimization algorithms whose processes are inspired by those of natural biological evolution.
+The primary mechanisms employed in EA's to evolve a population of possible solutions towards an optimal one are:
+\begin{enumerate}
+\item parent selection based on fitness,
+\item recombination,
+\item mutation, and
+\item and survivor selection based on fitness.
+\end{enumerate}
+Evolution serves as a powerful metaphor and demonstrates great creativity in both the natural world and in the world of computer science.
+
+In normal biological evolution the environment that the population exists in exerts various pressures on the individuals in the population that determines the likelihood that any particular individual will manage to survive long enough to reproduce, and it is through this process that the fitness of an individual in the population must be determined: relative to its environment.
+In an EA, the environment relates to the problem we wish to solve, the individuals in the population encode potential solutions to that problem, and their fitness is their quality as a solution to the problem.
+By mimicking the methods of natural evolution in this manner we can often arrive at good solutions.
+The basic evolutionary process is outlined in Algorithm~\ref{alg:evolution}.
+
+\begin{algorithm}[H]
+\caption{The evolutionary process.}
+\begin{algorithmic}[1]
+\label{alg:evolution}
+\STATE
+Initialize the population, either with randomly-generated or seeded candidate solutions or both.
+\STATE
+Evaluate the fitness of each member of the population.
+\REPEAT
+  \STATE
+  Select members of the population to act as parents.
+  This is typically related to the relative fitness of the parents in some way.
+  \STATE
+  Recombine the genetic material of the parents, producing offspring to be added to the population.
+  \STATE
+  Mutate some or all of the newly-created offspring.
+  \STATE
+  Evaluate the fitness of the offspring.
+  \STATE
+  Select survivors from the current population or a subset thereof, often only the newly-created offspring, to survive to the next generation.
+\UNTIL{some specified termination condition is satisfied.}
+\end{algorithmic}
+\end{algorithm}

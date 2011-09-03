@@ -1,0 +1,50 @@
+\section{Future Work}
+There are several opportunities for improvement on TSC.
+Some of these are obvious and result from known simplifications and limitations of the current TSC system.
+The most obvious paths for future research with this TSC fall into the following major tasks:
+\begin{enumerate}
+\item using more advanced $\phi$'s,
+\item using more advanced $\omega$'s,
+\item finishing the implementation of multidimensionality,
+\item using more advanced concepts in the GA,
+\item represent the rule strengths with polynomials instead of reals,
+\item changing from a Michigan to a Pittsburg approach,
+\item using a GP instead of a GA,
+\item and applying the system to other real-world problems.
+\end{enumerate}
+
+Using more advanced $\phi$'s, is the most straightforward to start on.
+In the version of TSC as outlined here, and in the associated code, it is entirely possible to use any lexical closure as a $\phi$, as long as it is capable of operating on one position of the time series data.
+In our use we only used $\phi$ to select the data field, but there is no reason why this should not or could not have vastly more complex operations.
+Any operations that would be useful in discernment might be useful.
+
+Using more advanced $\omega$'s would address what is probably the greatest weakness of the current system.
+At present we have only used a simple slope function for the $\omega$ and have not attempted anything else.
+There are bound to be many more useful functions available.
+We specifically expect that the ability to match against polynomials and against periodic functions would be of the most intrinsic value.
+
+Extending TSC so that it is a system fully capable of handling multivariate time series depends on the previous two tasks' completion first.
+The TSC system as described and the code used were both originally designed to handle multivariate time series, and therefore much of the work is already completed, but exactly what else remains to be finished is not entirely clear.
+We assert that at least new $\omega$'s that are designed with multivariate time series in mind would be required, but there may be other elements of the TSC system that need revision as well.
+
+Using more advanced concepts within TSC's GA would be one of the easiest methods of improvement.
+The form of crossover we used was simple one-point crossover, and there are several well-known forms of crossover with better performance in general use.
+Employing a self-adaptive GA to evolve its own parameters encoded in its gene could also provide for some major gains, as this has been the most computationally intensive part of our investigation.
+Other methods of mutation may be beneficial, although this would require novel work: the non-standard form of the individuals in TSC appears to necessitate non-standard mutation approaches.
+The easiest modification of the mutation that would possibly be beneficial would be to try a Gaussian form of mutation which would allow for more drastic alteration to the population members on rare occasions.
+This would allow the system to adapt more fully to notably different environments.
+
+The measures of the strengths here are real numbers currently, but we suspect that they may be better represented by polynomials, especially in the stock market problem since there is a great deal of difference in the value of a rule in differing times for any specific stock.
+
+XCS and company use the so-called Michagan approach, where the entire population is the rule set.
+We suspect that the Pittsburgh approach, where each individual in the population is a complete rule set, could possibly be a better fit for our stock market problem in specific and possibly time series problems in general.
+This would be quite involved, and almost a complete redesign of the system.
+
+Replacing the GA with a genetic program (GP), would be quite an undertaking.
+This would allow for vastly more complex classification rules and could possibly discover new basic metrics for the time series problems presented to the system.
+This would be of particular value with the stock market even though there are several well-known metrics because they are  rarely of any quality.
+This would even more valuable for less-investigated time series problems since there might not even be any known metrics as of yet for the problem.
+
+\enlargethispage{2\baselineskip}
+The final task is actually many tasks: TSC should be applied to many more real-world problems, both to better solve those problems and to improve TSC itself.
+We hope that this work will prove useful in many problems and look forward to its use by others.

@@ -1,0 +1,30 @@
+#/bin/bash
+
+function go_latex () {
+   latex -file-line-error $@
+}
+echo ---------------------------------------------------------------------------
+echo Running latex the first two times.
+go_latex thesis &&
+go_latex thesis &&
+
+echo --------------------------------------------------------------------------- &&
+echo Running bibtex twice. &&
+bibtex thesis &&
+bibtex thesis &&
+
+echo --------------------------------------------------------------------------- &&
+echo Running latex post bibtex three times. &&
+go_latex thesis &&
+go_latex thesis &&
+go_latex thesis &&
+
+echo --------------------------------------------------------------------------- &&
+echo Converting the dvi file to a ps file. &&
+dvips -o thesis.ps thesis &&
+
+echo --------------------------------------------------------------------------- &&
+echo Converting the dvi file to a pdf file. &&
+ps2pdf thesis.ps
+
+cp thesis.ps thesis.pdf /var/www/cgore.com/data/research/tsc/

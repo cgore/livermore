@@ -1,0 +1,12 @@
+\documentclass{article}
+
+\usepackage{GoreThesis}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\input{abstract.latex}
+
+\end{document}

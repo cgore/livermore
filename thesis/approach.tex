@@ -1,0 +1,79 @@
+\section{Approach and Design of the Time Series Classifier}
+
+\vspace{-\baselineskip}
+
+\input{fundamental-operations}
+
+\subsection{Data Representation}
+This LCS is intended to operate on a multivariate time series.
+The data consists of a single temporal dimension, several positional dimensions, and a single dimension of type.
+This is represented as a linked list consisting of multidimensional arrays, where each element in the matrices is a structure.
+Each array of structures represents a single time step; the position in the list is the position in time.
+The fields of the structures are independent data.
+Thus, any specific value in the multivariate time series could be uniquely referenced in the form:
+\begin{equation}
+\left\{ t, x_0, \ldots, x_{n-1}, \phi \right\}
+\end{equation}
+where $t$ is the temporal position,
+$x_0,\ldots,x_{n-1}$ are the dimensional positions (for $n$ dimensions),
+and $\phi$ is the field selector.
+It must hold that $\forall x_i \in \mathbb{N^*}$.
+The temporal position $t$ specifies a time $t_{current}-t$, and it must also hold that
+$t \in \mathbb{N}_0$.
+
+This representation can be simplified: the entries can be single elements instead of full structures, and the arrays themselves can even be reduced to single elements, reducing to a traditional one-dimensional time series, all using the same code.
+This is what is done in the examples here, and all tests were performed on one-dimensional time series, although each entry was a structure containing multiple related data.
+For our example of market analysis, $t$ is the number of days from present time, and the fields are the opening price, closing price, high price, low price, adjusted closing price, and the volume of the trades for that particular stock at that particular time.
+
+\newpage
+\subsection{Rule Representation}
+The representation of a single rule is a collection of predicates;
+each predicate must match the current situation for the rule to match the situation.
+A single predicate consists of an initial and a final position,
+each of the form
+\begin{equation}
+\left\{ t, x_0, \ldots, x_{n-1} \right\},
+\end{equation}
+a field selector $\phi$, an operator $\omega$, and a range pair consisting of a lower and upper bound $[l,u]$.
+The field selector $\phi$ is to be a lexical closure taking only one argument, which is the structure at the position
+$\left\{t,x_0,\ldots,x_{n-1}\right\}$.
+If the structure is not a structure, but rather a single element, the only value that would usually make sense for $\phi$ would be an identity function:
+simple transformative functions would be acceptable otherwise.
+Any function that operates in a uniform manner, applied to a single entry, would be an acceptable $\phi$.
+The operator $\omega$ is also a lexical closure, and is intended for classification purposes; all $\omega$'s must operate over a one-dimensional vector of data.
+
+If we take the data along the straight line segment from the initial point $A$ to the final point $B$, forming a vector $d$, we can then form $d'$ by applying $\phi$ to each element in $d$:
+\begin{equation}
+d'_i = \phi \left(d_i\right) \forall d_i \in d.
+\end{equation}
+The predicate is said to match the data if and only if
+\begin{equation}
+l \le \omega \left( d' \right) \le u.
+\end{equation}
+When all of the predicates of the rule match, then the rule matches; the rule then recommends a particular classification or action.
+
+\subsection{Mutation}
+\label{sec:mutation}
+The approach to mutation of the paths is to restrict the mutation of the line segment to the same line, only allowing the end points to move up or down along that line.
+In this method, the alteration of the line segment is minor, and therefore there is very little change in the actual information held by the path.
+This is exactly the sort of effect we wish in mutation: small changes.
+By only allowing for smaller mutations we do not have the information stored in the rule itself destroyed completely, but instead it is just slightly modified.
+\[\xymatrix{\circ \ar@{.}[r] & \bullet \ar@{-}[rrr] & \bullet & \bullet & \bullet }\]
+The lower and upper values of the range are altered, but limited by a maximum mutation parameter, and also limited to ensure that the current situation maintains its current classification under the classifier rule.
+
+\subsection{Crossover}
+\label{sec:crossover}
+We use a marginally-modified form of one-point crossover.
+Consider viewing the environment condition of a rule as consisting of several predicates, each possessing an initial point $A$, a final point $B$, a lower bound $l$, an upper bound $u$, a field $\phi$ and an operation $\omega$.
+We could choose to view this as a list of the form
+\begin{equation}
+\left\{
+   A_0, B_0, l_0, u_0, \phi_0, \omega_0,
+   \ldots,
+   A_{p-1}, B_{p-1}, l_{p-1}, u_{p-1}, \phi_{p-1}, \omega_{p-1}
+\right\}
+\end{equation}
+where $p$ is the number of predicates contained in the rule.
+Apply one-point crossover on two lists of this form, but insure that both lists break the predicates in the same way.
+
+\input{classifier-system}
