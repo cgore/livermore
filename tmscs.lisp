@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (load "xcsr")
 (in-package :xcs)
 (export '(tms-classifier

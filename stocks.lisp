@@ -9,7 +9,7 @@
 
 (asdf:operate 'asdf:load-op 'clsql-postgresql-socket)
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'time) (load "time"))
 (unless (find-package 'statistics) (load "statistics"))
 (unless (find-package 'csv) (load "csv"))

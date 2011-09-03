@@ -5,11 +5,11 @@
 ;;;; Last edited Monday, February 4, AD 2008; xb.
 ;;;; Copyright (C) 2005 -- 2008, all rights reserved.
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package "XCS")
   (defpackage "XCS"
     (:use "COMMON-LISP"
-          #+cmu "EXTENSIONS" 
+          #+cmu "EXTENSIONS"
           "UTILITIES")
     (:export :ternary-value
              :match?

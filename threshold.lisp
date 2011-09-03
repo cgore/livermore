@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (unless (find-package "THRESHOLD")
   (defpackage "THRESHOLD"
     (:use "COMMON-LISP" "UTILITIES")))

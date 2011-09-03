@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (load "xcsr")
 (load "xcs-analyzer")
 (load "threshold")

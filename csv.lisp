@@ -7,7 +7,7 @@
 ;;;; $HeadURL: file:///var/svn/trading/trunk/csv.lisp $
 ;;;; $Revision: 484 $
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'csv)
   (defpackage :csv
     (:use :common-lisp :utilities)

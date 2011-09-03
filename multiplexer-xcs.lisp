@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (load "xcs")
 (load "xcs-analyzer")
 (load "multiplexer")

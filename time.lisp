@@ -7,7 +7,7 @@
 ;;;; $HeadURL: file:///var/svn/trading/trunk/time.lisp $
 ;;;; $Revision: 539 $
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'time)
   (defpackage :time
     (:use :common-lisp :utilities)

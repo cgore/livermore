@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (load "xcs")
 (in-package "XCS")
 (use-package '("COMMON-LISP" "UTILITIES"))

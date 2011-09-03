@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (unless (find-package 'multiplexer)
   (defpackage "MULTIPLEXER"
     (:use "COMMON-LISP" "UTILITIES")))

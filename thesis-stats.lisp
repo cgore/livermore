@@ -1,4 +1,4 @@
-(load "utilities")
+(load "utilities/utilities")
 (load "statistics")
 (use-package :utilities)
 (use-package :statistics)
@@ -12,7 +12,7 @@
 (list-entry-names num-correct percent-correct money-returned money-ratio)
 |#
 
-(setf *reward-a1-stats* 
+(setf *reward-a1-stats*
       '((697 46.467 1345840.30 0.49023)
         (736 49.067 1803198.10 0.65683)
         (755 50.733 2024644.50 0.73749)

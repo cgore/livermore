@@ -7,7 +7,7 @@
 ;;;; $HeadURL: file:///var/svn/trading/trunk/statistics.lisp $
 ;;;; $Revision: 471 $
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'statistics)
   (defpackage "STATISTICS"
     (:nicknames "STAT")
@@ -23,7 +23,7 @@
 
 (defgeneric arithmetic-mean (sequence &key key start end))
 
-(defmethod arithmetic-mean 
+(defmethod arithmetic-mean
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
   "The arithmetic mean is what most people mean when they use the word
   ``mean''  This is also called the ``sample mean,'' and is what is usually

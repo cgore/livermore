@@ -11,7 +11,7 @@
 (require 'clx)
 (require 'clim)
 
-(unless (find-package 'utilities) (load "utilities"))
+(unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'stocks) (load "stocks"))
 (unless (find-package 'trade-chart)
   (defpackage :trade-chart
