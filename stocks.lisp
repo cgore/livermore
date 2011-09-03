@@ -1,11 +1,9 @@
-;;;; Copyright (C) 2005 -- 2008, all rights reserved.
-;;;; Christopher Mark Gore.
-;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281.
-;;;; WWW: <http://www.cgore.com>.
-;;;; E-mail: <chris-gore@earthlink.net>.
-;;;; $Date: 2008-08-04 08:47:51 -0500 (Mon, 04 Aug 2008) $
-;;;; $HeadURL: file:///var/svn/trading/trunk/stocks.lisp $
-;;;; $Revision: 544 $
+;;;; Copyright (c) 2005 -- 2011, Christopher Mark Gore,
+;;;; All rights reserved.
+;;;;
+;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281 USA.
+;;;; Web: http://cgore.com
+;;;; Email: cgore@cgore.com
 
 (asdf:operate 'asdf:load-op 'clsql-postgresql-socket)
 

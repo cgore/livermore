@@ -1,4 +1,10 @@
-(load "utilities/utilities")
+;;;; Copyright (c) 2005 -- 2011, Christopher Mark Gore,
+;;;; All rights reserved.
+;;;;
+;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281 USA.
+;;;; Web: http://cgore.com
+;;;; Email: cgore@cgore.com(load "utilities/utilities")
+
 (load "statistics")
 (use-package :utilities)
 (use-package :statistics)
