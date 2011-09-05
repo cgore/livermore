@@ -223,7 +223,7 @@
          (floor/ y 400)
          32045))))
 
-(function-alias 'time-jdn 'time-julian-day-number)
+(function-alias 'time-julian-day-number 'time-jdn)
 
 (defun time-julian-date (&optional (time (get-decoded-time-list)))
   (+ (time-julian-day-number time)
@@ -231,14 +231,14 @@
      (/ (time-minute time) 1440)
      (/ (time-second time) 86400)))
 
-(function-alias 'time-jd 'time-julian-date)
+(function-alias 'time-julian-date 'time-jd)
 
 (defun time-ordinal-date (&optional (time (get-decoded-time-list)))
   (1+ (- (time-julian-day-number time)
          (time-julian-day-number
            (decoded-time-list (encode-year (time-year time)))))))
 
-(function-alias 'time-day-of-year 'time-ordinal-date)
+(function-alias 'time-ordinal-date 'time-day-of-year)
 
 
 
@@ -270,12 +270,12 @@
   (format nil "~4D-~2D-~2D"
           (time-year time) (time-month time) (time-date time)))
 
-(function-alias 'iso-extended-date-string 'yyyy-mm-dd-string)
+(function-alias 'yyyy-mm-dd-string 'iso-extended-date-string)
 
-(function-alias 'iso-date-string 'iso-extended-date-string)
+(function-alias 'iso-extended-date-string 'iso-date-string)
 
 (defun yyyymmdd-string (&optional (time (get-decoded-time-list)))
   (format nil "~4D~2D~2D"
           (time-year time) (time-month time) (time-date time)))
 
-(function-alias 'iso-short-date-string 'yyyymmdd-string)
+(function-alias 'yyyymmdd-string 'iso-short-date-string)

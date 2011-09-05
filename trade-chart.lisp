@@ -10,6 +10,7 @@
 (require 'clim)
 
 (unless (find-package 'utilities) (load "utilities/utilities"))
+(unless (find-package 'time) (load "time"))
 (unless (find-package 'stocks) (load "stocks"))
 (unless (find-package 'trade-chart)
   (defpackage :trade-chart
@@ -131,7 +132,7 @@
                          (up-ink (up-ink frame))
                          (down-ink (down-ink frame))
                          (line-thickness 1))
-  (let* ((w (bounding-rectangle-width pane))
+  (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
          (yr (- (y1 frame) (y0 frame)))
          (ys (/ h yr)))
@@ -164,7 +165,7 @@
 
 (defun bar-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
   (naked-bar-chart frame pane :up-ink up-ink :down-ink down-ink)
-  (let* ((w (bounding-rectangle-width pane))
+  (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
          (yr (- (y1 frame) (y0 frame)))
          (ys (/ h yr)))
@@ -184,7 +185,7 @@
 
 (defun ohlc-bar-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
   (bar-chart frame pane :up-ink up-ink :down-ink down-ink)
-  (let* ((w (bounding-rectangle-width pane))
+  (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
          (yr (- (y1 frame) (y0 frame)))
          (ys (/ h yr)))
@@ -258,7 +259,7 @@
                           :x1 (apply #'max (closing-time table))
                           :y1 (apply #'max (adjusted-high-price table))
                           :data table
-                          :pretty-name "Trade Chart $Revision: 539 $"))
+                          :pretty-name "Trade Chart"))
 
 (defun trade-chart (table)
   (run-frame-top-level (make-trade-chart table)))

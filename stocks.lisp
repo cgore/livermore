@@ -138,6 +138,34 @@
 ;                 :database-type :postgresql-socket))
 (in-package :stocks)
 
+(defgeneric records (table))
+(defgeneric adjustment (table-record))
+(defgeneric adjusted-opening-price (table-record))
+(defgeneric adjusted-high-price (table-record))
+(defgeneric adjusted-low-price (table-record))
+(defgeneric generate-daily-records (table))
+(defgeneric daily-records (table))
+(defgeneric generate-monthly-records (table))
+(defgeneric monthly-records (table))
+(defgeneric generate-yearly-records (table))
+(defgeneric yearly-records (table))
+(defgeneric elt-record (table position &optional key))
+(defgeneric difference (table &key key start end))
+#+sbcl (sb-ext:without-package-locks
+         (defgeneric ratio (table &key key start end)))
+#+cmu (ext:without-package-locks
+        (defgeneric ratio (table &key key start end)))
+#+clisp (ext:without-package-lock ()
+          (defgeneric ratio (table &key key start end)))
+(defgeneric percent-change (table &key key start end))
+(defgeneric spread-difference (table &key key position spread))
+(defgeneric spread-ratio (table &key key position spread))
+(defgeneric spread-percent-change (table &key key position spread))
+(defgeneric sample-z-score (table &key key start end))
+(defgeneric unbiased-sample-z-score (table &key key start end))
+(defgeneric shares-buyable (record money))
+(defgeneric buy-and-hold (table initial-money &key start end))
+
 ;; This is the initial quantity of money for the various analyzer methods.
 (defparameter *initial-money* 100000.00)
 
@@ -150,7 +178,7 @@
 
 (defun canonical-ticker (ticker)
   "Turns a ticker symbol into its canonical form.  We are following Yahoo!
-  Finance's style of tickers for now."
+Finance's style of tickers for now."
   (if (symbolp ticker)
     (setf ticker (symbol-name ticker)))
   (string-upcase ticker))
@@ -234,22 +262,17 @@
                  :trading-volume (trading-volume table-record)
                  :adjusted-closing-price (adjusted-closing-price table-record)))
 
-(defgeneric adjustment (table-record))
-
 (defmethod adjustment ((table-record table-record))
   (/ (adjusted-closing-price table-record) (closing-price table-record)))
 
-(defgeneric adjusted-opening-price (table-record))
 
 (defmethod adjusted-opening-price ((table-record table-record))
   (* (opening-price table-record) (adjustment table-record)))
 
-(defgeneric adjusted-high-price (table-record))
 
 (defmethod adjusted-high-price ((table-record table-record))
   (* (high-price table-record) (adjustment table-record)))
 
-(defgeneric adjusted-low-price (table-record))
 
 (defmethod adjusted-low-price ((table-record table-record))
   (* (low-price table-record) (adjustment table-record)))
@@ -293,7 +316,6 @@
      :initarg :records
      :type list)))
 
-(defgeneric records (table))
 
 (defmethod records ((table table))
   (subseq (funcall (preferred-records table) table)
@@ -312,19 +334,13 @@
                  :yearly-records (duplicate (slot-value table 'yearly-records))
                  :records (duplicate (slot-value table 'records))))
 
-(defgeneric generate-daily-records (table))
-
 (defmethod generate-daily-records ((table table))
   ;; Effectively a no-op for now, until we start defaulting to intraday data.
   (slot-value table 'records))
 
-(defgeneric daily-records (table))
-
 (defmethod daily-records ((table table))
   ;; XXX: This will need to be changed whenever we get intraday data.
   (slot-value table 'records))
-
-(defgeneric generate-monthly-records (table))
 
 (defmethod generate-monthly-records ((table table))
   (with-slots (monthly-records) table
@@ -383,12 +399,8 @@
       (setf monthly-records (reverse monthly-records)))
     monthly-records))
 
-(defgeneric monthly-records (table))
-
 (defmethod monthly-records ((table table))
   (aif (slot-value table 'monthly-records) it (generate-monthly-records table)))
-
-(defgeneric generate-yearly-records (table))
 
 (defmethod generate-yearly-records ((table table))
   (with-slots (yearly-records) table
@@ -441,8 +453,6 @@
       (setf yearly-records (reverse yearly-records)))
     yearly-records))
 
-(defgeneric yearly-records (table))
-
 (defmethod yearly-records ((table table))
   (aif (slot-value table 'yearly-records) it (generate-yearly-records table)))
 
@@ -485,8 +495,6 @@
 (defmethod adjusted-closing-price ((table table))
   (mapcar #'adjusted-closing-price (records table)))
 
-(defgeneric elt-record (table position &optional key))
-
 (defmethod elt-record ((table table) position &optional (key #'identity))
   ;; We allow for NIL as a position indicating the very end of the list.
   (when (null position)
@@ -507,7 +515,7 @@
 
 (defun parse-yahoo-finance-stock-csv-record (record)
   "This reads in a line from a Yahoo! Finance CSV file about a stock and returns
-  an equivalent stock table record."
+an equivalent stock table record."
   (make-instance 'table-record
                  :opening-time (date-string-to-universal-time
                                  (first record)
@@ -541,47 +549,33 @@
                                        (table-filename ticker-symbol))))
                        #'< :key #'opening-time)))
 
-(function-alias 'load-table 'load-table-from-yahoo)
-
-(defgeneric difference (table &key key start end))
+(function-alias 'load-table-from-yahoo 'load-table)
 
 (defmethod difference
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   "This reports the DIFFERENCE between the value of the KEY at the START
-  position and at the END position."
+position and at the END position."
   (- (elt-record table end key)
      (elt-record table start key)))
 
-#+sbcl (sb-ext:without-package-locks
-         (defgeneric ratio (table &key key start end)))
-#+cmu (ext:without-package-locks
-        (defgeneric ratio (table &key key start end)))
-#+clisp (ext:without-package-lock ()
-          (defgeneric ratio (table &key key start end)))
 (defmethod ratio
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   "This reports the RATIO between the value of the KEY at the START position
-  and at the END position."
+and at the END position."
   (/ (elt-record table end key)
      (elt-record table start key)))
-
-(defgeneric percent-change (table &key key start end))
 
 (defmethod percent-change
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   "This reports the PERCENT DIFFERENCE between the value of the KEY at the
-  START position and at the END position."
+START position and at the END position."
   (* 100.0 (ratio table :key key :start start :end end)))
-
-(defgeneric spread-difference (table &key key position spread))
 
 (defmethod spread-difference
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
   "This reports the DIFFERENCE between the value of the KEY at the POSITION and
-  at the POSITION + SPREAD."
+at the POSITION + SPREAD."
   (difference table :key key :start (+ position spread) :end position))
-
-(defgeneric spread-ratio (table &key key position spread))
 
 (defmethod spread-ratio
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
@@ -589,12 +583,10 @@
   the POSITION + SPREAD."
   (ratio table :key key :start (+ position spread) :end position))
 
-(defgeneric spread-percent-change (table &key key position spread))
-
 (defmethod spread-percent-change
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
   "This reports the PERCENT DIFFERENCE between the value of the KEY at the
-  POSITION and at the POSITION + SPREAD."
+POSITION and at the POSITION + SPREAD."
   (percent-change table :key key :start (+ position spread) :end position))
 
 (defmethod arithmetic-mean
@@ -644,7 +636,7 @@
                       (key #'adjusted-closing-price)
                       (start 0) (end nil))
   "This predicate specifies if element at the specified position is the
-  MINIMUM of the stock table's records."
+MINIMUM of the stock table's records."
   (minimum? (records table) :position position :key key :start start :end end))
 
 ;;; XXX: this is broken.
@@ -654,10 +646,8 @@
                       (key #'adjusted-closing-price)
                       (start 0) (end nil))
   "This predicate specifies if element at the specified position is the
-  MAXIMUM of the stock table's records."
+MAXIMUM of the stock table's records."
   (maximum? (records table) :position position :key key :start start :end end))
-
-(defgeneric sample-z-score (table &key key start end))
 
 (defmethod sample-z-score
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
@@ -669,8 +659,6 @@
             (arithmetic-mean table :key key :start start :end end))
          sdev))))
 
-(defgeneric unbiased-sample-z-score (table &key key start end))
-
 (defmethod unbiased-sample-z-score
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   (let ((sdev (unbiased-sample-standard-deviation
@@ -681,12 +669,8 @@
             (arithmetic-mean table :key key :start start :end end))
          sdev))))
 
-(defgeneric shares-buyable (record money))
-
 (defmethod shares-buyable ((record table-record) money)
   (floor (/ money (adjusted-closing-price record))))
-
-(defgeneric buy-and-hold (table initial-money &key start end))
 
 (defmethod buy-and-hold ((table table) initial-money
                          &key (start 0) (end nil))
@@ -732,9 +716,9 @@
                              ;; Supress user messages, T or NIL.
                              (quiet nil))
   "This function retrieves the table.csv file for the specified stock from
-  Yahoo! Finance's webserver.  The table.csv file is in the format: 
+Yahoo! Finance's webserver.  The table.csv file is in the format:
   date,open,high,low,close,volume,adjusted-close
-  An example:
+An example:
   19-Nov-04,10571.63,10588.29,10419.89,10456.91,15266000,10456.91"
   (setf ticker-symbol (canonical-ticker ticker-symbol)
         start-date (princ-to-string start-date)
@@ -766,7 +750,7 @@
 
 (defun retrieve-stocks-data ()
   "This function calls RETRIEVE-TABLE on all of the ticker symbols in the
-  *TICKER-DESCRIPTIONS* hash table."
+*TICKER-DESCRIPTIONS* hash table."
   (maphash #'(lambda (ticker description)
                ;; We tell Lisp that we don't really use DESCRIPTION so that it
                ;; won't give us warning messages about it.
@@ -777,7 +761,7 @@
 (defun retrieve-index-components
   (index-symbol &key (filename (components-filename index-symbol)))
   "This function retrieves the components included in the specified index from
-  Yahoo! Finance's backend servers."
+Yahoo! Finance's backend servers."
   ;; TODO: this doesn't work yet.
   (wget "-O" filename
         (concatenate 'simple-string
@@ -789,7 +773,7 @@
 (defun index-components (index-symbol
                           &key (filename (components-filename index-symbol)))
   "This function returns the components included in the specified index from
-  the file retrieved from Yahoo! Finance's backend servers."
+the file retrieved from Yahoo! Finance's backend servers."
   (retrieve-index-components index-symbol :filename filename)
   (mapcar (compose #'first #'parse-yahoo-finance-stock-csv-record)
           (read-lines filename)))
@@ -797,17 +781,17 @@
 (defun buy-and-hold-gains (sequence)
   (mapcar #'/ (rest sequence) sequence))
 
-(function-alias 'b&h-gains 'buy-and-hold-gains)
+(function-alias 'buy-and-hold-gains 'b&h-gains)
 
 (defun buy-and-hold-performance (sequence)
   (/ (car (last sequence)) (first sequence)))
 
-(function-alias 'b&h-performance 'buy-and-hold-performance)
+(function-alias 'buy-and-hold-performance 'b&h-performance)
 
 (defun cash-optimal-gains (sequence)
   "This is the gains possible if we magically know when to keep our money out,
-  and instead keep it in cash those days so that there is no loss or gain on
-  down days but always gain on up days."
+and instead keep it in cash those days so that there is no loss or gain on down
+days but always gain on up days."
   (mapcar (curry #'max 1) (buy-and-hold-gains sequence)))
 
 (defun cash-optimal-performance (sequence)
@@ -821,12 +805,12 @@
         (/ (sum sequence :start (- end period) :end end)
            period)))
 
-(function-alias 'sma 'simple-moving-average)
+(function-alias 'simple-moving-average 'sma)
 
 (defun arithmetically-weighted-moving-average (period sequence)
   "This function calculates the arithmetically weighted moving average (WMA) of
-  a sequence, which is the specific WMA generally meant in technical analysis
-  whenever WMA is discussed."
+a sequence, which is the specific WMA generally meant in technical analysis
+whenever WMA is discussed."
   (assert (positive-integer? period))
   (assert (sequence? sequence))
   (loop for end from period to (length sequence) collect
@@ -840,7 +824,7 @@
            ;; triangular number, which can be determined by this formula.
            (* period (1+ period) 1/2))))
 
-(function-alias 'awma 'arithmetically-weighted-moving-average)
+(function-alias 'arithmetically-weighted-moving-average 'awma)
 
 (defun exponential-moving-average (period sequence)
   "This function calculates the exponential moving average (EMA) of a sequence."
@@ -858,23 +842,28 @@
                                 (expt (1- smoothing-factor) e))
                           (subseq sequence (- end period) end)))))))
 
-(function-alias 'ema 'exponential-moving-average)
+(function-alias 'exponential-moving-average 'ema)
 
 (defun moving-average-convergence-divergence (period-a period-b sequence)
   "This is the moving average convergence/divergence (MACD) of a sequence."
   (mapcar #'- (ema period-a sequence) (ema period-b sequence)))
 
-(function-alias 'macd 'moving-average-convergence-divergence)
+(function-alias 'moving-average-convergence-divergence 'macd)
 
-(defun macd-12-26-9 (sequence)
-  "The MACD[12,26,9] is the textbook standard version."
-  (macd 12 26 9 sequence))
-
-(function-alias 'macd-textbook 'macd-12-26-9)
+;(defun macd-signal-line (period-a period-b signal-period sequence)
+;  "This is the signal line for the moving average convergence/divergence (MACD)
+;of a sequence."
+;  (
+;
+;(defun macd-12-26-9 (sequence)
+;  "The MACD[12,26,9] is the textbook standard version."
+;  (macd 12 26 9 sequence))
+;
+;(function-alias 'macd-12-26-9 'macd-textbook)
 
 (defun macd-signal (smoothing-period period-a period-b sequence)
   "This is the MACD of a sequence with an EMA applied to smooth the results.
-  It is routinely used as a signal/trigger."
+It is routinely used as a signal/trigger."
   (ema smoothing-period (macd period-a period-b sequence)))
 
 (defun upward-changes (sequence)
@@ -898,43 +887,43 @@
           (funcall moving-average (upward-changes sequence))
           (funcall moving-average (downward-changes sequence))))
 
-(function-alias 'rs 'relative-strength)
+(function-alias 'relative-strength 'rs)
 
 (defun ema-rs (period sequence)
   (relative-strength (curry #'ema period) sequence))
 
-(function-alias 'wilder-rs 'ema-rs)
+(function-alias 'ema-rs 'wilder-rs)
 
 (defun ema-rs-27 (sequence)
   "This is the RS that Wilder recommended originally."
   (ema-rs 27 sequence))
 
-(function-alias 'rs-textbook 'ema-rs-27)
+(function-alias 'ema-rs-27 'rs-textbook)
 
 (defun sma-rs (period sequence)
   (relative-strength (curry #'ema period) sequence))
 
-(function-alias 'cutler-rs 'sma-rs)
+(function-alias 'sma-rs 'cutler-rs)
 
 (defun relative-strength-index (rs sequence)
   (- 100 (* 100 (/ (1+ (funcall rs sequence))))))
 
-(function-alias 'rsi 'relative-strength-index)
+(function-alias 'relative-strength-index 'rsi)
 
 (defun ema-rsi (period sequence)
   (rsi (curry #'ema-rs period) sequence))
 
-(function-alias 'wilder-rsi 'ema-rsi)
+(function-alias 'ema-rsi 'wilder-rsi)
 
 (defun ema-rsi-27 (sequence)
   (rsi #'ema-rs-27 sequence))
 
-(function-alias 'rsi-textbook 'ema-rsi-27)
+(function-alias 'ema-rsi-27 'rsi-textbook)
 
 (defun sma-rsi (period sequence)
   (rsi (curry #'ema-rs period) sequence))
 
-(function-alias 'cutler-rsi 'sma-rsi)
+(function-alias 'sma-rsi 'cutler-rsi)
 
 (defun simple-directional-signal (period sequence)
   (assert (positive-integer? period))
