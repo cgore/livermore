@@ -174,12 +174,18 @@
 ;; I just copied these user agent strings from my Apache access logs; they all
 ;; are real-world examples.  If we don't specify an agent then Yahoo! Finance
 ;; won't give us any data, presumably to try to prevent data mining.
-(let ((msie-5.5 "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)")
-      (msie-6.0 "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1. 0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; BO1IE8_v1;ENUS)")
-      (msie-7.0 "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2;  SLCC1;  .NET CLR 1.1.4322;  . NET CLR 2.0.40607;  .NET CLR 3.0.04506.648)")
-      (msie-8.0 "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET    CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; yie8)")
-      (msie-9.0 "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)")
-      (ubuntu-firefox-5 "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.10) Gecko/20100915 Ubuntu/10.04 (lucid)  Firefox/3.6.10 GTB7.1"))
+(let ((msie-5.5
+        "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)")
+      (msie-6.0
+        "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1. 0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; BO1IE8_v1;ENUS)")
+      (msie-7.0
+        "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2;  SLCC1;  .NET CLR 1.1.4322;  . NET CLR 2.0.40607;  .NET CLR 3.0.04506.648)")
+      (msie-8.0
+        "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET    CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; yie8)")
+      (msie-9.0
+        "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)")
+      (ubuntu-firefox-5
+        "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.10) Gecko/20100915 Ubuntu/10.04 (lucid)  Firefox/3.6.10 GTB7.1"))
   (defun wget (&rest arguments)
     "A simple wrapper for GNU wget."
     (#+cmu extensions:run-program #+sbcl sb-ext:run-program
