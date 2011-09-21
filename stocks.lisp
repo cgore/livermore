@@ -1,10 +1,10 @@
-;;;; Copyright (c) 2005 -- 2011, Christopher Mark Gore,
-;;;; All rights reserved.
-;;;;
+;;;; Copyright (c) 2005 -- 2011, Christopher Mark Gore, all rights reserved.
 ;;;; 8729 Lower Marine Road, Saint Jacob, Illinois 62281 USA.
-;;;; Web: http://cgore.com
+;;;; Phone: +1 (573) 452-3216
+;;;; Web: http://www.cgore.com
 ;;;; Email: cgore@cgore.com
 
+(require 'asdf)
 (asdf:operate 'asdf:load-op 'clsql-postgresql-socket)
 
 (unless (find-package 'utilities) (load "utilities/utilities"))
@@ -133,10 +133,12 @@
              :^dji
              :^gspc
              :^ixic)))
-;  (clsql:connect '("localhost" "trading"
-;                 "trading" "stupidhead")
-;                 :database-type :postgresql-socket))
+
 (in-package :stocks)
+
+;; Connect to the database.
+(clsql:connect '("localhost" "livermore" "livermore" "stupidhead")
+                 :database-type :postgresql-socket)
 
 (defgeneric records (table))
 (defgeneric adjustment (table-record))
