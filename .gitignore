@@ -1,2 +1,7 @@
 *~
 *.sw[nop]
+*.aux
+*.bbl
+*.blg
+*.idx
+*.log
