@@ -1,0 +1,28 @@
+\documentclass[draft]{article}
+
+\usepackage{amsmath,amsthm,mathrsfs}
+
+\bibliographystyle{plain}
+
+\usepackage{showidx}
+\makeindex
+
+\title{Paper}
+\author{Christopher Mark Gore\\
+  8729 Lower Marine Road, Saint Jacob, IL 62281 USA\\
+  http://www.cgore.com\\
+  cgore@cgore.com}
+\date{Incomplete Draft, \today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Gender separation of populations is a common component of biological evolutionary processes but is rarely employed by evolutionary algorithm designs.
+The use of gender separation in EAs has been studied before in \cite{Vrajitoru2002SimulatingGender}, which analysed the influence gender has on the population's evolution, concluding that gender is of help for larger population sizes but is actually a hinderence for small population sizes.
+
+\bibliography{paper}
+
+\end{document}
