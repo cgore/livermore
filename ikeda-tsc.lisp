@@ -4,7 +4,9 @@
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 
-(load "utilities/utilities")
+(require :asdf)
+(asdf:load-system "cgore-utilities")
+
 (load "statistics")
 (load "tmscs")
 (in-package "XCS")

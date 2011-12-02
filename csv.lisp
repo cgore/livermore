@@ -4,6 +4,9 @@
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 
+(require :asdf)
+(asdf:load-system "cgore-utilities")
+
 (unless (find-package 'utilities) (load "utilities/utilities"))
 (unless (find-package 'csv)
   (defpackage :csv
