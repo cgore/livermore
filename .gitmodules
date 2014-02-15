@@ -1,6 +1,0 @@
-[submodule "utilities"]
-	path = utilities
-	url = git@github.com:cgore/utilities.git
-[submodule "evolutionary-algorithms"]
-	path = evolutionary-algorithms
-	url = git@github.com:cgore/evolutionary-algorithms.git
