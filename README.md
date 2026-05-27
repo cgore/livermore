@@ -18,13 +18,13 @@ modification, are permitted provided that the following conditions are met:
 ### Debian/Ubuntu/etc.
 
 ```shell
-apt-get install rlwrap sbcl libpq-dev
+apt-get install rlwrap sbcl libpq-dev texlive-full
 ```
 
 ### Red Hat/Fedora/etc.
 
 ```shell
-sudo dnf install sbcl rlwrap curl postgresql-devel
+sudo dnf install sbcl rlwrap curl postgresql-devel texlive-scheme-full
 ```
 
 ## Initial Quicklisp Setup
