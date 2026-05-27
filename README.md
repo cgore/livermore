@@ -11,7 +11,9 @@ modification, are permitted provided that the following conditions are met:
 
 # Introduction
 
-# How To Use
+# Initial Setup
+
+## Debian/Ubuntu/etc.
 
 ```shell
 apt-get install rlwrap
@@ -20,6 +22,19 @@ apt-get install cl-clx-sbcl
 apt-get install cl-mcclim cl-mcclim-doc cl-mcclim-examples
 apt-get install cl-sql cl-sql-postgresql cl-sql-postgresql-socket cl-sql-uffi
 ```
+
+## Red Hat/Fedora/etc.
+
+```shell
+sudo dnf install rlwrap
+sudo dnf install sbcl
+```
+
+# Quicklisp
+
+*... todo ...*
+
+# How To Use
 
 ```lisp
 (load "trade-chart")
