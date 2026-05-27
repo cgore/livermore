@@ -13,7 +13,9 @@ modification, are permitted provided that the following conditions are met:
 
 # Initial Setup
 
-## Debian/Ubuntu/etc.
+## OS Level Setup
+
+### Debian/Ubuntu/etc.
 
 ```shell
 apt-get install rlwrap
@@ -23,16 +25,30 @@ apt-get install cl-mcclim cl-mcclim-doc cl-mcclim-examples
 apt-get install cl-sql cl-sql-postgresql cl-sql-postgresql-socket cl-sql-uffi
 ```
 
-## Red Hat/Fedora/etc.
+### Red Hat/Fedora/etc.
 
 ```shell
-sudo dnf install rlwrap
-sudo dnf install sbcl
+sudo dnf install sbcl rlwrap curl
 ```
 
-# Quicklisp
+## Initial Quicklisp Setup
 
-*... todo ...*
+```shell
+curl -O https://beta.quicklisp.org/quicklisp.lisp
+
+sbcl --load quicklisp.lisp \
+     --eval '(quicklisp-quickstart:install)' \
+     --eval '(ql:add-to-init-file)' \
+     --eval '(quit)'
+```
+
+```lisp
+(ql:quickload '("clx"
+                "mcclim"
+                "cl-sql"
+                "cl-sql-postgresql"
+                "cl-sql-postgresql-socket"))
+```
 
 # How To Use
 
