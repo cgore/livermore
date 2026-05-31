@@ -1,3 +1,0 @@
-[submodule "source/sigma"]
-	path = source/sigma
-	url = git@github.com:cgore/sigma.git
