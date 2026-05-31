@@ -4,7 +4,7 @@
 
 # Introduction
 
-
+Livermore is an evolutionary rules-based AI library in Common Lisp.
 
 # License
 
