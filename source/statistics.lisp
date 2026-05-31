@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,11 +32,12 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(unless (find-package 'utilities) (load "utilities/utilities"))
+(asdf:load-system :sigma)
+
 (unless (find-package 'statistics)
   (defpackage "STATISTICS"
     (:nicknames "STAT")
-    (:use "COMMON-LISP" "UTILITIES")
+    (:use "COMMON-LISP")
     (:documentation "This contains several useful statistical functions.")))
 (in-package "STATISTICS")
 (export '(arithmetic-mean
@@ -45,6 +46,8 @@
            sample-standard-deviation
            unbiased-sample-standard-deviation
            stat-report))
+
+(sigma:use-all-sigma)
 
 (defgeneric arithmetic-mean (sequence &key key start end))
 
