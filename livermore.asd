@@ -64,4 +64,5 @@
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
                 :components ((:file "csv")
-                             (:file "statistics")))))
+                             (:file "statistics")
+                             (:file "time")))))

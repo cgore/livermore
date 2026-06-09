@@ -1,4 +1,4 @@
-;;;; Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
@@ -32,52 +32,51 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(unless (find-package 'utilities) (load "utilities/utilities"))
-(unless (find-package 'time)
-  (defpackage :time
-    (:use :common-lisp :utilities)
-    (:export :decoded-time-list
-             :get-decoded-time-list
-             :month-to-number
-             :month-name
-             :month-short-name
-             :time-second
-             :time-minute
-             :time-hour
-             :time-date
-             :time-month
-             :time-month-name
-             :time-month-short-name
-             :time-quarter
-             :time-year
-             :time-day
-             :time-daylight-p
-             :time-zone
-             :encode-month-year
-             :encode-year
-             :yyyy-mm-dd-to-universal-time
-             :dd-month-yyyy-to-universal-time
-             :date-string-to-universal-time
-             :dd-month-yyyy-to-decoded-time
-             :dd-month-yyyy-to-decoded-time-list
-             :time-julian-day-number
-             :time-jdn
-             :time-julian-date
-             :time-jd
-             :time-ordinal-date
-             :time-day-of-year
-             :yyyy-string
-             :qqyyyy-string
-             :qq-yyyy-string
-             :mon-yyyy-string
-             :dd-mon-yyyy-string
-             :date-time-string
-             :yyyy-mm-dd-string
-             :iso-extended-date-string
-             :iso-date-string
-             :yyyymmdd-string
-             :iso-short-date-string)))
-(in-package :time)
+
+(defpackage :livermore/time
+  (:use :common-lisp :sigma/control :sigma/string)
+  (:export :decoded-time-list
+           :get-decoded-time-list
+           :month-to-number
+           :month-name
+           :month-short-name
+           :time-second
+           :time-minute
+           :time-hour
+           :time-date
+           :time-month
+           :time-month-name
+           :time-month-short-name
+           :time-quarter
+           :time-year
+           :time-day
+           :time-daylight-p
+           :time-zone
+           :encode-month-year
+           :encode-year
+           :yyyy-mm-dd-to-universal-time
+           :dd-month-yyyy-to-universal-time
+           :date-string-to-universal-time
+           :dd-month-yyyy-to-decoded-time
+           :dd-month-yyyy-to-decoded-time-list
+           :time-julian-day-number
+           :time-jdn
+           :time-julian-date
+           :time-jd
+           :time-ordinal-date
+           :time-day-of-year
+           :yyyy-string
+           :qqyyyy-string
+           :qq-yyyy-string
+           :mon-yyyy-string
+           :dd-mon-yyyy-string
+           :date-time-string
+           :yyyy-mm-dd-string
+           :iso-extended-date-string
+           :iso-date-string
+           :yyyymmdd-string
+           :iso-short-date-string))
+(in-package :livermore/time)
 
 (defgeneric decoded-time-list (time))
 
@@ -169,7 +168,7 @@
   (encode-month-year 1 year))
 
 (defun yyyy-mm-dd-to-universal-time
-  (date-string 
+  (date-string
     &key (second 0) (minute 0) (hour 0) (time-zone (time-zone)))
   "This takes a date string of the style \"[D]D-(Mon|Monthname)-YYYY\" or of
   the style \"[D]D-(Mon|Monthname)-YY\", and returns a Lisp universal time
@@ -181,7 +180,7 @@
     (encode-universal-time second minute hour day month year time-zone)))
 
 (defun dd-month-yyyy-to-universal-time
-  (date-string 
+  (date-string
     &key (second 0) (minute 0) (hour 0) (time-zone (time-zone)))
   "This takes a date string of the style \"[D]D-(Mon|Monthname)-YYYY\" or of
   the style \"[D]D-(Mon|Monthname)-YY\", and returns a Lisp universal time
@@ -193,7 +192,7 @@
     (encode-universal-time second minute hour day month year time-zone)))
 
 (defun date-string-to-universal-time
-  (date-string 
+  (date-string
     &key (second 0) (minute 0) (hour 0) (time-zone (time-zone)))
   (if (= 3 (length (second (split date-string #\-))))
     (dd-month-yyyy-to-universal-time date-string
