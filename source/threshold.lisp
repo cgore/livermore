@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,12 +32,10 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(unless (find-package "THRESHOLD")
-  (defpackage "THRESHOLD"
-    (:use "COMMON-LISP" "UTILITIES")))
-(in-package "THRESHOLD")
-(export '(threshold-indicator))
+(defpackage :livermore/threshold
+  (:use :common-lisp :sigma/sequence)
+  (:export :threshold-indicator))
+(in-package :livermore/threshold)
 
 (defmethod threshold-indicator ((threshold list) (instance list))
   (assert (= (length threshold)
