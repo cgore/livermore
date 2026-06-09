@@ -58,8 +58,10 @@
   :version #.(version-string)
   :author "Christopher Mark Gore <cgore@cgore.com>"
   :license "BSD-3-Clause"
+  :depends-on ("sigma")
   :homepage "https://github.com/cgore/livermore"
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
-                :components ((:file "csv")))))
+                :components ((:file "csv")
+                             (:file "statistics")))))

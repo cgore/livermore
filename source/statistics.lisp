@@ -32,22 +32,17 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(asdf:load-system :sigma)
 
-(unless (find-package 'statistics)
-  (defpackage "STATISTICS"
-    (:nicknames "STAT")
-    (:use "COMMON-LISP")
-    (:documentation "This contains several useful statistical functions.")))
-(in-package "STATISTICS")
-(export '(arithmetic-mean
-           sample-variance
-           unbiased-sample-variance
-           sample-standard-deviation
-           unbiased-sample-standard-deviation
-           stat-report))
-
-(sigma:use-all-sigma)
+(defpackage :livermore/statistics
+  (:use :common-lisp :sigma/control :sigma/numeric :sigma/sequence)
+  (:documentation "This contains several useful statistical functions.")
+  (:export :arithmetic-mean
+           :sample-variance
+           :unbiased-sample-variance
+           :sample-standard-deviation
+           :unbiased-sample-standard-deviation
+           :stat-report))
+(in-package :livermore/statistics)
 
 (defgeneric arithmetic-mean (sequence &key key start end))
 
