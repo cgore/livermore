@@ -32,17 +32,14 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require :asdf)
-
-(unless (find-package 'csv)
-  (defpackage :csv
-    (:use :common-lisp)
-    (:export :*separator*
-             :*quote*
-             :character-list-from-stream
-             :parse-character-list
-             :parse-stream
-             :parse-file)))
+(defpackage :livermore/csv
+  (:use :common-lisp)
+  (:export :*separator*
+           :*quote*
+           :character-list-from-stream
+           :parse-character-list
+           :parse-stream
+           :parse-file))
 (in-package :csv)
 
 (defparameter *separator* #\,
