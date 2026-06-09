@@ -40,7 +40,7 @@
            :parse-character-list
            :parse-stream
            :parse-file))
-(in-package :csv)
+(in-package :livermore/csv)
 
 (defparameter *separator* #\,
   "Column separater character.")
