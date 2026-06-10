@@ -66,4 +66,5 @@
                 :components ((:file "csv")
                              (:file "statistics")
                              (:file "threshold")
+                             (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")))))
