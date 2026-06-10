@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,14 +32,19 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
-(export '(ternary-value?
-           ternary-value
-           ternary-predicate
-           value
-           covering?
-           ?
-           covering-score))
+(defpackage :livermore/xcs-ternary-predicate
+  (:use :common-lisp
+        :sigma/probability
+        :livermore/learning-parameters)
+  (:export :ternary-value?
+           :ternary-value
+           :ternary-predicate
+           :value
+           :covering?
+           :?
+           :covering-score))
+(in-package :livermore/xcs-ternary-predicate)
+
 
 (defun ternary-value? (x)
   (member x '(nil t :#)))

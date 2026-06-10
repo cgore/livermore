@@ -32,106 +32,106 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(unless (find-package 'utilities) (load "utilities/utilities"))
-(unless (find-package 'xcs)
-  (defpackage :xcs
-    (:use :common-lisp
-          #+cmu :EXTENSIONS
-          #+sbcl :sb-ext
-          :utilities)
-    (:export :ternary-value
-             :match?
-             :more-general?
-             :cover
-             :mutate
-             :range-predicate
-             :lower
-             :upper
-             :spread
-             :center
-             :classifier
-             :environment-condition
-             :action
-             :prediction
-             :prediction-error
-             :fitness
-             :experience
-             :time-stamp
-             :action-set-size
-             :numerosity
-             :accuracy
-             :learning-parameters
-             :maximum-total-numerosity
-             :learning-rate
-             :multiplier-parameter
-             :equal-error-threshold
-             :power-parameter
-             :discount-factor
-             :ga-threshold
-             :crossover-probability
-             :mutation-probability
-             :deletion-threshold
-             :fitness-fraction-threshold
-             :minimum-subsumption-experience
-             :covering-probability
-             :initial-prediction
-             :initial-prediction-error
-             :initial-fitness
-             :exploration-probability
-             :minimum-number-of-actions
-             :ga-subsumption?
-             :action-set-subsumption?
-             :possible-actions
-             :prediction-array-element
-             :action
-             :fitness-sum
-             :xcs
-             :learning-parameters
-             :population
-             :match-set
-             :action-set
-             :previous-action-set
-             :prediction-array
-             :reward
-             :previous-reward
-             :situation
-             :previous-situation
-             :action
-             :number-of-situations
-             :experiment
-             :single-step-output
-             :environment
-             :reinforcement-program
-             :terminate?
-             :system-prediction
-             :actions-in
-             :start
-             :run
-             :get-situation
-             :generate-match-set
-             :generate-covering-classifier
-             :generate-prediction-array
-             :select-action
-             :generate-action-set
-             :update-set
-             :update-fitness
-             :run-ga?
-             :run-ga
-             :select-offspring
-             :crossover
-             :insert-into-population
-             :delete-from-population
-             :sum-of-numerosities
-             :deletion-vote
-             :most-general-subsumers
-             :do-action-set-subsumption
-             :could-subsume?
-             :subsume?)
-    (:documentation
-      "This is an implementation of Wilson's XCS system, originally based upon
+(defpackage :livermore/xcs
+  (:use :common-lisp
+        #+cmu :EXTENSIONS
+        #+sbcl :sb-ext
+        :utilities
+        :livermore/learning-parameters
+        :livermore/xcs-ternary-predicate)
+  (:export :ternary-value
+           :match?
+           :more-general?
+           :cover
+           :mutate
+           :range-predicate
+           :lower
+           :upper
+           :spread
+           :center
+           :classifier
+           :environment-condition
+           :action
+           :prediction
+           :prediction-error
+           :fitness
+           :experience
+           :time-stamp
+           :action-set-size
+           :numerosity
+           :accuracy
+           :learning-parameters
+           :maximum-total-numerosity
+           :learning-rate
+           :multiplier-parameter
+           :equal-error-threshold
+           :power-parameter
+           :discount-factor
+           :ga-threshold
+           :crossover-probability
+           :mutation-probability
+           :deletion-threshold
+           :fitness-fraction-threshold
+           :minimum-subsumption-experience
+           :covering-probability
+           :initial-prediction
+           :initial-prediction-error
+           :initial-fitness
+           :exploration-probability
+           :minimum-number-of-actions
+           :ga-subsumption?
+           :action-set-subsumption?
+           :possible-actions
+           :prediction-array-element
+           :action
+           :fitness-sum
+           :xcs
+           :learning-parameters
+           :population
+           :match-set
+           :action-set
+           :previous-action-set
+           :prediction-array
+           :reward
+           :previous-reward
+           :situation
+           :previous-situation
+           :action
+           :number-of-situations
+           :experiment
+           :single-step-output
+           :environment
+           :reinforcement-program
+           :terminate?
+           :system-prediction
+           :actions-in
+           :start
+           :run
+           :get-situation
+           :generate-match-set
+           :generate-covering-classifier
+           :generate-prediction-array
+           :select-action
+           :generate-action-set
+           :update-set
+           :update-fitness
+           :run-ga?
+           :run-ga
+           :select-offspring
+           :crossover
+           :insert-into-population
+           :delete-from-population
+           :sum-of-numerosities
+           :deletion-vote
+           :most-general-subsumers
+           :do-action-set-subsumption
+           :could-subsume?
+           :subsume?)
+  (:documentation
+   "This is an implementation of Wilson's XCS system, originally based upon
       the article ``An Algorithmic Description of XCS'' by Martin V. Butz and
-      Stewart W. Wilson, as found in LNAI volume 1996, pp. 253 -- 272.")))
-(in-package "XCS")
+      Stewart W. Wilson, as found in LNAI volume 1996, pp. 253 -- 272."))
+(in-package :livermore/xcs)
 
 (defclass classifier ()
   ((environment-condition
@@ -375,8 +375,6 @@
                   contains an XCS, reinforcement program, and environment."))
 (defgeneric single-step-output (experiment))
 (defgeneric terminate? (experiment))
-
-(load "xcs-ternary-predicate")
 
 (defmethod could-subsume? ((classifier classifier)
                            (learning-parameters learning-parameters))
