@@ -64,7 +64,11 @@
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
                 :components ((:file "csv")
+                             (:file "learning-parameters")
                              (:file "statistics")
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
-                             (:file "time")))))
+                             (:file "time")
+                             ;;(:file "xcs-ternary-predicate" :depends-on ("learning-parameters"))
+                             ;;(:file "xcs" :depends-on ("learning-parameters" "xcs-ternary-predicate"))
+                             ))))
