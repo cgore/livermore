@@ -53,8 +53,7 @@
            :print-object
            :range-predicate
            :spread
-           :upper
-           :xcsr))
+           :upper))
 (in-package :livermore/xcs-range-predicate)
 
 (defclass range-predicate ()
@@ -88,10 +87,6 @@
     :documentation
     "This is how large of a fraction of the range may be added or subtracted
        from the lower and the upper bounds combined in the mutation method.")))
-
-(defclass xcsr (xcs)
-  ((predicate-type
-     :initform 'range-predicate)))
 
 (defmethod print-object ((range-predicate range-predicate) stream)
   (format stream "#<~A -- ~A>"

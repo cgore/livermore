@@ -34,22 +34,24 @@
 
 (unless (find-package 'xcs) (load "xcs"))
 (in-package "XCS")
+;; TODO require xcs-range-predicate, and sort out the different methods vs. here.
+
 
 (defclass range-predicate ()
   ((lower
-     :accessor lower
-     :initform nil
-     :initarg :lower
-     :type number
-     :documentation "This is the lower bound of the range, inclusive.")
+    :accessor lower
+    :initform nil
+    :initarg :lower
+    :type number
+    :documentation "This is the lower bound of the range, inclusive.")
    (upper
-     :accessor upper
-     :initform nil
-     :initarg :upper
-     :type number
-     :documentation "This is the upper bound of the range, inclusive."))
+    :accessor upper
+    :initform nil
+    :initarg :upper
+    :type number
+    :documentation "This is the upper bound of the range, inclusive."))
   (:documentation
-    "This class represents a single range predicate as used by XCSR."))
+   "This class represents a single range predicate as used by XCSR."))
 
 (defclass xcsr-learning-parameters (learning-parameters)
   ((problem-range
