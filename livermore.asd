@@ -65,6 +65,7 @@
   :components ((:module "source"
                 :components ((:file "csv")
                              (:file "learning-parameters")
+                             (:file "multiplexer")
                              (:file "statistics")
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))

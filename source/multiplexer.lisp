@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,17 +32,17 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(unless (find-package 'multiplexer)
-  (defpackage "MULTIPLEXER"
-    (:use "COMMON-LISP" "UTILITIES")))
-(in-package "MULTIPLEXER")
-(export '( random-bit
-           random-bit-vector
-           binary-decoder
-           multiplexer-length
-           multiplexer
-           truth-vector))
+
+(defpackage :livermore/multiplexer
+  (:use :common-lisp)
+  (:export :random-bit
+           :random-bit-vector
+           :binary-decoder
+           :multiplexer-length
+           :multiplexer
+           :truth-vector))
+(in-package :livermore/multiplexer)
+
 
 (defun random-bit ()
   "This returns a random bit, either 0 or 1."
