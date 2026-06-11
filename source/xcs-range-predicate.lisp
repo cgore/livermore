@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,38 +32,61 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+
+(defpackage :livermore/xcs-range-predicate
+  (:use :common-lisp
+        :sigma/control
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence
+        :livermore/learning-parameters)
+  (:export :center
+           :cover
+           :covering-maximum
+           :duplicate
+           :identical?
+           :lower
+           :match?
+           :more-general?
+           :mutate
+           :mutation-maximum
+           :print-object
+           :range-predicate
+           :spread
+           :upper
+           :xcsr))
+(in-package :livermore/xcs-range-predicate)
 
 (defclass range-predicate ()
   ((lower
-     :accessor lower
-     :initform 0.0
-     :initarg :lower
-     :type float
-     :documentation "This is the lower bound of the range, inclusive.")
+    :accessor lower
+    :initform 0.0
+    :initarg :lower
+    :type float
+    :documentation "This is the lower bound of the range, inclusive.")
    (upper
-     :accessor upper
-     :initform 1.0  ;;; TODO: This is not handled properly
-     :initarg :upper
-     :type float
-     :documentation "This is the upper bound of the range, inclusive.")
+    :accessor upper
+    :initform 1.0 ;;; TODO: This is not handled properly
+    :initarg :upper
+    :type float
+    :documentation "This is the upper bound of the range, inclusive.")
    (covering-maximum
-     :accessor covering-maximum
-     :allocation :class
-     :initform 0.20
-     :initarg :covering-maximum
-     :type positive-float
-     :documentation
-       "This is how large of a fraction of the range can be added to both the
+    :accessor covering-maximum
+    :allocation :class
+    :initform 0.20
+    :initarg :covering-maximum
+    :type positive-float
+    :documentation
+    "This is how large of a fraction of the range can be added to both the
        lower and the upper bounds combined in the covering method.")
    (mutation-maximum
-     :accessor mutation-maximum
-     :allocation :class
-     :initform 0.20 ; 20% change at maximum.
-     :initarg :mutation-maximum
-     :type positive-float
-     :documentation
-       "This is how large of a fraction of the range may be added or subtracted
+    :accessor mutation-maximum
+    :allocation :class
+    :initform 0.20                      ; 20% change at maximum.
+    :initarg :mutation-maximum
+    :type positive-float
+    :documentation
+    "This is how large of a fraction of the range may be added or subtracted
        from the lower and the upper bounds combined in the mutation method.")))
 
 (defclass xcsr (xcs)

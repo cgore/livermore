@@ -70,6 +70,7 @@
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")
+                             (:file "xcs-range-predicate"   :depends-on ("learning-parameters"))
                              (:file "xcs-set-predicate"     :depends-on ("learning-parameters"))
                              (:file "xcs-ternary-predicate" :depends-on ("learning-parameters"))
                              (:file "whitley-test-functions")
