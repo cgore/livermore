@@ -169,7 +169,7 @@
   (assert (<= 1 (length x)))
   (mapcar (lambda (xi)
             (assert (floatp xi))
-            (assert (<= 512 xi 511)))
+            (assert (<= -512 xi 511)))
           x)
   (sum x :key (lambda (xi)
                 (- (* xi (sin (sqrt (abs xi))))))))
