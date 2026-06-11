@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,9 +32,6 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require :asdf)
-(asdf:load-system "cgore-utilities")
-
 ;;;; This is a set of functions for evaluating evolutionary algorithms.
 ;;;; It is an implementation of the functions presented in:
 ;;;;
@@ -51,16 +48,18 @@
 ;;;;
 ;;;; http://www.cs.jhu.edu/~sheppard/cs.605.754/papers/paper10b.ps.gz
 
-(defpackage :cgore-whitley
-  (:nicknames :whitley)
-  (:use :common-lisp :cgore-utilities :cgore-random)
+(defpackage :livermore/whitley-test-functions
+  (:use :common-lisp
+        :sigma/control
+        :sigma/numeric
+        :sigma/random)
   (:export :f1 :f2 :f3 :f4 :f5
            :f6  :rastrigin
            :f7  :schwefel
            :f8  :griewangk
            :f9  :sine-envelope-sine-wave
            :f10 :stretched-v-sine-wave))
-(in-package :cgore-whitley)
+(in-package :livermore/whitley-test-functions)
 
 (defun f1 (x)
   "This function, F1, is a unimodal function, the sum of the squares.  It is
