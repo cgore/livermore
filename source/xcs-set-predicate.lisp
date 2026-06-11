@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,24 +32,47 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+
+(defpackage :livermore/xcs-set-predicate
+  (:use :common-lisp
+        :sigma/control
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence
+        :livermore/learning-parameters)
+  (:export :cover
+           :covering?
+           :covering-score
+           :duplicate
+           :equivalent?
+           :identical?
+           :match?
+           :more-general?
+           :mutate
+           :non-members
+           :possible-members
+           :print-object
+           :set-predicate
+           :universal?))
+(in-package :livermore/xcs-set-predicate)
+
 
 (defclass set-predicate ()
   ((members
-     :accessor members
-     :initform nil
-     :initarg :members
-     :type list)
+    :accessor members
+    :initform nil
+    :initarg :members
+    :type list)
    (possible-members
-     :accessor possible-members
-     :initform nil
-     :initarg :possible-members
-     :type list)
+    :accessor possible-members
+    :initform nil
+    :initarg :possible-members
+    :type list)
    (covering?
-     :accessor covering?
-     :initform nil
-     :initarg :covering?
-     :type boolean))
+    :accessor covering?
+    :initform nil
+    :initarg :covering?
+    :type boolean))
   (:documentation
    "A set predicate consists of a list of members of the set, or can cover all
     conditions if the COVERING? member is T.  The POSSIBLE-MEMBERS list should
@@ -130,7 +153,7 @@
                    situation
                    (mutation-probability float))
   (when (probability? mutation-probability)
-    (with-slots (members covering?) set-predicate
+    (with-slots (members covering? possible-members) set-predicate
       ;; The list of possible members should include at least two possibilities.
       (assert (< 1 (length possible-members)))
       (flet ((insert-new-member ()
@@ -139,38 +162,50 @@
                                                 (non-members set-predicate))))
                  ;; There must be somebody left to insert.
                  (assert (plusp (length potential-members)))
-                 (pushnew (random-element potential-members))))
+                 (pushnew (random-element potential-members)
+                          members
+                          :test 'identical?)))
              (delete-existing-member ()
                "This function removes one of the members."
                (let ((deletion-candidates (remove situation members)))
                  ;; There must be somebody left to delete.
                  (assert (plusp (length deletion-candidates)))
-                 (deletef (random-element deletion-candidates) members
+                 (deletef (random-element deletion-candidates)
+                          members
                           :test 'identical?))))
         (cond
           ;; If the COVERING? flag is set to T then the only logical mutation is
           ;; to toggle it to NIL.
           (covering?
             (progn (setf covering? nil)
-                   (pushnew situation members)))
+                   (pushnew situation
+                            members
+                            :test 'identical?)))
+
           ;; This probability of toggling the COVERING? flag to T should be
           ;; related to the number of non-members, but I suspect that I will
           ;; want to make the exact value of the multiplier a parameter
           ;; eventually, instead of a hard-coded 2.0.
           ((probability? (* 2.0 (/ (length (non-members set-predicate)))))
            (setf covering? t))
+
+          ;; Special case when we only have one member: prefer to add rather than delete
           ((equalp 1 (length members))
-           ;; The probability of adding a new member and removing an
-           ;; existing member should be equal, but we don't want to have the
-           ;; list of members become empty.
-           ((and (not( equalp 1 (length members)))
-                 (probability? 0.5))
-            (deletef (random-element (remove situation members)) members
-                     :test 'identical?))
-           ;; The only remaining possibility.
-           (t (pushnew (random-element
-                         (remove situation (non-members set-predicate)))
-                       members))))))))
+           (insert-new-member))
+
+          ;; Normal mutation: 50% chance to delete (if possible), else insert.
+          ;; The probability of adding a new member and removing an existing
+          ;; member should be equal, but we don't want to have the list of
+          ;; members become empty.
+          ((and (probability? 0.5)
+                (> (length members) 1))
+           (delete-existing-member))
+
+          ;; The only remaining possibility.
+          (t (pushnew (random-element
+                       (remove situation (non-members set-predicate)))
+                      members
+                      :test 'identical?)))))))
 
 (defmethod covering-score ((set-predicate set-predicate)
                            (learning-parameters learning-parameters))
