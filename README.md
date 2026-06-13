@@ -46,6 +46,7 @@ sbcl --load quicklisp.lisp \
 
 ```lisp
 (ql:quickload '("clx"
+                "md5"
                 "mcclim"
                 "clsql"
                 "clsql-postgresql"

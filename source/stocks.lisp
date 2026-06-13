@@ -32,141 +32,134 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require 'asdf)
-(asdf:operate 'asdf:load-op 'clsql-postgresql-socket)
 
-(unless (find-package 'utilities) (load "utilities/utilities"))
-(unless (find-package 'time) (load "time"))
-(unless (find-package 'statistics) (load "statistics"))
-(unless (find-package 'csv) (load "csv"))
-(unless (find-package 'stocks)
-  (defpackage :stocks
-    (:use :common-lisp
-          #+cmu :extensions #+sbcl :sb-ext
-          :utilities
-          :time
-          :statistics)
-    (:export :*^dji-components*
-             :*ticker-descriptions*
-             :*initial-money*
-             :canonical-ticker
-             :stock-description
-             :table-filename
-             :components-filename
-             :retrieve-stock-data
-             :retrieve-stocks-data
-             :retrieve-index-components
-             :index-components
-             :buy-and-hold-gains
-             :b&h-gains
-             :buy-and-hold-performance
-             :b&h-performance
-             :cash-optimal-gains
-             :cash-optimal-performance
-             :buy-and-hold
-             :trend-following
-             :report-results
-             :table-record
-             :adjustment
-             :opening-time
-             :closing-time
-             :opening-price
-             :adjusted-opening-price
-             :high-price
-             :adjusted-high-price
-             :low-price
-             :adjusted-low-price
-             :closing-price
-             :trading-volume
-             :adjusted-closing-price
-             :table
-             :preferred-records
-             :records-start
-             :records-end
-             :daily-records
-             :weekly-records
-             :monthly-records
-             :quarterly-records
-             :yearly-records
-             :ticker-symbol
-             :records
-             :elt-record
-             :stock-description
-             :load-table
-             :difference
-             :ratio
-             :percent-change
-             :spread-difference
-             :spread-ratio
-             :spread-percent-change
-             :arithmetic-mean
-             :sample-variance
-             :unbiased-sample-variance
-             :sample-standard-deviation
-             :unbiased-sample-standard-deviation
-             :minimum
-             :maximum
-             :minimum?
-             :maximum?
-             :sample-z-score
-             :unbiased-sample-z-score
-             :plot
-             :shares-buyable
-             :simple-moving-average
-             :sma
-             :arithmetically-weighted-moving-average
-             :awma
-             :exponential-moving-average
-             :ema
-             :moving-average-convergence-divergence
-             :macd
-             :macd-12-26-9
-             :macd-textbook
-             :macd-signal
-             :upward-changes
-             :downward-changes
-             :relative-strength
-             :rs
-             :ema-rs
-             :wilder-rs
-             :ema-rs-27
-             :rs-textbook
-             :sma-rs
-             :cutler-rs
-             :relative-strength-index
-             :rsi
-             :ema-rsi
-             :wilder-rsi
-             :ema-rsi-27
-             :sma-rsi
-             :cutler-rsi
-             :rsi-textbook
-             :simple-directional-signal
-             :simple-directional-gains
-             :simple-directional-performance
-             :dual-simple-directional-signal
-             :dual-simple-directional-gains
-             :dual-simple-directional-performance
-             :sma-crossover-signal
-             :directional-sma-crossover-signal
-             :sma-crossover-gains
-             :sma-crossover-long/short-gains
-             :directional-sma-crossover-gains
-             :sma-crossover-performance
-             :sma-crossover-long/short-performance
-             :directional-sma-crossover-performance
-             :sma-crossover-optimal
-             :sma-crossover-long/short-optimal
-             :directional-sma-crossover-optimal
-             :^dji
-             :^gspc
-             :^ixic)))
-
-(in-package :stocks)
+(defpackage :livermore/stocks
+  (:use :common-lisp
+        #+cmu :extensions #+sbcl :sb-ext
+        :livermore/time
+        :livermore/statistics
+        :livermore/stock-ticker-descriptions
+        :sigma/control
+        :sigma/numeric
+        :sigma/sequence)
+  (:export :*initial-money*
+           :canonical-ticker
+           :stock-description
+           :table-filename
+           :components-filename
+           :retrieve-stock-data
+           :retrieve-stocks-data
+           :retrieve-index-components
+           :index-components
+           :buy-and-hold-gains
+           :b&h-gains
+           :buy-and-hold-performance
+           :b&h-performance
+           :cash-optimal-gains
+           :cash-optimal-performance
+           :buy-and-hold
+           :trend-following
+           :report-results
+           :table-record
+           :adjustment
+           :opening-time
+           :closing-time
+           :opening-price
+           :adjusted-opening-price
+           :high-price
+           :adjusted-high-price
+           :low-price
+           :adjusted-low-price
+           :closing-price
+           :trading-volume
+           :adjusted-closing-price
+           :table
+           :preferred-records
+           :records-start
+           :records-end
+           :daily-records
+           :weekly-records
+           :monthly-records
+           :quarterly-records
+           :yearly-records
+           :ticker-symbol
+           :records
+           :elt-record
+           :stock-description
+           :load-table
+           :difference
+           :value-ratio
+           :percent-change
+           :spread-difference
+           :spread-ratio
+           :spread-percent-change
+           :arithmetic-mean
+           :sample-variance
+           :unbiased-sample-variance
+           :sample-standard-deviation
+           :unbiased-sample-standard-deviation
+           :minimum
+           :maximum
+           :minimum?
+           :maximum?
+           :sample-z-score
+           :unbiased-sample-z-score
+           :plot
+           :shares-buyable
+           :simple-moving-average
+           :sma
+           :arithmetically-weighted-moving-average
+           :awma
+           :exponential-moving-average
+           :ema
+           :moving-average-convergence-divergence
+           :macd
+           :macd-12-26-9
+           :macd-textbook
+           :macd-signal
+           :upward-changes
+           :downward-changes
+           :relative-strength
+           :rs
+           :ema-rs
+           :wilder-rs
+           :ema-rs-27
+           :rs-textbook
+           :sma-rs
+           :cutler-rs
+           :relative-strength-index
+           :rsi
+           :ema-rsi
+           :wilder-rsi
+           :ema-rsi-27
+           :sma-rsi
+           :cutler-rsi
+           :rsi-textbook
+           :simple-directional-signal
+           :simple-directional-gains
+           :simple-directional-performance
+           :dual-simple-directional-signal
+           :dual-simple-directional-gains
+           :dual-simple-directional-performance
+           :sma-crossover-signal
+           :directional-sma-crossover-signal
+           :sma-crossover-gains
+           :sma-crossover-long/short-gains
+           :directional-sma-crossover-gains
+           :sma-crossover-performance
+           :sma-crossover-long/short-performance
+           :directional-sma-crossover-performance
+           :sma-crossover-optimal
+           :sma-crossover-long/short-optimal
+           :directional-sma-crossover-optimal
+           :^dji
+           :^gspc
+           :^ixic))
+(in-package :livermore/stocks)
 
 ;; Connect to the database.
-(clsql:connect '("localhost" "livermore" "livermore" "stupidhead")
-                 :database-type :postgresql-socket)
+;; (clsql:connect '("localhost" "livermore" "livermore" "stupidhead")
+;;                  :database-type :postgresql-socket)
 
 (defgeneric records (table))
 (defgeneric adjustment (table-record))
@@ -181,12 +174,7 @@
 (defgeneric yearly-records (table))
 (defgeneric elt-record (table position &optional key))
 (defgeneric difference (table &key key start end))
-#+sbcl (sb-ext:without-package-locks
-         (defgeneric ratio (table &key key start end)))
-#+cmu (ext:without-package-locks
-        (defgeneric ratio (table &key key start end)))
-#+clisp (ext:without-package-lock ()
-          (defgeneric ratio (table &key key start end)))
+(defgeneric value-ratio (table &key key start end))
 (defgeneric percent-change (table &key key start end))
 (defgeneric spread-difference (table &key key position spread))
 (defgeneric spread-ratio (table &key key position spread))
@@ -229,57 +217,67 @@ Finance's style of tickers for now."
     (setf ticker (symbol-name ticker)))
   (string-upcase ticker))
 
-(load "stock-ticker-descriptions")
-
 ;; This is the directory where all of the stock trading data should be stored.
-(let ((data-directory "yahoo-finance-data"))
-  (defun description-filename (ticker-symbol)
-    (concatenate 'string data-directory "/"
-                 (canonical-ticker ticker-symbol) "-description.csv"))
-  (defun table-filename (ticker-symbol)
-    (concatenate 'string data-directory "/"
-                 (canonical-ticker ticker-symbol) "-table.csv"))
-  (defun components-filename (index-symbol)
-    (concatenate 'string data-directory "/"
-                 (canonical-ticker index-symbol) "-components.csv")))
+(defparameter *livermore-data-directory*
+  (merge-pathnames #P"data/yahoo-finance-data/"
+                   (asdf:system-source-directory :livermore))
+  "Absolute path to the yahoo-finance-data directory.")
+
+(defun description-filename (ticker-symbol)
+  (merge-pathnames (make-pathname
+                    :name (concatenate 'string (canonical-ticker ticker-symbol) "-description")
+                    :type "csv")
+                   *livermore-data-directory*))
+
+(defun table-filename (ticker-symbol)
+  (merge-pathnames (make-pathname
+                    :name (concatenate 'string (canonical-ticker ticker-symbol) "-table")
+                    :type "csv")
+                   *livermore-data-directory*))
+
+(defun components-filename (index-symbol)
+  (merge-pathnames (make-pathname
+                    :name (concatenate 'string (canonical-ticker index-symbol) "-components")
+                    :type "csv")
+                   *livermore-data-directory*))
 
 (defclass table-record ()
   ((opening-time
-     :accessor opening-time
-     :initarg :opening-time
-     :type integer)
+    :accessor opening-time
+    :initarg :opening-time
+    :type integer)
    (closing-time
-     :accessor closing-time
-     :initarg :closing-time
-     :type integer)
+    :accessor closing-time
+    :initarg :closing-time
+    :type integer)
    (descriptive-time
-     :accessor descriptive-time
-     :initarg :descriptive-time
-     :type string)
+    :accessor descriptive-time
+    :initarg :descriptive-time
+    :type string)
    (opening-price
-     :accessor opening-price
-     :initarg :opening-price
-     :type float)
+    :accessor opening-price
+    :initarg :opening-price
+    :type float)
    (high-price
-     :accessor high-price
-     :initarg :high-price
-     :type float)
+    :accessor high-price
+    :initarg :high-price
+    :type float)
    (low-price
-     :accessor low-price
-     :initarg :low-price
-     :type float)
+    :accessor low-price
+    :initarg :low-price
+    :type float)
    (closing-price
-     :accessor closing-price
-     :initarg :closing-price
-     :type float)
+    :accessor closing-price
+    :initarg :closing-price
+    :type float)
    (trading-volume
-     :accessor trading-volume
-     :initarg :trading-volume
-     :type (integer 0 *))
+    :accessor trading-volume
+    :initarg :trading-volume
+    :type (integer 0 *))
    (adjusted-closing-price
-     :accessor adjusted-closing-price
-     :initarg :adjusted-closing-price
-     :type float)))
+    :accessor adjusted-closing-price
+    :initarg :adjusted-closing-price
+    :type float)))
 
 (defmethod print-object ((table-record table-record) stream)
   (format stream "(stocks:table-record ~%:opening-time ~A :closing-time ~A :descriptive-time ~A ~%:opening-price ~A :high-price ~A :low-price ~A ~%:closing-price ~A :trading-volume ~A :adjusted-closing-price ~A)"
@@ -555,7 +553,6 @@ Finance's style of tickers for now."
           (descriptive-time (elt-record table 0))
           (descriptive-time (elt-record table nil))))
 
-
 (defmethod stock-description ((table table))
   (stock-description (ticker-symbol table)))
 
@@ -591,7 +588,7 @@ an equivalent stock table record."
                  :preferred-records preferred-records
                  :records
                  (sort (mapcar #'parse-yahoo-finance-stock-csv-record
-                               (rest (csv:parse-file
+                               (rest (livermore/csv:parse-file
                                        (table-filename ticker-symbol))))
                        #'< :key #'opening-time)))
 
@@ -604,7 +601,7 @@ position and at the END position."
   (- (elt-record table end key)
      (elt-record table start key)))
 
-(defmethod ratio
+(defmethod value-ratio
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   "This reports the RATIO between the value of the KEY at the START position
 and at the END position."
@@ -615,7 +612,7 @@ and at the END position."
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
   "This reports the PERCENT DIFFERENCE between the value of the KEY at the
 START position and at the END position."
-  (* 100.0 (ratio table :key key :start start :end end)))
+  (* 100.0 (value-ratio table :key key :start start :end end)))
 
 (defmethod spread-difference
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
@@ -627,7 +624,7 @@ at the POSITION + SPREAD."
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
   "This reports the RATIO between the value of the KEY at the POSITION and at
   the POSITION + SPREAD."
-  (ratio table :key key :start (+ position spread) :end position))
+  (value-ratio table :key key :start (+ position spread) :end position))
 
 (defmethod spread-percent-change
   ((table table) &key (key #'adjusted-closing-price) (position 0) (spread -1))
@@ -720,7 +717,7 @@ MAXIMUM of the stock table's records."
 
 (defmethod buy-and-hold ((table table) initial-money
                          &key (start 0) (end nil))
-  (* initial-money (ratio table :start start :end end)))
+  (* initial-money (value-ratio table :start start :end end)))
 
 (defun retrieve-stock-description (ticker-symbol)
   (wget "-O" (description-filename ticker-symbol)
@@ -728,7 +725,7 @@ MAXIMUM of the stock table's records."
                      "http://quote.yahoo.com/d/quotes.csv"
                      "?s=" (canonical-ticker ticker-symbol)
                      "&f=sn")) ; format s: stock ticker n: stock name
-  (second (first (csv:parse-file (description-filename ticker-symbol)))))
+  (second (first (livermore/csv:parse-file (description-filename ticker-symbol)))))
 
 (defun description (ticker-symbol)
   (a?if database-result

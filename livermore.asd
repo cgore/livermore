@@ -58,7 +58,10 @@
   :version #.(version-string)
   :author "Christopher Mark Gore <cgore@cgore.com>"
   :license "BSD-3-Clause"
-  :depends-on ("sigma")
+  :depends-on ("md5"
+               "clsql" ; https://github.com/sharplispers/clsql
+               "clsql-postgresql-socket"
+               "sigma")
   :homepage "https://github.com/cgore/livermore"
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
@@ -68,6 +71,7 @@
                              (:file "multiplexer")
                              (:file "statistics")
                              (:file "stock-ticker-descriptions")
+                             (:file "stocks" :depends-on ("csv" "statistics" "stock-ticker-descriptions" "time"))
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")
