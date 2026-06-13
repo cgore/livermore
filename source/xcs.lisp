@@ -36,9 +36,14 @@
   (:use :common-lisp
         #+cmu :EXTENSIONS
         #+sbcl :sb-ext
-        :utilities
         :livermore/learning-parameters
-        :livermore/xcs-ternary-predicate)
+        :livermore/xcs-ternary-predicate
+        :sigma/control
+        :sigma/numeric
+        :sigma/os
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence)
   (:export :ternary-value
            :match?
            :more-general?

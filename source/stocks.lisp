@@ -41,6 +41,7 @@
         :livermore/stock-ticker-descriptions
         :sigma/control
         :sigma/numeric
+        :sigma/os
         :sigma/sequence)
   (:export :*initial-money*
            :canonical-ticker
