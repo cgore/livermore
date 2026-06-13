@@ -67,6 +67,7 @@
                              (:file "learning-parameters")
                              (:file "multiplexer")
                              (:file "statistics")
+                             (:file "stock-ticker-descriptions")
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")

@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,7 +32,21 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "STOCKS")
+
+(defpackage :livermore/stock-ticker-descriptions
+  (:use :common-lisp)
+  (:export :*dow-jones-indices*
+           :*nyse-indices*
+           :*nasdaq-indices*
+           :*standard-and-poors-indices*
+           :*other-us-indices*
+           :*us-treasury-indices*
+           :*us-commodities-indices*
+           :*misc-stocks*
+           :*^dji-components*
+           :*ticker-descriptions*
+           :stock-description))
+(in-package :livermore/stock-ticker-descriptions)
 
 (defparameter *dow-jones-indices*
   '(("^dja" "Dow Jones 65 Composite Average")
