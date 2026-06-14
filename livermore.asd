@@ -67,6 +67,7 @@
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
                 :components ((:file "animat-xcs-parameters" :depends-on ("learning-parameters" "xcs"))
+                             (:file "animat-xcs" :depends-on ("xcs" "animat-xcs-parameters"))
                              (:file "csv")
                              (:file "learning-parameters")
                              (:file "multiplexer")

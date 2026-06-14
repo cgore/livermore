@@ -1,4 +1,4 @@
-;;;; Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
@@ -32,14 +32,10 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require :asdf)
-(asdf:load-system "cgore-utilities")
-(asdf:load-system "cgore-evolutionary-algorithms")
-
-(defpackage :cgore-anamat-xcs
+(defpackage :livermore/anamat-xcs
   (:use :common-lisp
-        :cgore-utilities
-        :cgore-xcs)
+        :livermore/xcs
+        :livermore/animat-xcs-parameters)
   (:export :animat-analyzer
            :current-situation
            :initialize
@@ -48,9 +44,8 @@
            :get-reward
            :end-of-problem?
            :start-animat-experiment))
-(in-package :cgore-anamat-xcs)
+(in-package :livermore/anamat-xcs)
 
-(load "animat-xcs-parameters.lisp")
 
 (defclass animat-analyzer (environment reinforcement-program)
   ((file-name
