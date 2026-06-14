@@ -66,7 +66,8 @@
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
-                :components ((:file "csv")
+                :components ((:file "animat-xcs-parameters" :depends-on ("learning-parameters" "xcs"))
+                             (:file "csv")
                              (:file "learning-parameters")
                              (:file "multiplexer")
                              (:file "statistics")

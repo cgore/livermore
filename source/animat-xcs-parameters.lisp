@@ -32,7 +32,13 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :xcs)
+(defpackage :livermore/animat-xcs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/xcs)
+  (:export :*animat-learning-parameters*))
+(in-package :livermore/animat-xcs-parameters)
+
 ;; see http://www.boston.quik.com/sw/pd/imp-notes.html for some corrections.
 (defparameter *animat-learning-parameters*
   (make-instance 'learning-parameters
