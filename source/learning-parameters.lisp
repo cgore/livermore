@@ -35,7 +35,28 @@
 
 (defpackage :livermore/learning-parameters
   (:use :common-lisp)
-  (:export :learning-parameters))
+  (:export :learning-parameters
+           :maximum-total-numerosity
+           :learning-rate
+           :multiplier-parameter
+           :equal-error-threshold
+           :power-parameter
+           :discount-factor
+           :ga-threshold
+           :crossover-probability
+           :mutation-probability
+           :deletion-threshold
+           :fitness-fraction-threshold
+           :minimum-subsumption-experience
+           :covering-probability
+           :initial-prediction
+           :initial-prediction-error
+           :initial-fitness
+           :exploration-probability
+           :minimum-number-of-actions
+           :ga-subsumption?
+           :action-set-subsumption?
+           :possible-actions))
 (in-package :livermore/learning-parameters)
 
 (defclass learning-parameters ()
