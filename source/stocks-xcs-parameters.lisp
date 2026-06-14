@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,10 +32,24 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
+
+(defpackage :livermore/stocks-xcs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/xcs)
+  (:export :*stock-starting-index*
+           :*reward-method*
+           :*valid-actions*
+           :*learning-parameters*
+           :*initial-stock-ticker*
+           :*stocks-xcs-output*
+           :*stocks-xcs-report-days*))
+(in-package :livermore/stocks-xcs-parameters)
+
 ;;; Use this function to reload the parameters.
-(defun rlp-stocks ()
-  (load "stocks-xcs-parameters.lisp"))
-(export 'rlp-stocks)
+;; (defun rlp-stocks ()
+;;   (load "stocks-xcs-parameters.lisp"))
+;; (export 'rlp-stocks)
 
 (defparameter *stock-starting-index* 100)
 (defparameter *reward-method* :correctness)

@@ -72,6 +72,8 @@
                              (:file "statistics")
                              (:file "stock-ticker-descriptions")
                              (:file "stocks" :depends-on ("csv" "statistics" "stock-ticker-descriptions" "time"))
+                             (:file "stocks-xcs" :depends-on ("statistics" "time" "xcs" "xcs-analyzer" "stocks-xcs-parameters"))
+                             (:file "stocks-xcs-parameters" :depends-on ("learning-parameters" "xcs"))
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")

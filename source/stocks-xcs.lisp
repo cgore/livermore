@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,50 +32,48 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "statistics")
-(load "stocks")
-(load "time")
-(load "xcs")
-(load "xcs-analyzer")
-(in-package "XCS")
-(use-package '("COMMON-LISP"
-               "UTILITIES"
-               "STOCKS"
-               "TIME"))
-(export '(stocks-xcs-analyzer
-           stocks-experiment
-           table
-           initial-index
-           current-index
-           previous-action
-           current-action
-           money
-           previous-money
-           correct-actions
-           actions
-           initialize
-           money-from-stock
-           elt-record
-           current-record
-           elt-previous-record
-           previous-record
-           should-have-bought-stock?
-           buy-stock?
-           *correct-actions-history*
-           execute-action
-           get-situation
-           correct-action?
-           positive-action?
-           negative-action?
-           get-reward
-           end-of-problem?
-           load-*table*
-           start-stocks-xcs-experiment
-           experiment-stats
-           castats
-           all-stats))
-(load "stocks-xcs-parameters.lisp")
+
+(defpackage :livermore/stocks-xcs
+  (:use :common-lisp
+        :livermore/statistics
+        :livermore/stocks
+        :livermore/stocks-xcs-parameters
+        :livermore/time
+        :livermore/xcs
+        :livermore/xcs-analyzer)
+  (:export :stocks-xcs-analyzer
+           :stocks-experiment
+           :table
+           :initial-index
+           :current-index
+           :previous-action
+           :current-action
+           :money
+           :previous-money
+           :correct-actions
+           :actions
+           :initialize
+           :money-from-stock
+           :elt-record
+           :current-record
+           :elt-previous-record
+           :previous-record
+           :should-have-bought-stock?
+           :buy-stock?
+           :*correct-actions-history*
+           :execute-action
+           :get-situation
+           :correct-action?
+           :positive-action?
+           :negative-action?
+           :get-reward
+           :end-of-problem?
+           :load-*table*
+           :start-stocks-xcs-experiment
+           :experiment-stats
+           :castats
+           :all-stats))
+(in-package :livermore/stocks-xcs)
 
 (defclass stocks-xcs-analyzer (analyzer)
   ((table
@@ -116,9 +114,10 @@
      :initarg :positive-actions
      :type integer)))
 
-(defmethod elt-record ((stocks-xcs-analyzer stocks-xcs-analyzer) (n integer))
+(defmethod elt-record ((stocks-xcs-analyzer stocks-xcs-analyzer) (n integer) &optional (key #'identity))
+  (declare (ignore key))
   (assert (not (minusp n)))
-  (elt-record (table stocks-xcs-analyzer) n))
+  (elt-record (table stocks-xcs-analyzer) n key))
 
 (defmethod current-record ((stocks-xcs-analyzer stocks-xcs-analyzer))
   (elt-record stocks-xcs-analyzer (current-index stocks-xcs-analyzer)))
