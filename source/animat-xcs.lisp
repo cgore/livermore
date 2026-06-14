@@ -32,7 +32,7 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :livermore/anamat-xcs
+(defpackage :livermore/animat-xcs
   (:use :common-lisp
         :livermore/xcs
         :livermore/animat-xcs-parameters)
@@ -44,7 +44,7 @@
            :get-reward
            :end-of-problem?
            :start-animat-experiment))
-(in-package :livermore/anamat-xcs)
+(in-package :livermore/animat-xcs)
 
 
 (defclass animat-analyzer (environment reinforcement-program)
