@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,23 +32,44 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(unless (find-package 'xcs) (load "xcs"))
-(in-package "XCS")
-;; TODO require xcs-range-predicate, and sort out the different methods vs. here.
-
+(defpackage :livermore/xcsr
+  (:use :common-lisp
+        :sigma/control
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence
+        :livermore/learning-parameters
+        :livermore/xcs)
+  (:export :center
+           :cover
+           :covering-maximum
+           :duplicate
+           :identical?
+           :lower
+           :match?
+           :more-general?
+           :mutate
+           :mutation-maximum
+           :print-object
+           :range-predicate
+           :spread
+           :upper
+           :xcsr
+           :xcsr-learning-parameters))
+(in-package :livermore/xcsr)
 
 (defclass range-predicate ()
   ((lower
     :accessor lower
     :initform nil
     :initarg :lower
-    :type number
+    :type (or null number)
     :documentation "This is the lower bound of the range, inclusive.")
    (upper
     :accessor upper
     :initform nil
     :initarg :upper
-    :type number
+    :type (or null number)
     :documentation "This is the upper bound of the range, inclusive."))
   (:documentation
    "This class represents a single range predicate as used by XCSR."))
