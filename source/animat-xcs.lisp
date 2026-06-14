@@ -35,7 +35,10 @@
 (defpackage :livermore/animat-xcs
   (:use :common-lisp
         :livermore/xcs
-        :livermore/animat-xcs-parameters)
+        :livermore/animat-xcs-parameters
+        :sigma/numeric
+        :sigma/sequence
+        :sigma/time-series)
   (:export :animat-analyzer
            :current-situation
            :initialize
