@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,70 +32,72 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcs")
-(in-package "XCS")
-(use-package '("COMMON-LISP" "UTILITIES"))
-(export '(analyzer
-           current-situation
-           number-of-situations
-           current-action
-           actions
-           correct-actions
-           action-history
-           odd-action-history
-           even-action-history
-           initialize ; Define per-problem
-           correct-action ; Define per-problem
-           correct-action?
-           get-reward
-           execute-action))
+
+(defpackage :livermore/xcs-analyzer
+  (:use :common-lisp
+        :livermore/xcs)
+  (:export :analyzer
+           :current-situation
+           :number-of-situations
+           :current-action
+           :actions
+           :correct-actions
+           :action-history
+           :odd-action-history
+           :even-action-history
+           :initialize ; Define per-problem
+           :correct-action ; Define per-problem
+           :correct-action?
+           :get-reward
+           :execute-action))
+(in-package :livermore/xcs-analyzer)
+
 
 (defclass analyzer (environment reinforcement-program)
-   ((current-situation
-     :accessor current-situation
-     :initarg :current-situation)
+  ((current-situation
+    :accessor current-situation
+    :initarg :current-situation)
    (number-of-situations
-     :accessor number-of-situations
-     :initform 0
-     :initarg :number-of-situations
-     :type (integer 0 *))
+    :accessor number-of-situations
+    :initform 0
+    :initarg :number-of-situations
+    :type (integer 0 *))
    (current-action
-     :accessor current-action
-     :initarg :current-action)
+    :accessor current-action
+    :initarg :current-action)
    (actions
-     :accessor actions
-     :initform 0
-     :initarg :actions
-     :type (integer 0 *))
+    :accessor actions
+    :initform 0
+    :initarg :actions
+    :type (integer 0 *))
    (correct-actions
-     :accessor correct-actions
-     :initform 0
-     :initarg :correct-actions
-     :type (integer 0 *))
+    :accessor correct-actions
+    :initform 0
+    :initarg :correct-actions
+    :type (integer 0 *))
    (action-history
-     :accessor action-history
-     :initform nil
-     :initarg :action-history
-     :type list)
+    :accessor action-history
+    :initform nil
+    :initarg :action-history
+    :type list)
    (odd-action-history
-     :accessor odd-action-history
-     :initform nil
-     :initarg :odd-action-history
-     :type list)
+    :accessor odd-action-history
+    :initform nil
+    :initarg :odd-action-history
+    :type list)
    (even-action-history
-     :accessor even-action-history
-     :initform nil
-     :initarg :even-action-history
-     :type list)))
+    :accessor even-action-history
+    :initform nil
+    :initarg :even-action-history
+    :type list)))
 
-;(defmethod initialize ((analyzer analyzer))
-;  "Define this method for any individual problem that needs initialization."
-;  nil)
+;;(defmethod initialize ((analyzer analyzer))
+;;  "Define this method for any individual problem that needs initialization."
+;;  nil)
 
-;(defmethod correct-action ((analyzer analyzer))
-;  "Define this method for each individual problem."
-;  nil)
+;;(defmethod correct-action ((analyzer analyzer))
+;;  "Define this method for each individual problem."
+;;  nil)
 
 (defmethod correct-action? ((analyzer analyzer))
   "This predicate returns true if the classifier picked the correct action."
@@ -121,7 +123,7 @@
     (if (oddp actions)
       (push (correct-action? analyzer) odd-action-history)
       (push (correct-action? analyzer) even-action-history))
-    (push (correct-action? analyzer) action-history)    
+    (push (correct-action? analyzer) action-history)
     (let ((ca50 (count t action-history :end 50))
           (ca50len (min 50 (length action-history)))
           (cao50 (count t odd-action-history :end 50))

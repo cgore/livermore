@@ -79,5 +79,6 @@
                              (:file "xcs-set-predicate"     :depends-on ("learning-parameters"))
                              (:file "xcs-ternary-predicate" :depends-on ("learning-parameters"))
                              (:file "whitley-test-functions")
-                             (:file "xcs"  :depends-on ("learning-parameters" "xcs-ternary-predicate"))
+                             (:file "xcs" :depends-on ("learning-parameters" "xcs-ternary-predicate"))
+                             (:file "xcs-analyzer" :depends-on ("xcs"))
                              (:file "xcsr" :depends-on ("learning-parameters" "xcs"))))))

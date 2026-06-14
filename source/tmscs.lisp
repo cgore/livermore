@@ -40,7 +40,7 @@
         :sigma/probability
         :sigma/random
         :sigma/sequence
-        :sigma/string+
+        :sigma/string
         :sigma/time-series
         :livermore/learning-parameters
         :livermore/xcs
