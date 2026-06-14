@@ -75,6 +75,7 @@
                              (:file "threshold")
                              (:file "thesis-stats" :depends-on ("statistics"))
                              (:file "time")
+                             (:file "tmscs" :depends-on ("learning-parameters" "xcs" "xcsr"))
                              (:file "xcs-set-predicate"     :depends-on ("learning-parameters"))
                              (:file "xcs-ternary-predicate" :depends-on ("learning-parameters"))
                              (:file "whitley-test-functions")

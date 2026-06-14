@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -32,24 +32,36 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcsr")
-(in-package :xcs)
-(export '(tms-classifier
-          match?
-          tms-predicate
-          initial
-          final
-          field
-          operation
-          tmscs-learning-parameters
-          maximum-environment-condition-length
-          maximum-temporal-mutation
-          maximum-position-mutation
-          valid-operations
-          valid-fields
-          visible-time-range
-          tmscs))
+
+(defpackage :livermore/tmscs
+  (:use :common-lisp
+        :sigma/control
+        :sigma/numeric
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence
+        :sigma/string+
+        :sigma/time-series
+        :livermore/learning-parameters
+        :livermore/xcs
+        :livermore/xcsr)
+  (:export :tms-classifier
+           :match?
+           :tms-predicate
+           :initial
+           :final
+           :field
+           :operation
+           :tmscs-learning-parameters
+           :maximum-environment-condition-length
+           :maximum-temporal-mutation
+           :maximum-position-mutation
+           :valid-operations
+           :valid-fields
+           :visible-time-range
+           :tmscs))
+(in-package :livermore/tmscs)
+
 
 (defclass tms-classifier (classifier)
   ())
