@@ -131,7 +131,8 @@
            :most-general-subsumers
            :do-action-set-subsumption
            :could-subsume?
-           :subsume?)
+           :subsume?
+           :multistep?)
   (:documentation
    "This is an implementation of Wilson's XCS system, originally based upon
       the article ``An Algorithmic Description of XCS'' by Martin V. Butz and
