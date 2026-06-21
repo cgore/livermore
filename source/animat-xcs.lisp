@@ -120,7 +120,6 @@
                world file-name
                multistep?) analyzer
     (setf multistep? t)
-    (break)
     (with-open-file (stream file-name
                             :direction :input
                             :element-type 'character)
