@@ -927,11 +927,11 @@
     (initialize reinforcement-program)
     (initialize xcs)
     (if (multistep? environment)
-      (multi-step-experiment experiment)
-      (single-step-experiment experiment))))
+        (multi-step-experiment experiment)
+        (single-step-experiment experiment))))
 
 (defmethod start-experiments ((experiment experiment)
-			      (number-of-experiments integer))
+                              (number-of-experiments integer))
   (dotimes (experiment-number number-of-experiments)
     (start experiment)))
 
