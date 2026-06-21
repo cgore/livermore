@@ -35,28 +35,29 @@
 
 (defpackage :livermore/learning-parameters
   (:use :common-lisp)
-  (:export :learning-parameters
-           :maximum-total-numerosity
-           :learning-rate
-           :multiplier-parameter
-           :equal-error-threshold
-           :power-parameter
-           :discount-factor
-           :ga-threshold
-           :crossover-probability
-           :mutation-probability
-           :deletion-threshold
-           :fitness-fraction-threshold
-           :minimum-subsumption-experience
+  (:export :action-set-subsumption?
            :covering-probability
+           :crossover-probability
+           :deletion-threshold
+           :discount-factor
+           :equal-error-threshold
+           :exploration-probability
+           :fitness-fraction-threshold
+           :ga-subsumption?
+           :ga-threshold
+           :initial-fitness
            :initial-prediction
            :initial-prediction-error
-           :initial-fitness
-           :exploration-probability
+           :learning-parameters
+           :learning-rate
+           :maximum-number-of-steps
+           :maximum-total-numerosity
            :minimum-number-of-actions
-           :ga-subsumption?
-           :action-set-subsumption?
-           :possible-actions))
+           :minimum-subsumption-experience
+           :multiplier-parameter
+           :mutation-probability
+           :possible-actions
+           :power-parameter))
 (in-package :livermore/learning-parameters)
 
 (defclass learning-parameters ()
@@ -180,7 +181,7 @@
     :type float
     :documentation
     "This is `P_explr' in Butz and Wilson's paper, usually around 0.5.")
-   (minimum-number-of-actions 
+   (minimum-number-of-actions
     :accessor minimum-number-of-actions
     :initarg :minimum-number-of-actions
     :type (integer 0 *)
