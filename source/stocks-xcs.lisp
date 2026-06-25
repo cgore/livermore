@@ -41,78 +41,86 @@
         :livermore/time
         :livermore/xcs
         :livermore/xcs-analyzer)
-  (:export :stocks-xcs-analyzer
-           :stocks-experiment
-           :table
-           :initial-index
-           :current-index
-           :previous-action
-           :current-action
-           :money
-           :previous-money
-           :correct-actions
+  (:export :*analyzer*
+           :*correct-actions-history*
+           :*experiment*
+           :*xcs*
            :actions
-           :initialize
-           :money-from-stock
-           :elt-record
+           :all-stats
+           :buy-stock?
+           :castats
+           :correct-action?
+           :correct-actions
+           :current-action
+           :current-index
            :current-record
            :elt-previous-record
+           :elt-record
+           :end-of-problem?
+           :execute-action
+           :experiment-stats
+           :get-reward
+           :get-situation
+           :initial-index
+           :initialize
+           :load-*table*
+           :money
+           :money-from-stock
+           :negative-action?
+           :positive-action?
+           :previous-action
+           :previous-money
            :previous-record
            :should-have-bought-stock?
-           :buy-stock?
-           :*correct-actions-history*
-           :execute-action
-           :get-situation
-           :correct-action?
-           :positive-action?
-           :negative-action?
-           :get-reward
-           :end-of-problem?
-           :load-*table*
            :start-stocks-xcs-experiment
-           :experiment-stats
-           :castats
-           :all-stats))
+           :stocks-experiment
+           :stocks-xcs-analyzer
+           :table))
 (in-package :livermore/stocks-xcs)
+
+(defparameter *analyzer* nil)
+(defparameter *correct-actions-history* nil)
+(defparameter *experiment* nil)
+(defparameter *xcs* nil)
 
 (defclass stocks-xcs-analyzer (analyzer)
   ((table
-     :accessor table
-     :initarg :table)
+    :accessor table
+    :initarg :table)
    (initial-index
-     :accessor initial-index
-     :initform *stock-starting-index*
-     :initarg :initial-index
-     :type integer)
+    :accessor initial-index
+    :initform *stock-starting-index*
+    :initarg :initial-index
+    :type integer)
    (current-index
-     :accessor current-index
-     :initform *stock-starting-index*
-     :initarg :current-index
-     :type integer)
+    :accessor current-index
+    :initform *stock-starting-index*
+    :initarg :current-index
+    :type integer)
    (previous-action
-     :accessor previous-action
-     :initform nil
-     :initarg :previous-action)
+    :accessor previous-action
+    :initform nil
+    :initarg :previous-action)
    (money
-     :accessor money
-     :initform *initial-money*
-     :initarg :money
-     :type float)
+    :accessor money
+    :initform *initial-money*
+    :initarg :money
+    :type float)
    (previous-money
-     :accessor previous-money
-     :initform *initial-money*
-     :initarg :previous-money
-     :type float)
+    :accessor previous-money
+    :initform *initial-money*
+    :initarg :previous-money
+    :type float)
    (negative-actions
-     :accessor negative-actions
-     :initform 0
-     :initarg :negative-actions
-     :type integer)
+    :accessor negative-actions
+    :initform 0
+    :initarg :negative-actions
+    :type integer)
    (positive-actions
-     :accessor positive-actions
-     :initform 0
-     :initarg :positive-actions
-     :type integer)))
+    :accessor positive-actions
+    :initform 0
+    :initarg :positive-actions
+    :type integer)))
 
 (defmethod elt-record ((stocks-xcs-analyzer stocks-xcs-analyzer) (n integer) &optional (key #'identity))
   (declare (ignore key))
@@ -168,7 +176,7 @@
 
 ;; Version exists in xcs-analyzer.lisp.
 (defmethod execute-action ((stocks-xcs-analyzer stocks-xcs-analyzer) action)
-  (with-slots (table 
+  (with-slots (table
                 current-index initial-index
                 previous-action current-action
                 actions correct-actions
@@ -192,7 +200,7 @@
             0)
           *correct-actions-history*)))
 
-(defmethod get-situation ((stocks-xcs-analyzer stocks-xcs-analyzer)) 
+(defmethod get-situation ((stocks-xcs-analyzer stocks-xcs-analyzer))
   (with-slots (table current-index) stocks-xcs-analyzer
     (let ((yesterday (1- current-index)))
       (flet ((z+? (f days)
@@ -243,11 +251,11 @@
         (:delta-money (- money previous-money))
         (:weighted-delta-money (/ (- money previous-money)
                                   previous-money))
-        (:diff-money 
+        (:diff-money
           (- money (if (buy-stock? stocks-xcs-analyzer)
                      previous-money
                      (money-from-stock stocks-xcs-analyzer))))
-        (:weighted-diff-money 
+        (:weighted-diff-money
           (- money (if (buy-stock? stocks-xcs-analyzer)
                      previous-money
                      (* 0.5 (money-from-stock stocks-xcs-analyzer)))))
@@ -272,15 +280,12 @@
 (load-*table* *initial-stock-ticker*)
 
 (defun start-stocks-xcs-experiment ()
-  (defparameter *analyzer*
-    (make-instance 'stocks-xcs-analyzer :table *table*))
-  (defparameter *xcs*
-    (make-instance 'xcs :learning-parameters *learning-parameters*))
-  (defparameter *experiment*
-    (make-instance 'stocks-experiment
-                   :environment *analyzer*
-                   :reinforcement-program *analyzer*
-                   :xcs *xcs*))
+  (setf *analyzer* (make-instance 'stocks-xcs-analyzer :table *table*))
+  (setf *xcs* (make-instance 'xcs :learning-parameters *learning-parameters*))
+  (setf *experiment* (make-instance 'stocks-experiment
+                                    :environment *analyzer*
+                                    :reinforcement-program *analyzer*
+                                    :xcs *xcs*))
   (setf *correct-actions-history* nil)
   (start *experiment*)
   (format t "~&~34~ RESULTS ~34~~%")
