@@ -36,20 +36,20 @@
 (defpackage :livermore/xcs-analyzer
   (:use :common-lisp
         :livermore/xcs)
-  (:export :analyzer
-           :current-situation
-           :number-of-situations
-           :current-action
+  (:export :action-history
            :actions
-           :correct-actions
-           :action-history
-           :odd-action-history
-           :even-action-history
-           :initialize ; Define per-problem
-           :correct-action ; Define per-problem
+           :analyzer
+           :correct-action ; The CORRECT-ACTION method needs to be defined per-problem
            :correct-action?
+           :correct-actions
+           :current-action
+           :current-situation
+           :even-action-history
+           :execute-action
            :get-reward
-           :execute-action))
+           :initialize ; The INITIALIZE method needs to be defined per-problem
+           :number-of-situations
+           :odd-action-history))
 (in-package :livermore/xcs-analyzer)
 
 
@@ -91,13 +91,13 @@
     :initarg :even-action-history
     :type list)))
 
-;;(defmethod initialize ((analyzer analyzer))
-;;  "Define this method for any individual problem that needs initialization."
-;;  nil)
+(defmethod initialize ((analyzer analyzer))
+ "Define this method for any individual problem that needs initialization."
+  (error "The INITIALIZE method needs to be defined per-problem."))
 
-;;(defmethod correct-action ((analyzer analyzer))
-;;  "Define this method for each individual problem."
-;;  nil)
+(defmethod correct-action ((analyzer analyzer))
+ "Define this method for each individual problem."
+  (error "The CORRECT-ACTION method needs to be defined per-problem."))
 
 (defmethod correct-action? ((analyzer analyzer))
   "This predicate returns true if the classifier picked the correct action."
