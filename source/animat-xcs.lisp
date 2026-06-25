@@ -39,15 +39,22 @@
         :sigma/numeric
         :sigma/sequence
         :sigma/time-series)
-  (:export :animat-analyzer
+  (:export :*animat-analyzer*
+           :*animat-experiment*
+           :*animat-xcs*
+           :animat-analyzer
            :current-situation
-           :initialize
-           :get-situation
+           :end-of-problem?
            :execute-action
            :get-reward
-           :end-of-problem?
+           :get-situation
+           :initialize
            :start-animat-experiment))
 (in-package :livermore/animat-xcs)
+
+(defparameter *animat-analyzer* nil)
+(defparameter *animat-experiment* nil)
+(defparameter *animat-xcs* nil)
 
 
 (defclass animat-analyzer (environment reinforcement-program)
@@ -261,15 +268,15 @@
           nil))))
 
 (defun start-animat-experiment (file-name)
-  (defparameter *animat-analyzer*
-    (make-instance 'animat-analyzer
-                   :file-name file-name))
-  (defparameter *animat-xcs*
-    (make-instance 'xcs
-                   :learning-parameters *animat-learning-parameters*))
-  (defparameter *animat-experiment*
-    (make-instance 'animat-experiment
-                   :environment *animat-analyzer*
-                   :reinforcement-program *animat-analyzer*
-                   :xcs *animat-xcs*))
+  (setf *animat-analyzer*
+        (make-instance 'animat-analyzer
+                       :file-name file-name))
+  (setf *animat-xcs*
+        (make-instance 'xcs
+                       :learning-parameters *animat-learning-parameters*))
+  (setf *animat-experiment*
+        (make-instance 'animat-experiment
+                       :environment *animat-analyzer*
+                       :reinforcement-program *animat-analyzer*
+                       :xcs *animat-xcs*))
   (start *animat-experiment*))
