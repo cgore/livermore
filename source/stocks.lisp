@@ -59,7 +59,6 @@
            :cash-optimal-gains
            :cash-optimal-performance
            :buy-and-hold
-           :trend-following
            :report-results
            :table-record
            :adjustment

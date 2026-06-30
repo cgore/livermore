@@ -292,7 +292,6 @@
   (let* ((start (- (length (records *table*))
                    *stock-starting-index*))
          (b&h (buy-and-hold *table* :start start))
-         (tf (trend-following *table* :start start))
          (start-utime (opening-time (nth start (records *table*))))
          (end-utime (closing-time (nth (current-index *analyzer*)
                                      (records *table*)))))
@@ -311,8 +310,6 @@
                         (actions *analyzer*))))
     (format t "~&Buy-and-hold: $~$ (~,5F).~%"
             b&h (/ (money *analyzer*) b&h))
-    (format t "~&Trend-following: $~$ (~,5F).~%"
-            tf (/ (money *analyzer*) tf))
     (format t "~&~77~~%")
     (with-open-file (ca.data "correct-actions.data"
                              :direction :output
