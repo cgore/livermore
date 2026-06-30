@@ -81,6 +81,7 @@
 (defparameter *analyzer* nil)
 (defparameter *correct-actions-history* nil)
 (defparameter *experiment* nil)
+(defparameter *table* nil)
 (defparameter *xcs* nil)
 
 (defclass stocks-xcs-analyzer (analyzer)
@@ -276,7 +277,7 @@
         (not (plusp money)))))
 
 (defun load-*table* (stock-ticker)
-  (defparameter *table* (load-table stock-ticker)))
+  (setf *table* (load-table stock-ticker)))
 (load-*table* *initial-stock-ticker*)
 
 (defun start-stocks-xcs-experiment ()

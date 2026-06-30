@@ -56,57 +56,60 @@
            end-of-problem?
            terminate?
            start-stocks-tsc-experiment
-           start-stocks-tsc-experiment-stats))
+           start-stocks-tsc-experiment-stats
+          :*table*))
+
+(defparameter *table* nil)
 
 (defclass stocks-tsc-analyzer (environment reinforcement-program)
   ((table
-     :accessor table
-     :initarg :table)
+    :accessor table
+    :initarg :table)
    (history
-     :accessor history
-     :initform nil
-     :initarg :history
-     :type list)
+    :accessor history
+    :initform nil
+    :initarg :history
+    :type list)
    (action-history
-     :accessor action-history
-     :initform nil
-     :initarg :action-history
-     :type list)
+    :accessor action-history
+    :initform nil
+    :initarg :action-history
+    :type list)
    (money-history
-     :accessor money-history
-     :initform (list *initial-money*)
-     :initarg :money-history
-     :type list)
+    :accessor money-history
+    :initform (list *initial-money*)
+    :initarg :money-history
+    :type list)
    (stats-history
-     :accessor stats-history
-     :initform nil
-     :initarg :stats-history
-     :type list)
+    :accessor stats-history
+    :initform nil
+    :initarg :stats-history
+    :type list)
    (number-of-situations
-     :accessor number-of-situations
-     :initform 0
-     :initarg :number-of-situations
-     :type (integer 0 *))
+    :accessor number-of-situations
+    :initform 0
+    :initarg :number-of-situations
+    :type (integer 0 *))
    (number-of-actions
-     :accessor number-of-actions
-     :initform 0
-     :initarg :number-of-actions
-     :type (integer 0 *))
+    :accessor number-of-actions
+    :initform 0
+    :initarg :number-of-actions
+    :type (integer 0 *))
    (number-of-correct-actions
-     :accessor number-of-correct-actions
-     :initform 0
-     :initarg :number-of-correct-actions
-     :type (integer 0 *))
+    :accessor number-of-correct-actions
+    :initform 0
+    :initarg :number-of-correct-actions
+    :type (integer 0 *))
    (number-of-up-steps
-     :accessor number-of-up-steps
-     :initform 0
-     :initarg :number-of-up-steps
-     :type (integer 0 *))
+    :accessor number-of-up-steps
+    :initform 0
+    :initarg :number-of-up-steps
+    :type (integer 0 *))
    (initial-history-depth
-     :accessor initial-history-depth
-     :initform 200
-     :initarg :initial-history-depth
-     :type (integer 0 *))))
+    :accessor initial-history-depth
+    :initform 200
+    :initarg :initial-history-depth
+    :type (integer 0 *))))
 
 (defclass stocks-tsc-experiment (experiment)
   ())
@@ -362,7 +365,7 @@
 (load "stocks-tsc-parameters")
 
 (defun load-*table* (stock-ticker)
-  (defparameter *table* (load-table stock-ticker)))
+  (setf *table* (load-table stock-ticker)))
 (load-*table* *stock-ticker*)
 
 (defun stocks-tsc-experiment ()
