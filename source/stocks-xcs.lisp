@@ -292,7 +292,6 @@
   (format t "~&~34~ RESULTS ~34~~%")
   (let* ((start (- (length (records *table*))
                    *stock-starting-index*))
-         (b&h (buy-and-hold *table* :start start))
          (start-utime (opening-time (nth start (records *table*))))
          (end-utime (closing-time (nth (current-index *analyzer*)
                                      (records *table*)))))
@@ -309,8 +308,6 @@
             (actions *analyzer*)
             (* 100.0 (/ (correct-actions *analyzer*)
                         (actions *analyzer*))))
-    (format t "~&Buy-and-hold: $~$ (~,5F).~%"
-            b&h (/ (money *analyzer*) b&h))
     (format t "~&~77~~%")
     (with-open-file (ca.data "correct-actions.data"
                              :direction :output
