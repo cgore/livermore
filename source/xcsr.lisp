@@ -51,6 +51,7 @@
            :mutate
            :mutation-maximum
            :print-object
+           :problem-range
            :range-predicate
            :spread
            :upper
