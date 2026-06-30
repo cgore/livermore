@@ -124,7 +124,6 @@
     :type integer)))
 
 (defmethod elt-record ((stocks-xcs-analyzer stocks-xcs-analyzer) (n integer) &optional (key #'identity))
-  (declare (ignore key))
   (assert (not (minusp n)))
   (elt-record (table stocks-xcs-analyzer) n key))
 
