@@ -296,7 +296,7 @@
          (end-utime (closing-time (nth (current-index *analyzer*)
                                      (records *table*)))))
     (format t "~&~A (~A).~%"
-            (description *table*)
+            (stock-description *table*)
             (string-upcase (ticker-symbol *table*)))
     (format t "~&Initial (~A): $~$.~%Final (~A): $~$.~%"
             (dd-mon-yyyy-string start-utime)
