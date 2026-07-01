@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -116,7 +116,8 @@
 (defmethod terminate? ((linear-tmscs-analyzer linear-tmscs-analyzer))
   (<= 10000 (number-of-actions linear-tmscs-analyzer)))
 
-(defmethod initialize ((analyzer linear-tmscs-analyzer))
+(defmethod initialize-instance :after ((analyzer linear-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
@@ -173,5 +174,4 @@
                    :environment *linear-tmscs-analyzer*
                    :reinforcement-program *linear-tmscs-analyzer*
                    :xcs *linear-tmscs*))
-  (initialize *linear-tmscs-analyzer*)
   (start *linear-tmscs-experiment*))

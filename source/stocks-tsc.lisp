@@ -1,8 +1,8 @@
-;;;; Copyright (c) 2005 -- 2014, Christopher Mark Gore,
+;;;; Copyright (c) 2005 -- 2026, Christopher Mark Gore,
 ;;;; Soli Deo Gloria,
 ;;;; All rights reserved.
 ;;;;
-;;;; 2317 South River Road, Saint Charles, Missouri 63303 USA.
+;;;; 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
 ;;;; Web: http://cgore.com
 ;;;; Email: cgore@cgore.com
 ;;;;
@@ -302,7 +302,8 @@
 (defmethod terminate? ((experiment stocks-tsc-experiment))
   (<= *stock-termination-actions* (number-of-actions (environment experiment))))
 
-(defmethod initialize ((analyzer stocks-tsc-analyzer))
+(defmethod initialize-instance :after ((analyzer stocks-tsc-analyzer) &rest initargs &key &allow-other-keys)
+  (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
@@ -382,7 +383,6 @@
     (format t "~&Starting stock-tsc experiment, stock=~A, reward method=~A.~%"
             *stock-ticker* *reward-method*)
     (describe parameters)
-    (initialize stocks-tsc)
     (start experiment)
     (list experiment parameters (stats-history analyzer))))
 

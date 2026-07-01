@@ -352,15 +352,28 @@
 (defmethod single-step? ((env environment))
   (not (multistep? env)))
 
-(defmethod initialize ((env environment)) nil)
-(defmethod reset ((env environment)) nil)
-(defmethod get-situation ((env environment)) nil)
-(defmethod execute-action ((env environment) action) nil)
+(defmethod reset ((env environment))
+  (when (next-method-p)
+    (call-next-method)))
 
-(defclass reinforcement-program () ())
-(defmethod initialize ((rp reinforcement-program)) nil)
-(defmethod get-reward ((rp reinforcement-program)) nil)
-(defmethod end-of-problem? ((rp reinforcement-program)) nil)
+(defmethod get-situation ((env environment))
+  (when (next-method-p)
+    (call-next-method)))
+
+(defmethod execute-action ((env environment) action)
+  (when (next-method-p)
+    (call-next-method)))
+
+(defclass reinforcement-program ()
+  ())
+
+(defmethod get-reward ((rp reinforcement-program))
+  (when (next-method-p)
+    (call-next-method)))
+
+(defmethod end-of-problem? ((rp reinforcement-program))
+  (when (next-method-p)
+    (call-next-method)))
 
 (defclass experiment ()
   ((environment
@@ -433,8 +446,6 @@
 (defmethod actions-in ((classifiers sequence))
   "This returns a list of all the actions present in CLASSIFIERS."
   (remove-duplicates (mapcar 'action classifiers)))
-
-(defmethod initialize ((xcs xcs)) nil)
 
 (defmethod deletion-vote ((classifier classifier)
                           (learning-parameters learning-parameters)
@@ -923,9 +934,6 @@
   ;; CMUCL, so we initialize here ourselves.
   (setf *random-state* (make-random-state t))
   (with-slots (environment reinforcement-program xcs) experiment
-    (initialize environment)
-    (initialize reinforcement-program)
-    (initialize xcs)
     (if (multistep? environment)
         (multi-step-experiment experiment)
         (single-step-experiment experiment))))

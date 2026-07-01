@@ -47,7 +47,6 @@
            :even-action-history
            :execute-action
            :get-reward
-           :initialize ; The INITIALIZE method needs to be defined per-problem
            :number-of-situations
            :odd-action-history))
 (in-package :livermore/xcs-analyzer)
@@ -90,10 +89,6 @@
     :initform nil
     :initarg :even-action-history
     :type list)))
-
-(defmethod initialize ((analyzer analyzer))
- "Define this method for any individual problem that needs initialization."
-  (error "The INITIALIZE method needs to be defined per-problem."))
 
 (defmethod correct-action ((analyzer analyzer))
  "Define this method for each individual problem."

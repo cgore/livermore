@@ -62,7 +62,6 @@
            :get-reward
            :get-situation
            :initial-index
-           :initialize
            :load-*table*
            :money
            :money-from-stock

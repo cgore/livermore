@@ -49,7 +49,6 @@
            correct-actions
            monk-problem
            monk?
-           initialize
            random-situation
            get-situation
            correct-action
@@ -148,9 +147,6 @@
 (defmethod monk? ((analyzer monk-analyzer) attributes)
   "This method evaluates calls the current monk problem on the attributes."
   (funcall (monk-problem analyzer) attributes))
-
-(defmethod initialize ((analyzer monk-analyzer))
-  nil)
 
 (defmethod random-situation ((analyzer monk-analyzer))
   (random-monk-attributes))

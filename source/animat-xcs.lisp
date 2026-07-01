@@ -48,7 +48,6 @@
            :execute-action
            :get-reward
            :get-situation
-           :initialize
            :start-animat-experiment))
 (in-package :livermore/animat-xcs)
 
@@ -120,8 +119,9 @@
 (defclass animat-experiment (experiment)
   ())
 
-(defmethod initialize ((analyzer animat-analyzer))
+(defmethod initialize-instance :after ((analyzer animat-analyzer) &rest initargs &key &allow-other-keys)
   "Reads the file given by file-name into the world array"
+  (declare (ignore initargs))
   (with-slots (world-width
                world-height
                world file-name

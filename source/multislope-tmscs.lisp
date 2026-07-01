@@ -244,7 +244,8 @@
 (defmethod terminate? ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
   (<= 10000 (number-of-actions multislope-tmscs-analyzer)))
 
-(defmethod initialize ((analyzer multislope-tmscs-analyzer))
+(defmethod initialize-instance :after ((analyzer multislope-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
@@ -297,5 +298,4 @@
                    :environment *multislope-tmscs-analyzer*
                    :reinforcement-program *multislope-tmscs-analyzer*
                    :xcs *multislope-tmscs*))
-  (initialize *multislope-tmscs-analyzer*)
   (start *multislope-tmscs-experiment*))
