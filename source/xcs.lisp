@@ -37,6 +37,8 @@
         #+cmu :EXTENSIONS
         #+sbcl :sb-ext
         :livermore/learning-parameters
+        :livermore/xcs-predicate
+        :livermore/xcs-set-predicate
         :livermore/xcs-ternary-predicate
         :sigma/control
         :sigma/numeric

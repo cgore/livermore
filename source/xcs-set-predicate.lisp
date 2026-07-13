@@ -39,10 +39,11 @@
         :sigma/probability
         :sigma/random
         :sigma/sequence
-        :livermore/learning-parameters)
+        :livermore/learning-parameters
+        :livermore/xcs-predicate)
   (:export :cover
-           :covering?
            :covering-score
+           :covering?
            :duplicate
            :equivalent?
            :identical?
@@ -57,7 +58,7 @@
 (in-package :livermore/xcs-set-predicate)
 
 
-(defclass set-predicate ()
+(defclass set-predicate (xcs-predicate)
   ((members
     :accessor members
     :initform nil

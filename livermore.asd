@@ -66,23 +66,42 @@
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
   :components ((:module "source"
-                :components ((:file "animat-xcs-parameters" :depends-on ("learning-parameters" "xcs"))
-                             (:file "animat-xcs" :depends-on ("xcs" "animat-xcs-parameters"))
+                :components ((:file "animat-xcs-parameters"     :depends-on ("learning-parameters"
+                                                                             "xcs"))
+                             (:file "animat-xcs"                :depends-on ("xcs"
+                                                                             "animat-xcs-parameters"))
                              (:file "csv")
                              (:file "learning-parameters")
                              (:file "multiplexer")
                              (:file "statistics")
                              (:file "stock-ticker-descriptions")
-                             (:file "stocks" :depends-on ("csv" "statistics" "stock-ticker-descriptions" "time"))
-                             (:file "stocks-xcs" :depends-on ("statistics" "time" "xcs" "xcs-analyzer" "stocks-xcs-parameters"))
-                             (:file "stocks-xcs-parameters" :depends-on ("learning-parameters" "xcs"))
+                             (:file "stocks"                    :depends-on ("csv"
+                                                                             "statistics"
+                                                                             "stock-ticker-descriptions"
+                                                                             "time"))
+                             (:file "stocks-xcs"                :depends-on ("statistics"
+                                                                             "time"
+                                                                             "xcs"
+                                                                             "xcs-analyzer"
+                                                                             "stocks-xcs-parameters"))
+                             (:file "stocks-xcs-parameters"     :depends-on ("learning-parameters"
+                                                                             "xcs"))
                              (:file "threshold")
-                             (:file "thesis-stats" :depends-on ("statistics"))
+                             (:file "thesis-stats"              :depends-on ("statistics"))
                              (:file "time")
-                             (:file "tmscs" :depends-on ("learning-parameters" "xcs" "xcsr"))
-                             (:file "xcs-set-predicate"     :depends-on ("learning-parameters"))
-                             (:file "xcs-ternary-predicate" :depends-on ("learning-parameters"))
+                             (:file "tmscs"                     :depends-on ("learning-parameters"
+                                                                             "xcs"
+                                                                             "xcsr"))
+                             (:file "xcs-predicate"             :depends-on ("learning-parameters"))
+                             (:file "xcs-set-predicate"         :depends-on ("learning-parameters"
+                                                                             "xcs-predicate"))
+                             (:file "xcs-ternary-predicate"     :depends-on ("learning-parameters"
+                                                                             "xcs-predicate"))
                              (:file "whitley-test-functions")
-                             (:file "xcs" :depends-on ("learning-parameters" "xcs-ternary-predicate"))
-                             (:file "xcs-analyzer" :depends-on ("xcs"))
-                             (:file "xcsr" :depends-on ("learning-parameters" "xcs"))))))
+                             (:file "xcs"                       :depends-on ("learning-parameters"
+                                                                             "xcs-predicate"
+                                                                             "xcs-set-predicate"
+                                                                             "xcs-ternary-predicate"))
+                             (:file "xcs-analyzer"              :depends-on ("xcs"))
+                             (:file "xcsr"                      :depends-on ("learning-parameters"
+                                                                             "xcs"))))))

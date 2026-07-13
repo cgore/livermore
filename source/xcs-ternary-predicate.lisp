@@ -35,14 +35,21 @@
 (defpackage :livermore/xcs-ternary-predicate
   (:use :common-lisp
         :sigma/probability
-        :livermore/learning-parameters)
-  (:export :ternary-value?
-           :ternary-value
-           :ternary-predicate
-           :value
+        :livermore/learning-parameters
+        :livermore/xcs-predicate)
+  (:export :?
+           :cover
+           :covering-score
            :covering?
-           :?
-           :covering-score))
+           :duplicate
+           :identical?
+           :match?
+           :more-general?
+           :mutate
+           :ternary-predicate
+           :ternary-value
+           :ternary-value?
+           :value))
 (in-package :livermore/xcs-ternary-predicate)
 
 
@@ -52,7 +59,7 @@
 (deftype ternary-value ()
   '(satisfies ternary-value?))
 
-(defclass ternary-predicate ()
+(defclass ternary-predicate (xcs-predicate)
   ((value
      :accessor value
      :initform :#
