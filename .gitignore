@@ -1,7 +1,15 @@
+# Ignore Emacs and Vim swap/temp files.
+\#*\#
+.#*
 *~
 *.sw[nop]
+
+# Ignore some LaTeX stuff.
 *.aux
 *.bbl
 *.blg
 *.idx
 *.log
+
+# Ignore SBCL compiled code.
+*.fasl
