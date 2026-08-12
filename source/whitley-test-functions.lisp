@@ -50,6 +50,7 @@
 
 (defpackage :livermore/whitley-test-functions
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :sigma/numeric
         :sigma/random)
@@ -71,7 +72,7 @@
             (assert (floatp xi))
             (assert (<= -5.12 xi 5.11)))
           x)
-  (sum x :key (lambda (xi) (expt 2 xi))))
+  (sum x :key (lambda (xi) (expt xi 2))))
 
 (defun f2 (x)
   "This function, F2, is a nonlinear function over two variables.  It is
@@ -83,9 +84,8 @@
             (assert (floatp xi))
             (assert (<= -2.048 xi 2.047)))
           x)
-  (+ (* 100.0 (expt 2 (- (expt 2 (first x))
-                         (second x))))
-     (expt 2 (- 1 (first x)))))
+  (+ (* 100.0 (expt (- (second x) (expt (first x) 2)) 2))
+     (expt (- 1 (first x)) 2)))
 
 (defun f3 (x)
   "This function, F3, is a discontinuous function, the sum of the floors.  It is
@@ -202,10 +202,10 @@
           x)
   (let* ((x1 (first x))
          (x2 (second x))
-         (xsq (+ (expt 2 x1) (expt 2 x2))))
-    (+ 0.5 (/ (- (expt 2 (sin (sqrt xsq)))
+         (xsq (+ (expt x1 2) (expt x2 2))))
+    (+ 0.5 (/ (- (expt (sin (sqrt xsq)) 2)
                  0.5)
-              (expt 2 (+ 1.0 (* 0.001 xsq)))))))
+              (expt (+ 1.0 (* 0.001 xsq)) 2)))))
 
 (function-alias 'f9 'sine-envelope-sine-wave)
 
@@ -219,8 +219,64 @@
           x)
   (let* ((x1 (first x))
          (x2 (second x))
-         (xsq (+ (expt 2 x1) (expt 2 x2))))
-    (* (expt 0.25 xsq)
-       (1+ (expt 2 (sin (* 50 (expt 0.1 xsq))))))))
+         (xsq (+ (expt x1 2) (expt x2 2))))
+    (* (expt xsq 0.25)
+       (1+ (expt (sin (* 50 (expt xsq 0.1))) 2)))))
 
 (function-alias 'f10 'stretched-v-sine-wave)
+
+(behavior 'f1
+  (spec "the origin is a global minimum of 0"
+    (should= 0.0 (f1 '(0.0 0.0 0.0))))
+  (should= 1.0 (f1 '(1.0 0.0 0.0)))
+  (should= 14.0 (f1 '(1.0 2.0 3.0)))
+  (should= (f1 '(-1.0 2.0 -3.0)) (f1 '(1.0 2.0 3.0))))
+
+(behavior 'f2
+  (spec "Rosenbrock: 100 (x2 - x1^2)^2 + (1 - x1)^2, minimum 0 at (1, 1)"
+    (should= 0.0 (f2 '(1.0 1.0)))
+    (should= 1.0 (f2 '(0.0 0.0)))
+    (should= 100.0 (f2 '(1.0 2.0)))
+    (should= 4.0 (f2 '(-1.0 1.0)))))
+
+(behavior 'f3
+  (should= 0 (f3 '(0.0 0.0 0.0 0.0 0.0)))
+  (should= 5 (f3 '(1.9 1.1 1.0 1.5 1.2))))
+
+(behavior 'rastrigin
+  (spec "the origin is a global minimum of 0"
+    (should= 0.0 (f6 '(0.0)))
+    (should= 0.0 (rastrigin '(0.0 0.0 0.0))))
+  (should-eq (fdefinition 'f6) (fdefinition 'rastrigin)))
+
+(behavior 'schwefel
+  (should= 0.0 (f7 '(0.0)))
+  (should-eq (fdefinition 'f7) (fdefinition 'schwefel)))
+
+(behavior 'griewangk
+  (spec "the origin is a global minimum of 0"
+    (should= 0.0 (f8 '(0.0)))
+    (should= 0.0 (griewangk '(0.0 0.0))))
+  (should-eq (fdefinition 'f8) (fdefinition 'griewangk)))
+
+(behavior 'sine-envelope-sine-wave
+  (spec "the origin is a global minimum of 0"
+    (should= 0.0 (f9 '(0.0 0.0))))
+  (spec "0.5 + (sin^2(sqrt(r^2)) - 0.5) / (1 + 0.001 r^2)^2"
+    (let* ((xsq (+ (* 3.0 3.0) (* 4.0 4.0)))
+           (expected (+ 0.5 (/ (- (expt (sin (sqrt xsq)) 2) 0.5)
+                               (expt (+ 1.0 (* 0.001 xsq)) 2)))))
+      (should= expected (f9 '(3.0 4.0)))
+      (should= expected (sine-envelope-sine-wave '(3.0 4.0)))))
+  (should-eq (fdefinition 'f9) (fdefinition 'sine-envelope-sine-wave)))
+
+(behavior 'stretched-v-sine-wave
+  (spec "the origin is a global minimum of 0"
+    (should= 0.0 (f10 '(0.0 0.0))))
+  (spec "(r^2)^0.25 * (1 + sin^2(50 (r^2)^0.1))"
+    (let* ((xsq (+ (* 3.0 3.0) (* 4.0 4.0)))
+           (expected (* (expt xsq 0.25)
+                        (1+ (expt (sin (* 50 (expt xsq 0.1))) 2)))))
+      (should= expected (f10 '(3.0 4.0)))
+      (should= expected (stretched-v-sine-wave '(3.0 4.0)))))
+  (should-eq (fdefinition 'f10) (fdefinition 'stretched-v-sine-wave)))
