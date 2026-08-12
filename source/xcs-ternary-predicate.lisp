@@ -35,6 +35,7 @@
 (defpackage :livermore/xcs-ternary-predicate
   (:use :common-lisp
         :sigma/probability
+        :sigma/truth
         :livermore/learning-parameters
         :livermore/xcs-predicate)
   (:export :?

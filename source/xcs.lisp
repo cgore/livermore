@@ -109,6 +109,10 @@
            :single-step-output
            :environment
            :reinforcement-program
+           :reset
+           :execute-action
+           :get-reward
+           :end-of-problem?
            :terminate?
            :system-prediction
            :actions-in
@@ -348,7 +352,7 @@
   ((multistep?
      :accessor multistep?
      :initform nil
-     :initarg multistep?
+     :initarg :multistep?
      :type boolean)))
 
 (defmethod single-step? ((env environment))
@@ -743,9 +747,9 @@
         (mutate (elt environment-condition i)
                 (elt situation i)
                 learning-parameters))
-      (when (probability? mutation-probability))
+      (when (probability? mutation-probability)
         (setf (action classifier)
-              (random-element possible-actions)))))
+              (random-element possible-actions))))))
 
 (defmethod insert-into-population ((classifier classifier) (xcs xcs))
   "This is the ``INSERT IN POPULATION'' function in Butz and Wilson's paper.
@@ -878,6 +882,9 @@
   (with-slots (xcs number-of-trials environment) experiment
     (with-slots (explore?) xcs
       (dotimes (trial number-of-trials)
+        ;; Alternate so odd problems explore (and learn) while even
+        ;; problems exploit; UPDATE-HISTORIES already reports both.
+        (setf explore? (evenp trial))
 	(reset environment)
 	(if explore?
           (multi-step-explore experiment)
@@ -938,7 +945,8 @@
   (with-slots (environment reinforcement-program xcs) experiment
     (if (multistep? environment)
         (multi-step-experiment experiment)
-        (single-step-experiment experiment))))
+        (single-step-experiment experiment)))
+  experiment)
 
 (defmethod start-experiments ((experiment experiment)
                               (number-of-experiments integer))

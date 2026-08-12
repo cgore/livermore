@@ -43,7 +43,8 @@
            :identical?
            :match?
            :more-general?
-           :mutate))
+           :mutate
+           :xcs-predicate))
 (in-package :livermore/xcs-predicate)
 
 
