@@ -959,13 +959,37 @@
     (should-be-true (match? (cover 'ternary-predicate sit lp) sit))
     (should-be-false (match? (cover 'ternary-predicate sit lp) '(t t t)))))
 
-(defun %test-classifier (condition action)
+(defun %test-classifier (condition action
+                         &key (prediction 0.0)
+                              (prediction-error 0.0)
+                              (fitness 0.01)
+                              (experience 0)
+                              (numerosity 1)
+                              (action-set-size 1)
+                              (time-stamp 0)
+                              (accuracy 0.0))
   (make-instance 'classifier
                  :environment-condition condition
                  :action action
-                 :prediction 0.0
-                 :prediction-error 0.0
-                 :fitness 0.01))
+                 :prediction prediction
+                 :prediction-error prediction-error
+                 :fitness fitness
+                 :experience experience
+                 :numerosity numerosity
+                 :action-set-size action-set-size
+                 :time-stamp time-stamp
+                 :accuracy accuracy))
+
+(defun %test-lp (&rest args)
+  (apply #'make-instance 'learning-parameters
+         :minimum-number-of-actions 1
+         args))
+
+(defun %hash-condition (length)
+  (loop repeat length collect (ternary-predicate :#)))
+
+(defun %specific-condition (bits)
+  (mapcar #'ternary-predicate bits))
 
 (behavior 'classifier-identity
   (let* ((lp (make-instance 'learning-parameters
@@ -1011,3 +1035,261 @@
     (should-be-true (every (lambda (c) (match? c (situation xcs)))
                            (match-set xcs)))
     (should= (length (population xcs)) (length (match-set xcs)))))
+
+(behavior 'could-subsume?
+  (let ((lp (%test-lp :minimum-subsumption-experience 20
+                      :equal-error-threshold 10.0)))
+    (should-be-false (could-subsume? (%test-classifier nil 0 :experience 0
+                                                      :prediction-error 0.0)
+                                     lp))
+    (should-be-true (could-subsume? (%test-classifier nil 0 :experience 21
+                                                     :prediction-error 5.0)
+                                    lp))
+    (should-be-false (could-subsume? (%test-classifier nil 0 :experience 21
+                                                      :prediction-error 10.0)
+                                     lp))))
+
+(behavior 'subsume?
+  (let* ((lp (%test-lp :minimum-subsumption-experience 20
+                       :equal-error-threshold 10.0))
+         (general (%test-classifier (%hash-condition 2) 0
+                                    :experience 21 :prediction-error 0.0))
+         (specific (%test-classifier (%specific-condition '(t nil)) 0
+                                     :experience 0 :prediction-error 0.0))
+         (other-action (%test-classifier (%specific-condition '(t nil)) 1
+                                         :experience 0 :prediction-error 0.0)))
+    (should-be-true (subsume? general specific lp))
+    (should-be-false (subsume? general other-action lp))
+    (should-be-false (subsume? specific general lp))))
+
+(behavior 'deletion-vote
+  (let ((lp (%test-lp :deletion-threshold 20 :fitness-fraction-threshold 0.1)))
+    (spec "inexperienced classifiers vote action-set-size * numerosity"
+      (should= 2.0
+               (deletion-vote (%test-classifier nil 0
+                                                :action-set-size 2
+                                                :numerosity 1
+                                                :experience 0
+                                                :fitness 0.01)
+                              lp 1.0)))
+    (spec "experienced low-fitness classifiers are voted up"
+      (let ((vote (deletion-vote (%test-classifier nil 0
+                                                   :action-set-size 1
+                                                   :numerosity 1
+                                                   :experience 21
+                                                   :fitness 0.01)
+                                 lp 1.0)))
+        (should= 100.0 vote)))))
+
+(behavior 'delete-from-population
+  (spec "does nothing when under the numerosity cap"
+    (let* ((lp (%test-lp :maximum-total-numerosity 10))
+           (c (%test-classifier nil 0))
+           (xcs (make-instance 'xcs :learning-parameters lp :population (list c))))
+      (delete-from-population xcs)
+      (should= 1 (length (population xcs)))))
+  (spec "decrements numerosity when the chosen classifier is a macroclassifier"
+    (let* ((lp (%test-lp :maximum-total-numerosity 1))
+           (c (%test-classifier nil 0 :numerosity 2 :fitness 1.0))
+           (xcs (make-instance 'xcs :learning-parameters lp :population (list c))))
+      (delete-from-population xcs)
+      (should= 1 (length (population xcs)))
+      (should= 1 (numerosity (first (population xcs))))))
+  (spec "removes a microclassifier when over the cap"
+    (let* ((lp (%test-lp :maximum-total-numerosity 1))
+           (c1 (%test-classifier (%specific-condition '(t)) 0 :fitness 1.0))
+           (c2 (%test-classifier (%specific-condition '(nil)) 1 :fitness 1.0))
+           (xcs (make-instance 'xcs
+                               :learning-parameters lp
+                               :population (list c1 c2))))
+      (delete-from-population xcs)
+      (should= 1 (length (population xcs))))))
+
+(behavior 'system-prediction
+  (let* ((lp (%test-lp :possible-actions '(0 1)))
+         (c0 (%test-classifier nil 0 :prediction 10.0 :fitness 1.0))
+         (c1 (%test-classifier nil 0 :prediction 0.0 :fitness 1.0))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :match-set (list c0 c1))))
+    (should= 5.0 (system-prediction xcs 0))
+    (should= 0 (system-prediction xcs 1))))
+
+(behavior 'select-action-best
+  (let* ((lp (%test-lp :possible-actions '(0 1)))
+         (low (%test-classifier nil 0 :prediction 1.0 :fitness 1.0))
+         (high (%test-classifier nil 1 :prediction 100.0 :fitness 1.0))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :match-set (list low high))))
+    (select-action-best xcs)
+    (should= 1 (action xcs))))
+
+(behavior 'generate-action-set
+  (let* ((lp (%test-lp :possible-actions '(0 1)))
+         (c0 (%test-classifier nil 0))
+         (c1 (%test-classifier nil 1))
+         (c0b (%test-classifier (%hash-condition 1) 0))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :match-set (list c0 c1 c0b)
+                             :action 0)))
+    (generate-action-set xcs)
+    (should= 2 (length (action-set xcs)))
+    (should-be-true (every (lambda (c) (eql 0 (action c))) (action-set xcs)))))
+
+(behavior 'update-set
+  (spec "the first 1/beta updates use the MAM average toward payoff"
+    (let* ((lp (%test-lp :learning-rate 0.2
+                         :action-set-subsumption? nil
+                         :possible-actions '(0 1)))
+           (c (%test-classifier nil 0
+                                :prediction 10.0
+                                :prediction-error 0.0
+                                :experience 0
+                                :fitness 0.01))
+           (xcs (make-instance 'xcs
+                               :learning-parameters lp
+                               :action-set (list c)
+                               :payoff 100.0)))
+      (update-set xcs)
+      (should= 1 (experience c))
+      (should= 100.0 (prediction c))))
+  (spec "later updates take a learning-rate step toward payoff"
+    (let* ((lp (%test-lp :learning-rate 0.2
+                         :action-set-subsumption? nil
+                         :possible-actions '(0 1)))
+           (c (%test-classifier nil 0
+                                :prediction 10.0
+                                :prediction-error 0.0
+                                :experience 10
+                                :fitness 0.01))
+           (xcs (make-instance 'xcs
+                               :learning-parameters lp
+                               :action-set (list c)
+                               :payoff 100.0)))
+      (update-set xcs)
+      (should= 11 (experience c))
+      (should= 28.0 (prediction c)))))
+
+(behavior 'update-fitness
+  (let* ((lp (%test-lp :learning-rate 0.2
+                       :equal-error-threshold 10.0
+                       :multiplier-parameter 0.1
+                       :power-parameter 5
+                       :action-set-subsumption? nil
+                       :possible-actions '(0 1)))
+         (accurate (%test-classifier nil 0
+                                     :prediction-error 0.0
+                                     :fitness 0.01
+                                     :numerosity 1))
+         (inaccurate (%test-classifier nil 0
+                                       :prediction-error 20.0
+                                       :fitness 0.01
+                                       :numerosity 1))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :action-set (list accurate inaccurate))))
+    (update-fitness xcs)
+    (should= 1 (accuracy accurate))
+    (should-be-true (< (accuracy inaccurate) 1))
+    (should-be-true (> (fitness accurate) (fitness inaccurate)))))
+
+(behavior 'insert-into-population
+  (let* ((lp (%test-lp))
+         (sit (%specific-condition '(t nil)))
+         (c1 (%test-classifier sit 0))
+         (xcs (make-instance 'xcs :learning-parameters lp :population (list c1))))
+    (insert-into-population (%test-classifier sit 0) xcs)
+    (should= 1 (length (population xcs)))
+    (should= 2 (numerosity c1))
+    (insert-into-population (%test-classifier sit 1) xcs)
+    (should= 2 (length (population xcs)))))
+
+(behavior 'two-point-crossover
+  (let* ((p (list (ternary-predicate t) (ternary-predicate nil)
+                  (ternary-predicate t) (ternary-predicate nil)))
+         (q (list (ternary-predicate nil) (ternary-predicate t)
+                  (ternary-predicate nil) (ternary-predicate t)))
+         (before (mapcar (lambda (a b) (list (value a) (value b))) p q)))
+    (two-point-crossover p q)
+    (should= 4 (length p))
+    (should= 4 (length q))
+    (should-be-true
+      (every (lambda (pair-after pair-before)
+               (null (set-exclusive-or pair-after pair-before)))
+             (mapcar (lambda (a b) (list (value a) (value b))) p q)
+             before))))
+
+(behavior 'crossover-classifiers
+  (spec "crossover-probability 0 leaves predictions alone"
+    (let* ((lp (%test-lp :crossover-probability 0.0))
+           (xcs (make-instance 'xcs :learning-parameters lp))
+           (p (%test-classifier (%specific-condition '(t nil)) 0
+                                :prediction 10.0 :prediction-error 2.0 :fitness 0.2))
+           (q (%test-classifier (%specific-condition '(nil t)) 0
+                                :prediction 20.0 :prediction-error 4.0 :fitness 0.4)))
+      (crossover p q xcs)
+      (should= 10.0 (prediction p))
+      (should= 20.0 (prediction q))))
+  (spec "crossover-probability 1 averages prediction parameters"
+    (let* ((lp (%test-lp :crossover-probability 1.0))
+           (xcs (make-instance 'xcs :learning-parameters lp))
+           (p (%test-classifier (%specific-condition '(t nil)) 0
+                                :prediction 10.0 :prediction-error 2.0 :fitness 0.2))
+           (q (%test-classifier (%specific-condition '(nil t)) 0
+                                :prediction 20.0 :prediction-error 4.0 :fitness 0.4)))
+      (crossover p q xcs)
+      (should= 15.0 (prediction p) (prediction q))
+      (should= 3.0 (prediction-error p) (prediction-error q))
+      (should= 0.3 (fitness p) (fitness q)))))
+
+(behavior 'mutate-classifier
+  (let* ((lp (%test-lp :mutation-probability 0.0 :possible-actions '(0 1)))
+         (c (%test-classifier (%specific-condition '(t nil)) 0)))
+    (mutate c '(t nil) lp)
+    (should= 0 (action c))
+    (should-eq t (value (first (environment-condition c))))
+    (should-be-null (value (second (environment-condition c))))))
+
+(behavior 'run-ga?
+  (let ((lp (%test-lp :ga-threshold 25)))
+    (spec "an empty action set does not run the GA"
+      (should-be-false
+        (run-ga? (make-instance 'xcs
+                                :learning-parameters lp
+                                :action-set nil
+                                :number-of-situations 100))))
+    (spec "a recent action set is below the GA threshold"
+      (let ((c (%test-classifier nil 0 :time-stamp 90 :numerosity 1 :fitness 1.0)))
+        (should-be-false
+          (run-ga? (make-instance 'xcs
+                                  :learning-parameters lp
+                                  :action-set (list c)
+                                  :number-of-situations 100)))))
+    (spec "an old action set is due for the GA"
+      (let ((c (%test-classifier nil 0 :time-stamp 0 :numerosity 1 :fitness 1.0)))
+        (should-be-true
+          (run-ga? (make-instance 'xcs
+                                  :learning-parameters lp
+                                  :action-set (list c)
+                                  :number-of-situations 100)))))))
+
+(behavior 'generate-covering-classifier
+  (let* ((lp (%test-lp :covering-probability 0.0
+                       :possible-actions '(0 1)
+                       :initial-prediction 10.0
+                       :initial-prediction-error 0.0
+                       :initial-fitness 0.01))
+         (existing (%test-classifier (%specific-condition '(t nil)) 0))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :situation '(t nil)
+                             :match-set (list existing)
+                             :number-of-situations 7)))
+    (let ((cover (generate-covering-classifier xcs)))
+      (should= 1 (action cover))
+      (should-be-true (match? cover '(t nil)))
+      (should= 10.0 (prediction cover))
+      (should= 7 (time-stamp cover))
+      (should= 1 (numerosity cover)))))
