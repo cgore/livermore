@@ -110,7 +110,7 @@
           x)
   (let ((i (integer-range 1 (length x))))
     (+ (sum (mapcar (lambda (ii xi)
-                      (* ii (expt 4 xi)))
+                      (* ii (expt xi 4)))
                     i x))
        (gauss 0 1))))
 
@@ -141,11 +141,11 @@
             (sum (loop for j from 1 to 25 collect
                        (/ 1 (+ j
                                (sum (loop for i from 1 to 2 collect
-                                          (expt 6.0
-                                                (- (nth (1- i) x)
+                                          (expt (- (nth (1- i) x)
                                                    (aref f5a
                                                          (1- i)
-                                                         (1- j))))))))))))))
+                                                         (1- j)))
+                                                6)))))))))))
 
 (defun f6 (x)
   "This function, F6, is the Rastrigin function."
@@ -242,6 +242,44 @@
 (behavior 'f3
   (should= 0 (f3 '(0.0 0.0 0.0 0.0 0.0)))
   (should= 5 (f3 '(1.9 1.1 1.0 1.5 1.2))))
+
+(behavior 'f4
+  (spec "sum i xi^4 plus unit Gaussian noise"
+    (let ((zeros (make-list 30 :initial-element 0.0))
+          (ones (make-list 30 :initial-element 1.0)))
+      (should-be-a 'float (f4 zeros))
+      (should-be-a 'float (f4 ones))
+      (should-be-true (< (abs (f4 zeros)) 8.0))
+      (should-be-true (< (abs (- (f4 ones) 465.0)) 8.0)))))
+
+(behavior 'f5
+  (spec "Shekel foxholes: 1 / (0.002 + sum_j 1/(j + sum_i (xi - aij)^6))"
+    (let* ((a (make-array
+               '(2 25)
+               :initial-contents
+               '((-32 -16 0 16 32 -32 -16 0 16 32 -32 -16 0 16 32
+                  -32 -16 0 16 32 -32 -16 0 16 32)
+                 (-32 -32 -32 -32 -32 -16 -16 -16 -16 -16
+                    0   0   0   0   0  16  16  16  16  16
+                   32  32  32  32  32))))
+           (expected (lambda (x)
+                       (/ 1.0
+                          (+ 0.002
+                             (loop for j from 1 to 25
+                                   sum (/ 1.0
+                                          (+ j
+                                             (expt (- (first x)
+                                                      (aref a 0 (1- j)))
+                                                   6)
+                                             (expt (- (second x)
+                                                      (aref a 1 (1- j)))
+                                                   6)))))))))
+      (should= (funcall expected '(-32.0 -32.0)) (f5 '(-32.0 -32.0)))
+      (should= (funcall expected '(0.0 0.0)) (f5 '(0.0 0.0)))
+      (should= (funcall expected '(16.0 32.0)) (f5 '(16.0 32.0)))))
+  (spec "the first foxhole is a local minimum near 1/1.002"
+    (should-be-true (< (abs (- (f5 '(-32.0 -32.0)) (/ 1.0 1.002))) 1.0e-5))
+    (should-be-true (< (f5 '(-32.0 -32.0)) (f5 '(0.0 0.0))))))
 
 (behavior 'rastrigin
   (spec "the origin is a global minimum of 0"
