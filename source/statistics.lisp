@@ -34,7 +34,11 @@
 
 
 (defpackage :livermore/statistics
-  (:use :common-lisp :sigma/control :sigma/numeric :sigma/sequence)
+  (:use :common-lisp
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric
+        :sigma/sequence)
   (:documentation "This contains several useful statistical functions.")
   (:export :arithmetic-mean
            :sample-variance
@@ -130,3 +134,28 @@
                         :key key :start start :end end)
           (minimum data :key key :start start :end end)
           (maximum data :key key :start start :end end)))
+
+(behavior 'arithmetic-mean
+  (should= 2 (arithmetic-mean '(1 2 3)))
+  (should= 2 (arithmetic-mean #(1 2 3)))
+  (should-be-null (arithmetic-mean '()))
+  (should= 4 (arithmetic-mean '(1 3 5 7) :start 1 :end 3))
+  (should= 20 (arithmetic-mean '((10) (20) (30)) :key #'first)))
+
+(behavior 'sample-variance
+  (should= 0 (sample-variance '(4 4 4)))
+  (should= 2/3 (sample-variance '(1 2 3)))
+  (should-be-null (sample-variance '())))
+
+(behavior 'unbiased-sample-variance
+  (should= 0 (unbiased-sample-variance '(4 4 4)))
+  (should= 1 (unbiased-sample-variance '(1 2 3)))
+  (should-be-null (unbiased-sample-variance '(1))))
+
+(behavior 'sample-standard-deviation
+  (should= 0 (sample-standard-deviation '(4 4 4)))
+  (should= 1 (sample-standard-deviation '(1 3))))
+
+(behavior 'unbiased-sample-standard-deviation
+  (should= 0 (unbiased-sample-standard-deviation '(4 4 4)))
+  (should= 1 (unbiased-sample-standard-deviation '(1 2 3))))

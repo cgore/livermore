@@ -33,7 +33,8 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (defpackage :livermore/csv
-  (:use :common-lisp)
+  (:use :common-lisp
+        :sigma/behave)
   (:export :*separator*
            :*quote*
            :character-list-from-stream
@@ -117,3 +118,22 @@
                           :direction :input
                           :if-does-not-exist :error)
     (parse-stream stream)))
+
+(behavior 'character-list-from-stream
+  (should-equal '(#\a #\b #\c)
+                (character-list-from-stream (make-string-input-stream "abc"))))
+
+(behavior 'parse-character-list
+  (spec "newline-terminated rows of unquoted fields"
+    (should-equal '(("a" "b") (1 2))
+                  (parse-character-list (coerce "a,b
+1,2
+" 'list))))
+  (spec "numbers are read as numbers"
+    (should-equal '((1 2.5))
+                  (parse-character-list (coerce "1,2.5
+" 'list))))
+  (spec "quoted fields may contain the separator"
+    (should-equal '(("hello, world" 2))
+                  (parse-character-list (coerce "\"hello, world\",2
+" 'list)))))

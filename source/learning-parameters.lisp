@@ -34,7 +34,8 @@
 
 
 (defpackage :livermore/learning-parameters
-  (:use :common-lisp)
+  (:use :common-lisp
+        :sigma/behave)
   (:export :action-set-subsumption?
            :covering-probability
            :crossover-probability
@@ -222,3 +223,36 @@
     :documentation
     "This is a list of all the possible actions available to the XCS."))
   (:documentation "These are all of the learning parameters used by the XCS."))
+
+(behavior 'learning-parameters
+  (let ((lp (make-instance 'learning-parameters
+                           :minimum-number-of-actions 2)))
+    (should-be-a 'learning-parameters lp)
+    (spec "Butz and Wilson defaults"
+      (should= 100 (maximum-total-numerosity lp))
+      (should= 0.1 (learning-rate lp))
+      (should= 0.1 (multiplier-parameter lp))
+      (should= 10.0 (equal-error-threshold lp))
+      (should= 5 (power-parameter lp))
+      (should= 0.71 (discount-factor lp))
+      (should= 50 (ga-threshold lp))
+      (should= 0.5 (crossover-probability lp))
+      (should= 0.025 (mutation-probability lp))
+      (should= 20 (deletion-threshold lp))
+      (should= 0.1 (fitness-fraction-threshold lp))
+      (should= 20 (minimum-subsumption-experience lp))
+      (should= 0.33 (covering-probability lp))
+      (should= 0.001 (initial-prediction lp))
+      (should= 0.001 (initial-prediction-error lp))
+      (should= 0.001 (initial-fitness lp))
+      (should= 0.5 (exploration-probability lp))
+      (should= 50 (maximum-number-of-steps lp))
+      (should-eq t (ga-subsumption? lp))
+      (should-eq t (action-set-subsumption? lp))
+      (should-equal '(nil t) (possible-actions lp)))
+    (spec "initargs override defaults"
+      (should= 2 (minimum-number-of-actions lp))
+      (should= 0.2 (learning-rate
+                    (make-instance 'learning-parameters
+                                   :learning-rate 0.2
+                                   :minimum-number-of-actions 1))))))

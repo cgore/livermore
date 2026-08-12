@@ -34,6 +34,7 @@
 
 (defpackage :livermore/xcs-predicate
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :livermore/learning-parameters)
   (:export :cover
@@ -119,3 +120,17 @@ This is the core operation used by GENERATE-COVERING-CLASSIFIER."))
   "Default: error out. Subclasses must provide a proper implementation."
   (error "MUTATE must be specialized for predicate type ~A on situation ~A"
          (type-of p) situation))
+
+(behavior 'xcs-predicate
+  (let ((p (make-instance 'xcs-predicate))
+        (lp (make-instance 'learning-parameters :minimum-number-of-actions 1)))
+    (should-be-a 'xcs-predicate p)
+    (should-be-false (covering? p))
+    (should= 0 (covering-score p lp))
+    (should-be-false (more-general? p p))
+    (should-be-a 'xcs-predicate (duplicate p))
+    (spec "MATCH? and MUTATE have no useful default"
+      (should-be-true
+        (nth-value 1 (ignore-errors (match? p t))))
+      (should-be-true
+        (nth-value 1 (ignore-errors (mutate p t lp)))))))

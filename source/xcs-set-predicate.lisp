@@ -35,6 +35,7 @@
 
 (defpackage :livermore/xcs-set-predicate
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :sigma/probability
         :sigma/random
@@ -219,3 +220,52 @@
     1
     (/ (length (members set-predicate))
        (length (possible-members set-predicate)))))
+
+(behavior 'set-predicate
+  (let* ((space '(a b c))
+         (covering (make-instance 'set-predicate
+                                  :possible-members space
+                                  :covering? t))
+         (ab (make-instance 'set-predicate
+                            :members '(a b)
+                            :possible-members space))
+         (a (make-instance 'set-predicate
+                           :members '(a)
+                           :possible-members space))
+         (full (make-instance 'set-predicate
+                              :members '(a b c)
+                              :possible-members space)))
+    (spec "match?"
+      (should-be-true (match? covering 'z))
+      (should-be-true (match? ab 'a))
+      (should-be-true (match? ab 'b))
+      (should-be-false (match? ab 'c))
+      (should-be-true (match? covering a))
+      (should-be-true (match? ab a))
+      (should-be-false (match? a ab)))
+    (spec "more-general?"
+      (should-be-true (more-general? covering a))
+      (should-be-true (more-general? ab a))
+      (should-be-false (more-general? a ab))
+      (should-be-false (more-general? a covering)))
+    (spec "universal? and covering-score"
+      (should-be-true (universal? covering))
+      (should-be-true (universal? full))
+      (should-be-false (universal? a))
+      (should-be-null (non-members covering))
+      (should-equal '(c) (non-members ab))
+      (let ((lp (make-instance 'learning-parameters :minimum-number-of-actions 1)))
+        (should= 1 (covering-score covering lp))
+        (should= 1 (covering-score full lp))
+        (should= 1/3 (covering-score a lp))))
+    (spec "identical? vs equivalent?"
+      (should-be-true (identical? a (make-instance 'set-predicate
+                                                   :members '(a)
+                                                   :possible-members space)))
+      (should-be-false (identical? covering full))
+      (should-be-true (equivalent? covering full)))
+    (spec "duplicate shares the possible-members list"
+      (let ((copy (duplicate ab)))
+        (should-be-true (identical? ab copy))
+        (should-not-eq ab copy)
+        (should-eq (possible-members ab) (possible-members copy))))))

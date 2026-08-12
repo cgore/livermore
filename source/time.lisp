@@ -34,7 +34,10 @@
 
 
 (defpackage :livermore/time
-  (:use :common-lisp :sigma/control :sigma/string)
+  (:use :common-lisp
+        :sigma/behave
+        :sigma/control
+        :sigma/string)
   (:export :decoded-time-list
            :get-decoded-time-list
            :month-to-number
@@ -305,3 +308,58 @@
           (time-year time) (time-month time) (time-date time)))
 
 (function-alias 'yyyymmdd-string 'iso-short-date-string)
+
+(behavior 'month-to-number
+  (should= 1 (month-to-number "jan"))
+  (should= 1 (month-to-number "January"))
+  (should= 9 (month-to-number "sept"))
+  (should= 12 (month-to-number "DECEMBER"))
+  (should-be-null (month-to-number "not-a-month")))
+
+(behavior 'month-name
+  (should-string= "January" (month-name 1))
+  (should-string= "March" (month-name 3))
+  (should-string= "December" (month-name 12)))
+
+(behavior 'month-short-name
+  (should-string= "Jan" (month-short-name 1))
+  (should-string= "Mar" (month-short-name 3))
+  (should-string= "Dec" (month-short-name 12)))
+
+(behavior 'decoded-time-accessors
+  (let ((time '(5 10 15 20 3 2020 6 nil 0)))
+    (should= 5 (time-second time))
+    (should= 10 (time-minute time))
+    (should= 15 (time-hour time))
+    (should= 20 (time-date time))
+    (should= 3 (time-month time))
+    (should= 2020 (time-year time))
+    (should= 1 (time-quarter time))
+    (should-string= "March" (time-month-name time))
+    (should-string= "Mar" (time-month-short-name time))))
+
+(behavior 'time-quarter
+  (should= 1 (time-quarter '(0 0 0 1 1 2020 2 nil 0)))
+  (should= 1 (time-quarter '(0 0 0 1 3 2020 6 nil 0)))
+  (should= 2 (time-quarter '(0 0 0 1 4 2020 2 nil 0)))
+  (should= 3 (time-quarter '(0 0 0 1 7 2020 2 nil 0)))
+  (should= 4 (time-quarter '(0 0 0 1 10 2020 3 nil 0))))
+
+(behavior 'date-string-parsers
+  (let ((zone 0))
+    (spec "YYYY-MM-DD and DD-Mon-YYYY parse to the same instant"
+      (should= (yyyy-mm-dd-to-universal-time "2020-3-15" :time-zone zone)
+               (dd-month-yyyy-to-universal-time "15-Mar-2020" :time-zone zone)))
+    (spec "date-string-to-universal-time dispatches on the middle field"
+      (should= (yyyy-mm-dd-to-universal-time "2020-03-15" :time-zone zone)
+               (date-string-to-universal-time "2020-03-15" :time-zone zone))
+      (should= (dd-month-yyyy-to-universal-time "15-Mar-2020" :time-zone zone)
+               (date-string-to-universal-time "15-Mar-2020" :time-zone zone)))))
+
+(behavior 'date-formatters
+  (let ((time '(0 0 0 15 3 2020 6 nil 0)))
+    (should-string= "2020" (yyyy-string time))
+    (should-string= "1Q2020" (qqyyyy-string time))
+    (should-string= "Q1-2020" (qq-yyyy-string time))
+    (should-string= "Mar-2020" (mon-yyyy-string time))
+    (should-string= "15-Mar-2020" (dd-mon-yyyy-string time))))

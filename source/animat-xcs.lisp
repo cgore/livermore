@@ -36,6 +36,7 @@
   (:use :common-lisp
         :livermore/xcs
         :livermore/animat-xcs-parameters
+        :sigma/behave
         :sigma/numeric
         :sigma/sequence
         :sigma/time-series)
@@ -280,3 +281,54 @@
                        :reinforcement-program *animat-analyzer*
                        :xcs *animat-xcs*))
   (start *animat-experiment*))
+
+(behavior 'sensor-code
+  (should-equal '(t t nil) (sensor-code :F))
+  (should-equal '(t t t) (sensor-code :G))
+  (should-equal '(nil t nil) (sensor-code :O))
+  (should-equal '(nil t t) (sensor-code :Q))
+  (should-equal '(nil nil nil) (sensor-code :*)))
+
+(behavior 'animat-analyzer
+  (let* ((maze (asdf:system-relative-pathname
+                "livermore" "data/animat-data/easy.txt"))
+         (analyzer (make-instance 'animat-analyzer :file-name maze)))
+    (spec "loads easy.txt as a 3x4 corridor"
+      (should= 3 (world-width analyzer))
+      (should= 4 (world-height analyzer))
+      (should-eq :O (aref (world analyzer) 0 0))
+      (should-eq :* (aref (world analyzer) 1 1))
+      (should-eq :* (aref (world analyzer) 1 2))
+      (should-eq :F (aref (world analyzer) 1 3))
+      (should-be-true (multistep? analyzer)))
+    (spec "reset places the animat on an empty cell"
+      (reset analyzer)
+      (should-eq :* (aref (world analyzer)
+                          (x-location analyzer)
+                          (y-location analyzer)))
+      (should= 1 (number-of-problems analyzer)))
+    (spec "situation is 24 sensor bits"
+      (setf (x-location analyzer) 1
+            (y-location analyzer) 1)
+      (let ((sit (get-situation analyzer)))
+        (should= 24 (length sit))
+        (should-equal sit (current-situation analyzer))))
+    (spec "rocks block movement, open cells and food do not"
+      (setf (x-location analyzer) 1
+            (y-location analyzer) 1
+            (current-step-count analyzer) 0)
+      (execute-action analyzer 0) ; north into a rock
+      (should= 1 (x-location analyzer))
+      (should= 1 (y-location analyzer))
+      (should= 1 (current-step-count analyzer))
+      (execute-action analyzer 4) ; south onto the other empty cell
+      (should= 1 (x-location analyzer))
+      (should= 2 (y-location analyzer)))
+    (spec "food is the end of the problem and pays 1000"
+      (setf (x-location analyzer) 1
+            (y-location analyzer) 2)
+      (should-be-false (end-of-problem? analyzer))
+      (should= 0 (get-reward analyzer))
+      (setf (y-location analyzer) 3)
+      (should-be-true (end-of-problem? analyzer))
+      (should= 1000 (get-reward analyzer)))))

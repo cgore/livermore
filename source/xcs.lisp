@@ -40,6 +40,7 @@
         :livermore/xcs-predicate
         :livermore/xcs-set-predicate
         :livermore/xcs-ternary-predicate
+        :sigma/behave
         :sigma/control
         :sigma/numeric
         :sigma/os
@@ -956,3 +957,64 @@
 (defmethod main ((experiment experiment) &optional (number-of-experiments 1))
   (with-slots (environment) experiment
     (start-experiments environment number-of-experiments)))
+
+(behavior 'match?-sequences
+  (let ((lp (make-instance 'learning-parameters
+                           :covering-probability 0.0
+                           :minimum-number-of-actions 1))
+        (sit '(t nil t)))
+    (should-be-true (match? (cover 'ternary-predicate sit lp) sit))
+    (should-be-false (match? (cover 'ternary-predicate sit lp) '(t t t)))))
+
+(defun %test-classifier (condition action)
+  (make-instance 'classifier
+                 :environment-condition condition
+                 :action action
+                 :prediction 0.0
+                 :prediction-error 0.0
+                 :fitness 0.01))
+
+(behavior 'classifier-identity
+  (let* ((lp (make-instance 'learning-parameters
+                            :covering-probability 0.0
+                            :minimum-number-of-actions 1))
+         (sit '(t nil))
+         (c1 (%test-classifier (cover 'ternary-predicate sit lp) 0))
+         (c2 (%test-classifier (cover 'ternary-predicate sit lp) 0))
+         (c3 (%test-classifier (cover 'ternary-predicate sit lp) 1)))
+    (should-be-true (identical? c1 c2))
+    (should-be-false (identical? c1 c3))
+    (should-be-true (match? c1 sit))
+    (let ((copy (duplicate c1)))
+      (should-be-true (identical? c1 copy))
+      (should-not-eq c1 copy))))
+
+(behavior 'actions-in
+  (let ((actions (actions-in (list (%test-classifier nil 0)
+                                   (%test-classifier nil 1)
+                                   (%test-classifier nil 0)))))
+    (should= 2 (length actions))
+    (should-be-true (member 0 actions))
+    (should-be-true (member 1 actions))))
+
+(behavior 'more-general?-sequences
+  (let ((general (list (ternary-predicate :#) (ternary-predicate :#)))
+        (specific (list (ternary-predicate t) (ternary-predicate nil))))
+    (should-be-true (more-general? general specific))
+    (should-be-false (more-general? specific general))
+    (should-be-false (more-general? specific specific))))
+
+(behavior 'generate-match-set
+  (let* ((lp (make-instance 'learning-parameters
+                            :covering-probability 0.0
+                            :minimum-number-of-actions 2
+                            :possible-actions '(0 1)
+                            :maximum-total-numerosity 50))
+         (xcs (make-instance 'xcs
+                             :learning-parameters lp
+                             :situation '(t nil t))))
+    (generate-match-set xcs)
+    (should= 2 (length (actions-in (match-set xcs))))
+    (should-be-true (every (lambda (c) (match? c (situation xcs)))
+                           (match-set xcs)))
+    (should= (length (population xcs)) (length (match-set xcs)))))

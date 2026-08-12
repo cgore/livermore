@@ -34,6 +34,7 @@
 
 (defpackage :livermore/xcsr
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :sigma/probability
         :sigma/random
@@ -211,6 +212,39 @@
   (with-slots (lower upper) range-predicate
     (abs (/ (- lower upper)
             (apply #'- (problem-range parameters))))))
+
+(behavior 'range-predicate
+  (let ((unit (make-instance 'range-predicate :lower 0.0 :upper 1.0))
+        (wide (make-instance 'range-predicate :lower -1.0 :upper 2.0))
+        (point (make-instance 'range-predicate :lower 0.5 :upper 0.5)))
+    (spec "spread and center"
+      (should= 0.5 (spread unit))
+      (should= 0.5 (center unit))
+      (should= 0.0 (spread point))
+      (should= 0.5 (center point)))
+    (spec "match? a number"
+      (should-be-true (match? unit 0.0))
+      (should-be-true (match? unit 0.5))
+      (should-be-true (match? unit 1.0))
+      (should-be-false (match? unit -0.1))
+      (should-be-false (match? unit 1.1)))
+    (spec "match? another range"
+      (should-be-true (match? wide unit))
+      (should-be-true (match? unit point))
+      (should-be-false (match? point unit)))
+    (spec "more-general?"
+      (should-be-true (more-general? wide unit))
+      (should-be-true (more-general? unit point))
+      (should-be-false (more-general? unit unit))
+      (should-be-false (more-general? point unit)))
+    (spec "identical? and duplicate"
+      (should-be-true (identical? unit (make-instance 'range-predicate
+                                                      :lower 0.0
+                                                      :upper 1.0)))
+      (should-be-false (identical? unit wide))
+      (let ((copy (duplicate unit)))
+        (should-be-true (identical? unit copy))
+        (should-not-eq unit copy)))))
 
 ;; TODO: In Wilson's XCSR paper, he allows crossover to occur in the middle of an
 ;; allele, since he represented the environment condition as a list of the form
