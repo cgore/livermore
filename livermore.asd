@@ -65,6 +65,20 @@
   :homepage "https://github.com/cgore/livermore"
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
+
+  ;; Specs live in the sources as BEHAVIOR/SHOULD forms and run at load time.
+  ;; TEST-OP reloads every source file so those top-level assertions run again.
+  :in-order-to ((test-op (load-op "livermore")))
+  :perform (test-op (operation system)
+                    (declare (ignore operation))
+                    (labels ((reload (component)
+                               (typecase component
+                                 (cl-source-file
+                                  (load (component-pathname component)))
+                                 (parent-component
+                                  (map nil #'reload (component-children component))))))
+                      (reload system)))
+
   :components ((:module "source"
                 :components ((:file "animat-xcs-parameters"     :depends-on ("learning-parameters"
                                                                              "xcs"))
