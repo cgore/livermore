@@ -34,7 +34,8 @@
 
 
 (defpackage :livermore/multiplexer
-  (:use :common-lisp)
+  (:use :common-lisp
+        :sigma/behave)
   (:export :random-bit
            :random-bit-vector
            :binary-decoder
@@ -78,7 +79,7 @@
   (assert (and (plusp address-width)
                (= (length bits)
                   (multiplexer-length address-width))))
-  (elt (reverse (subseq bits address-width))
+  (elt (subseq bits address-width)
        (binary-decoder (subseq bits 0 address-width))))
 
 (defmethod truth-vector ((bvec bit-vector))
@@ -86,3 +87,51 @@
     (dotimes (i (length tvec) tvec)
       (setf (aref tvec i)
             (if (zerop (bit bvec i)) nil t)))))
+
+(behavior 'random-bit
+  (dotimes (i 20)
+    (should-be-true (member (random-bit) '(0 1)))))
+
+(behavior 'random-bit-vector
+  (let ((v (random-bit-vector 8)))
+    (should-be-a 'simple-bit-vector v)
+    (should= 8 (length v))
+    (should-be-true (every (lambda (b) (or (= b 0) (= b 1))) v))))
+
+(behavior 'binary-decoder
+  (should= 0 (binary-decoder '()))
+  (should= 0 (binary-decoder '(nil)))
+  (should= 0 (binary-decoder '(0)))
+  (should= 1 (binary-decoder '(t)))
+  (should= 1 (binary-decoder '(1)))
+  (should= 2 (binary-decoder '(t nil)))
+  (should= 3 (binary-decoder '(t t)))
+  (should= 3 (binary-decoder #*11))
+  (spec "treats any non-zero, non-NIL element as a 1-bit"
+    (should= 1 (binary-decoder '(5)))))
+
+(behavior 'multiplexer-length
+  (should= 3 (multiplexer-length 1))
+  (should= 6 (multiplexer-length 2))
+  (should= 11 (multiplexer-length 3)))
+
+(behavior 'multiplexer
+  (spec "a 3-multiplexer: address 0 selects the first data bit, address 1 the second"
+    (should= 0 (multiplexer 1 #*000))
+    (should= 0 (multiplexer 1 #*001))
+    (should= 1 (multiplexer 1 #*010))
+    (should= 1 (multiplexer 1 #*011))
+    (should= 0 (multiplexer 1 #*100))
+    (should= 1 (multiplexer 1 #*101))
+    (should= 0 (multiplexer 1 #*110))
+    (should= 1 (multiplexer 1 #*111)))
+  (spec "the 6-multiplexer docstring example: address 3 selects the last data bit"
+    (should= 1 (multiplexer 2 #*110001)))
+  (spec "address 0 selects the first data bit"
+    (should= 1 (multiplexer 2 #*001000))
+    (should= 0 (multiplexer 2 #*000001))))
+
+(behavior 'truth-vector
+  (should-equalp #(nil) (truth-vector #*0))
+  (should-equalp #(t) (truth-vector #*1))
+  (should-equalp #(t nil t) (truth-vector #*101)))
