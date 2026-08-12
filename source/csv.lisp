@@ -100,7 +100,12 @@
                        (setf quoted? nil))
                       (t (push character current-column)))
                 (setf last-character character))
-            list))
+            list)
+      ;; A final row with no trailing newline is still a row.
+      (when current-column
+        (push-column))
+      (when current-row
+        (push-row)))
     (reverse result)))
 
 (defun parse-stream (stream)
@@ -136,4 +141,12 @@
   (spec "quoted fields may contain the separator"
     (should-equal '(("hello, world" 2))
                   (parse-character-list (coerce "\"hello, world\",2
-" 'list)))))
+" 'list))))
+  (spec "the last row is kept even without a trailing newline"
+    (should-equal '(("a" "b") (1 2))
+                  (parse-character-list (coerce "a,b
+1,2" 'list)))
+    (should-equal '((1 2.5))
+                  (parse-character-list (coerce "1,2.5" 'list)))
+    (should-equal '(("hello, world" 2))
+                  (parse-character-list (coerce "\"hello, world\",2" 'list)))))
