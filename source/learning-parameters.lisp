@@ -192,7 +192,7 @@
    (maximum-number-of-steps
     :accessor maximum-number-of-steps
     :initform 50
-    :initarg maximum-number-of-steps
+    :initarg :maximum-number-of-steps
     :type integer
     :documentation
     "This is the maximum number of steps that a multistep problem can spend
@@ -255,4 +255,8 @@
       (should= 0.2 (learning-rate
                     (make-instance 'learning-parameters
                                    :learning-rate 0.2
-                                   :minimum-number-of-actions 1))))))
+                                   :minimum-number-of-actions 1)))
+      (should= 10 (maximum-number-of-steps
+                   (make-instance 'learning-parameters
+                                  :maximum-number-of-steps 10
+                                  :minimum-number-of-actions 1))))))
