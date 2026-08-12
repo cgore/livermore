@@ -497,13 +497,6 @@
                 (deletef classifier population :test 'identical?))
               (return-from delete-from-population))))))))
 
-(defmethod cover ((predicate-type symbol)
-                  situation
-                  (learning-parameters learning-parameters))
-  "This method generates a predicate of the specified type that covers the
-  given element of the situation."
-  (cover (make-instance predicate-type) situation learning-parameters))
-
 (defmethod generate-covering-classifier ((xcs xcs))
   "This is the ``GENERATE COVERING CLASSIFIER'' function in Butz and Wilson's
   paper.  It creates a classifier which matches the current situation."
