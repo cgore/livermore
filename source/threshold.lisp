@@ -33,21 +33,41 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (defpackage :livermore/threshold
-  (:use :common-lisp :sigma/sequence)
+  (:use :common-lisp
+        :sigma/behave
+        :sigma/sequence)
   (:export :threshold-indicator))
 (in-package :livermore/threshold)
+
+(defgeneric threshold-indicator (threshold instance)
+  (:documentation
+   "True iff INSTANCE meets or exceeds THRESHOLD.
+
+A number meets a number when INSTANCE >= THRESHOLD. A list or vector meets
+another of the same length when every coordinate satisfies that same
+comparison."))
 
 (defmethod threshold-indicator ((threshold list) (instance list))
   (assert (= (length threshold)
              (length instance)))
-  (mapcar #'(lambda (threshold instance)
-              (when (< instance threshold)
-                (return-from threshold-indicator nil)))
-          threshold instance)
-  t)
+  (every #'>= instance threshold))
 
 (defmethod threshold-indicator ((threshold vector) (instance vector))
   (threshold-indicator (vector-to-list threshold) (vector-to-list instance)))
 
 (defmethod threshold-indicator ((threshold number) (instance number))
-  (> instance threshold))
+  (>= instance threshold))
+
+(behavior 'threshold-indicator
+  (spec "a number meets a threshold at or above it"
+    (should-be-true (threshold-indicator 5 6))
+    (should-be-true (threshold-indicator 5 5))
+    (should-be-false (threshold-indicator 5 4)))
+  (spec "a list meets a threshold when every coordinate is at or above it"
+    (should-be-true (threshold-indicator '(1 2) '(2 3)))
+    (should-be-true (threshold-indicator '(1 2) '(2 2)))
+    (should-be-false (threshold-indicator '(1 2) '(0 3))))
+  (spec "vectors use the same rule as lists"
+    (should-be-true (threshold-indicator #(1 2) #(2 3)))
+    (should-be-true (threshold-indicator #(1 2) #(2 2)))
+    (should-be-false (threshold-indicator #(1 2) #(2 1)))))
