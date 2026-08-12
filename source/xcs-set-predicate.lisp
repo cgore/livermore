@@ -135,9 +135,12 @@
 
 (defmethod more-general? ((general set-predicate)
                           (specific set-predicate))
-  (and (not (covering? specific))
-       (or (covering? general)
-           (subsetp (members specific) (members general)))))
+  "True iff GENERAL matches everything SPECIFIC matches and they are not
+   functionally equivalent.  Identical sets and two universal predicates
+   (covering or an explicit listing of every possible member) are not
+   strictly more general than each other."
+  (and (match? general specific)
+       (not (equivalent? general specific))))
 
 (defmethod cover ((set-predicate set-predicate)
                   (situations list)
@@ -243,11 +246,17 @@
       (should-be-true (match? covering a))
       (should-be-true (match? ab a))
       (should-be-false (match? a ab)))
-    (spec "more-general?"
+    (spec "more-general? is strict"
       (should-be-true (more-general? covering a))
       (should-be-true (more-general? ab a))
+      (should-be-true (more-general? covering ab))
       (should-be-false (more-general? a ab))
-      (should-be-false (more-general? a covering)))
+      (should-be-false (more-general? a covering))
+      (should-be-false (more-general? a a))
+      (should-be-false (more-general? ab ab))
+      (should-be-false (more-general? covering covering))
+      (should-be-false (more-general? covering full))
+      (should-be-false (more-general? full covering)))
     (spec "universal? and covering-score"
       (should-be-true (universal? covering))
       (should-be-true (universal? full))
