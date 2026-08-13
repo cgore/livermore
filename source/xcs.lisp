@@ -605,10 +605,11 @@
                                         (equal action (action classifier)))
                                     match-set))))
 
-(defmethod most-general-subsumers ((xcs xcs))
+(defmethod most-general-subsumers ((xcs xcs) &optional action-set)
   "This function returns the most general classifiers that are capable of
   subsumption and is used in the DO-ACTION-SET-SUBSUMPTION function."
-  (with-slots (learning-parameters action-set) xcs
+  (let ((action-set (or action-set (action-set xcs)))
+        (learning-parameters (learning-parameters xcs)))
     (flet ((subsumer? (classifier)
                       (could-subsume? classifier learning-parameters))
            (key (classifier)
@@ -619,24 +620,32 @@
                          (more-general? best classifier)))
           (when best (remove-if-not #'selected action-set)))))))
 
-(defmethod do-action-set-subsumption ((xcs xcs))
+(defmethod do-action-set-subsumption ((xcs xcs) &optional action-set)
   "This is the function ``DO ACTION SET SUBSUMPTION'' function in Butz and
   Wilson's paper.  The function chooses the subsumer from the most general
   classifiers capable of subsumption and then subsumes all possible classifiers
   in to the subsumer."
-  (let ((subsumer (random-element (most-general-subsumers xcs))))
+  (let* ((set (or action-set (action-set xcs)))
+         (subsumer (random-element (most-general-subsumers xcs set))))
     (when subsumer
-      (dolist (classifier (action-set xcs))
-        (when (more-general? subsumer classifier)
+      (let ((victims (remove-if-not (lambda (classifier)
+                                      (more-general? subsumer classifier))
+                                    set)))
+        (dolist (classifier victims)
           (incf (numerosity subsumer) (numerosity classifier))
-          (deletef classifier (action-set xcs) :test 'identical?)
-          (deletef classifier (population xcs) :test 'identical?))))))
+          (deletef classifier (population xcs) :test 'identical?))
+        (let ((new-set (set-difference set victims :test 'identical?)))
+          (when (eq set (action-set xcs))
+            (setf (action-set xcs) new-set))
+          (when (eq set (previous-action-set xcs))
+            (setf (previous-action-set xcs) new-set)))))))
 
-(defmethod update-fitness ((xcs xcs))
+(defmethod update-fitness ((xcs xcs) &optional action-set)
   "This is the ``UPDATE FITNESS'' function in Butz and Wilson's paper.
   The fitness of all of the classifiers in the action set are updated in a
   normalized manner."
-  (with-slots (learning-parameters action-set) xcs
+  (let ((action-set (or action-set (action-set xcs)))
+        (learning-parameters (learning-parameters xcs)))
     (with-slots (equal-error-threshold
                   learning-rate
                   multiplier-parameter
@@ -686,9 +695,9 @@
                      (incf action-set-size (* learning-rate
                                               (- sum-of-numerosities
                                                  action-set-size))))))))
-      (update-fitness xcs)
+      (update-fitness xcs action-set)
       (when action-set-subsumption?
-        (do-action-set-subsumption xcs)))))
+        (do-action-set-subsumption xcs action-set)))))
 
 (defmethod two-point-crossover ((p sequence) (q sequence))
   "This is basic random two-point crossover.  The two points are allowed to
@@ -719,10 +728,10 @@
               (fitness p) new-fitness
               (fitness q) new-fitness)))))
 
-(defmethod select-offspring ((xcs xcs))
+(defmethod select-offspring ((xcs xcs) &optional action-set)
   "This is the ``SELECT OFFSPRING'' function in Butz and Wilson's paper.
   It uses a roulette method of selection."
-  (with-slots (action-set) xcs
+  (let ((action-set (or action-set (action-set xcs))))
     (let ((choice-point (* (random 1.0) (sum action-set :key 'fitness)))
           (fitness-sum 0.0))
       (dolist (classifier action-set)
@@ -767,9 +776,10 @@
   (more-general? (environment-condition general)
                  (environment-condition specific)))
 
-(defmethod run-ga? ((xcs xcs))
+(defmethod run-ga? ((xcs xcs) &optional action-set)
   "This predicate decides if we should run the GA or not."
-  (with-slots (learning-parameters action-set) xcs
+  (let ((action-set (or action-set (action-set xcs)))
+        (learning-parameters (learning-parameters xcs)))
     (and (plusp (length action-set))
          (< (GA-threshold learning-parameters)
             (- (number-of-situations xcs)
@@ -784,33 +794,32 @@
   action set [A] in order to induce niching."
   (with-slots (learning-parameters population) xcs
     (with-slots (GA-subsumption?) learning-parameters
-      (when (run-ga? xcs)
-	(when (eql action-set nil)
-	  (setf action-set (action-set xcs)))
-        (dolist (classifier action-set)
-          (setf (time-stamp classifier)
-                (number-of-situations xcs)))
-        (let* ((parent-1 (select-offspring xcs))
-               (parent-2 (select-offspring xcs))
-               (child-1 (duplicate parent-1))
-               (child-2 (duplicate parent-2)))
-          (assert (and child-1 child-2))
-          (setf (numerosity child-1) 1
-                (numerosity child-2) 1
-                (experience child-1) 0
-                (experience child-2) 0)
-          (crossover child-1 child-2 xcs)
-          (dolist (child (list child-1 child-2))
-            (multf (fitness child) 0.1)
-            (mutate child situation learning-parameters)
-            (cond ((and GA-subsumption?
-                        (subsume? parent-1 child learning-parameters))
-                   (incf (numerosity parent-1)))
-                  ((and GA-subsumption?
-                        (subsume? parent-2 child learning-parameters))
-                   (incf (numerosity parent-2)))
-                  (t (insert-into-population child xcs)))
-	    (delete-from-population xcs)))))))
+      (let ((action-set (or action-set (action-set xcs))))
+        (when (run-ga? xcs action-set)
+          (dolist (classifier action-set)
+            (setf (time-stamp classifier)
+                  (number-of-situations xcs)))
+          (let* ((parent-1 (select-offspring xcs action-set))
+                 (parent-2 (select-offspring xcs action-set))
+                 (child-1 (duplicate parent-1))
+                 (child-2 (duplicate parent-2)))
+            (assert (and child-1 child-2))
+            (setf (numerosity child-1) 1
+                  (numerosity child-2) 1
+                  (experience child-1) 0
+                  (experience child-2) 0)
+            (crossover child-1 child-2 xcs)
+            (dolist (child (list child-1 child-2))
+              (multf (fitness child) 0.1)
+              (mutate child situation learning-parameters)
+              (cond ((and GA-subsumption?
+                          (subsume? parent-1 child learning-parameters))
+                     (incf (numerosity parent-1)))
+                    ((and GA-subsumption?
+                          (subsume? parent-2 child learning-parameters))
+                     (incf (numerosity parent-2)))
+                    (t (insert-into-population child xcs)))
+              (delete-from-population xcs))))))))
 
 (defmethod get-situation ((experiment experiment))
   (with-slots (xcs environment) experiment
@@ -1170,7 +1179,34 @@
                                :payoff 100.0)))
       (update-set xcs)
       (should= 11 (experience c))
-      (should= 28.0 (prediction c)))))
+      (should= 28.0 (prediction c))))
+  (spec "an explicit previous action set is updated, not the current slot"
+    (let* ((lp (%test-lp :learning-rate 0.2
+                         :action-set-subsumption? nil
+                         :equal-error-threshold 10.0
+                         :possible-actions '(0 1)))
+           (previous (%test-classifier nil 0
+                                       :prediction 10.0
+                                       :prediction-error 0.0
+                                       :experience 0
+                                       :fitness 0.01))
+           (current (%test-classifier nil 1
+                                      :prediction 10.0
+                                      :prediction-error 0.0
+                                      :experience 0
+                                      :fitness 0.01))
+           (xcs (make-instance 'xcs
+                               :learning-parameters lp
+                               :previous-action-set (list previous)
+                               :action-set (list current)
+                               :payoff 100.0)))
+      (update-set xcs (previous-action-set xcs))
+      (should= 1 (experience previous))
+      (should= 0 (experience current))
+      (should= 100.0 (prediction previous))
+      (should= 10.0 (prediction current))
+      (should-be-true (/= (fitness previous) 0.01))
+      (should= 0.01 (fitness current)))))
 
 (behavior 'update-fitness
   (let* ((lp (%test-lp :learning-rate 0.2
@@ -1273,7 +1309,18 @@
           (run-ga? (make-instance 'xcs
                                   :learning-parameters lp
                                   :action-set (list c)
-                                  :number-of-situations 100)))))))
+                                  :number-of-situations 100)))))
+    (spec "an explicit action set is used instead of the current slot"
+      (let ((old (%test-classifier nil 0 :time-stamp 0 :numerosity 1 :fitness 1.0))
+            (new (%test-classifier nil 1 :time-stamp 90 :numerosity 1 :fitness 1.0)))
+        (let ((xcs (make-instance 'xcs
+                                  :learning-parameters lp
+                                  :previous-action-set (list old)
+                                  :action-set (list new)
+                                  :number-of-situations 100)))
+          (should-be-true (run-ga? xcs (list old)))
+          (should-be-false (run-ga? xcs (list new)))
+          (should-be-false (run-ga? xcs)))))))
 
 (behavior 'generate-covering-classifier
   (let* ((lp (%test-lp :covering-probability 0.0
