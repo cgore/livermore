@@ -1,0 +1,173 @@
+\contentsline {chapter}{Copyright}{ix}{chapter*.2}%
+\contentsline {chapter}{Introduction}{xi}{chapter*.3}%
+\contentsline {chapter}{\numberline {1}The \texttt {livermore/learning-parameters} Package}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Classes}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}The \texttt {learning-parameters} Class}{1}{subsection.1.1.1}%
+\contentsline {chapter}{\numberline {2}The \texttt {livermore/xcs-predicate} Package}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Classes}{3}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}The \texttt {xcs-predicate} Class}{3}{subsection.2.1.1}%
+\contentsline {section}{\numberline {2.2}Generics}{3}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}The \texttt {cover} Generic}{3}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}The \texttt {covering-score} Generic}{4}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}The \texttt {covering?} Generic}{4}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}The \texttt {identical?} Generic}{4}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}The \texttt {match?} Generic}{4}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}The \texttt {more-general?} Generic}{4}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}The \texttt {mutate} Generic}{5}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}The \texttt {duplicate} Generic}{5}{subsection.2.2.8}%
+\contentsline {chapter}{\numberline {3}The \texttt {livermore/xcs-ternary-predicate} Package}{7}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Types}{7}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}The \texttt {ternary-value} Type}{7}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}The \texttt {ternary-value?} Function}{7}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Classes}{7}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}The \texttt {ternary-predicate} Class}{7}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}The \texttt {ternary-predicate} Function}{7}{subsection.3.2.2}%
+\contentsline {section}{\numberline {3.3}Methods}{8}{section.3.3}%
+\contentsline {chapter}{\numberline {4}The \texttt {livermore/xcs-set-predicate} Package}{9}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Classes}{9}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}The \texttt {set-predicate} Class}{9}{subsection.4.1.1}%
+\contentsline {section}{\numberline {4.2}Methods}{9}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}The \texttt {non-members} Function}{9}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}The \texttt {universal?} Function}{10}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}The \texttt {equivalent?} Function}{10}{subsection.4.2.3}%
+\contentsline {chapter}{\numberline {5}The \texttt {livermore/xcs} Package}{11}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Classes}{11}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}The \texttt {classifier} Class}{11}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}The \texttt {xcs} Class}{12}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}The \texttt {environment} Class}{12}{subsection.5.1.3}%
+\contentsline {subsection}{\numberline {5.1.4}The \texttt {reinforcement-program} Class}{12}{subsection.5.1.4}%
+\contentsline {subsection}{\numberline {5.1.5}The \texttt {experiment} Class}{12}{subsection.5.1.5}%
+\contentsline {section}{\numberline {5.2}Match, Action, and Update}{13}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}The \texttt {generate-match-set} Generic}{13}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}The \texttt {generate-covering-classifier} Generic}{13}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}The \texttt {system-prediction} Generic}{13}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}The \texttt {select-action-learning} Generic}{13}{subsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.2.5}The \texttt {generate-action-set} Generic}{13}{subsection.5.2.5}%
+\contentsline {subsection}{\numberline {5.2.6}The \texttt {update-set} Generic}{13}{subsection.5.2.6}%
+\contentsline {subsection}{\numberline {5.2.7}The \texttt {update-fitness} Generic}{14}{subsection.5.2.7}%
+\contentsline {section}{\numberline {5.3}The Genetic Algorithm}{14}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}The \texttt {run-ga?} Generic}{14}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}The \texttt {run-ga} Generic}{14}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}The \texttt {select-offspring} Generic}{14}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}The \texttt {crossover} Generic}{14}{subsection.5.3.4}%
+\contentsline {subsection}{\numberline {5.3.5}The \texttt {could-subsume?} Generic}{14}{subsection.5.3.5}%
+\contentsline {subsection}{\numberline {5.3.6}The \texttt {subsume?} Generic}{14}{subsection.5.3.6}%
+\contentsline {subsection}{\numberline {5.3.7}The \texttt {deletion-vote} Generic}{14}{subsection.5.3.7}%
+\contentsline {subsection}{\numberline {5.3.8}The \texttt {delete-from-population} Generic}{15}{subsection.5.3.8}%
+\contentsline {subsection}{\numberline {5.3.9}The \texttt {insert-into-population} Generic}{15}{subsection.5.3.9}%
+\contentsline {subsection}{\numberline {5.3.10}The \texttt {do-action-set-subsumption} Generic}{15}{subsection.5.3.10}%
+\contentsline {section}{\numberline {5.4}The Experiment Loop}{15}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}The \texttt {start} Generic}{15}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}The \texttt {single-step-experiment} Generic}{15}{subsection.5.4.2}%
+\contentsline {subsection}{\numberline {5.4.3}The \texttt {multi-step-experiment} Generic}{15}{subsection.5.4.3}%
+\contentsline {subsection}{\numberline {5.4.4}The \texttt {get-situation} Generic}{15}{subsection.5.4.4}%
+\contentsline {subsection}{\numberline {5.4.5}The \texttt {get-reward} Generic}{16}{subsection.5.4.5}%
+\contentsline {subsection}{\numberline {5.4.6}The \texttt {terminate?} Generic}{16}{subsection.5.4.6}%
+\contentsline {subsection}{\numberline {5.4.7}The \texttt {single-step-output} Generic}{16}{subsection.5.4.7}%
+\contentsline {section}{\numberline {5.5}Identity and Generality}{16}{section.5.5}%
+\contentsline {chapter}{\numberline {6}The \texttt {livermore/xcsr} Package}{17}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Classes}{17}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}The \texttt {range-predicate} Class}{17}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}The \texttt {xcsr-learning-parameters} Class}{17}{subsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.1.3}The \texttt {xcsr} Class}{18}{subsection.6.1.3}%
+\contentsline {section}{\numberline {6.2}Methods}{18}{section.6.2}%
+\contentsline {chapter}{\numberline {7}The \texttt {livermore/xcs-analyzer} Package}{19}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Classes}{19}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}The \texttt {analyzer} Class}{19}{subsection.7.1.1}%
+\contentsline {section}{\numberline {7.2}Methods}{20}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}The \texttt {correct-action} Generic}{20}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}The \texttt {correct-action?} Generic}{20}{subsection.7.2.2}%
+\contentsline {subsection}{\numberline {7.2.3}The \texttt {get-reward} Generic}{20}{subsection.7.2.3}%
+\contentsline {subsection}{\numberline {7.2.4}The \texttt {execute-action} Generic}{20}{subsection.7.2.4}%
+\contentsline {chapter}{\numberline {8}The \texttt {livermore/tmscs} Package}{21}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Classes}{21}{section.8.1}%
+\contentsline {subsection}{\numberline {8.1.1}The \texttt {tms-predicate} Class}{21}{subsection.8.1.1}%
+\contentsline {subsection}{\numberline {8.1.2}The \texttt {tms-classifier} Class}{22}{subsection.8.1.2}%
+\contentsline {subsection}{\numberline {8.1.3}The \texttt {tmscs-learning-parameters} Class}{22}{subsection.8.1.3}%
+\contentsline {subsection}{\numberline {8.1.4}The \texttt {tmscs} Class}{22}{subsection.8.1.4}%
+\contentsline {section}{\numberline {8.2}Methods}{22}{section.8.2}%
+\contentsline {chapter}{\numberline {9}The \texttt {livermore/statistics} Package}{23}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Generics}{23}{section.9.1}%
+\contentsline {subsection}{\numberline {9.1.1}The \texttt {arithmetic-mean} Generic}{23}{subsection.9.1.1}%
+\contentsline {subsection}{\numberline {9.1.2}The \texttt {sample-variance} Generic}{23}{subsection.9.1.2}%
+\contentsline {subsection}{\numberline {9.1.3}The \texttt {unbiased-sample-variance} Generic}{23}{subsection.9.1.3}%
+\contentsline {subsection}{\numberline {9.1.4}The \texttt {sample-standard-deviation} Generic}{23}{subsection.9.1.4}%
+\contentsline {subsection}{\numberline {9.1.5}The \texttt {unbiased-sample-standard-deviation} Generic}{24}{subsection.9.1.5}%
+\contentsline {subsection}{\numberline {9.1.6}The \texttt {stat-report} Generic}{24}{subsection.9.1.6}%
+\contentsline {chapter}{\numberline {10}The \texttt {livermore/time} Package}{25}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Decoded Time}{25}{section.10.1}%
+\contentsline {subsection}{\numberline {10.1.1}The \texttt {decoded-time-list} Generic}{25}{subsection.10.1.1}%
+\contentsline {subsection}{\numberline {10.1.2}The \texttt {get-decoded-time-list} Function}{25}{subsection.10.1.2}%
+\contentsline {subsection}{\numberline {10.1.3}The \texttt {month-to-number} Function}{25}{subsection.10.1.3}%
+\contentsline {subsection}{\numberline {10.1.4}The \texttt {month-name} Function}{26}{subsection.10.1.4}%
+\contentsline {subsection}{\numberline {10.1.5}The \texttt {month-short-name} Function}{26}{subsection.10.1.5}%
+\contentsline {subsection}{\numberline {10.1.6}The \texttt {encode-month-year} Function}{26}{subsection.10.1.6}%
+\contentsline {subsection}{\numberline {10.1.7}The \texttt {encode-year} Function}{26}{subsection.10.1.7}%
+\contentsline {section}{\numberline {10.2}Parsing}{26}{section.10.2}%
+\contentsline {subsection}{\numberline {10.2.1}The \texttt {yyyy-mm-dd-to-universal-time} Function}{26}{subsection.10.2.1}%
+\contentsline {subsection}{\numberline {10.2.2}The \texttt {dd-month-yyyy-to-universal-time} Function}{26}{subsection.10.2.2}%
+\contentsline {subsection}{\numberline {10.2.3}The \texttt {date-string-to-universal-time} Function}{26}{subsection.10.2.3}%
+\contentsline {section}{\numberline {10.3}Julian and Ordinal Dates}{26}{section.10.3}%
+\contentsline {subsection}{\numberline {10.3.1}The \texttt {time-julian-day-number} Function}{26}{subsection.10.3.1}%
+\contentsline {subsection}{\numberline {10.3.2}The \texttt {time-julian-date} Function}{26}{subsection.10.3.2}%
+\contentsline {subsection}{\numberline {10.3.3}The \texttt {time-ordinal-date} Function}{27}{subsection.10.3.3}%
+\contentsline {section}{\numberline {10.4}Formatting}{27}{section.10.4}%
+\contentsline {chapter}{\numberline {11}The \texttt {livermore/threshold} Package}{29}{chapter.11}%
+\contentsline {subsection}{\numberline {11.0.1}The \texttt {threshold-indicator} Generic}{29}{subsection.11.0.1}%
+\contentsline {chapter}{\numberline {12}The \texttt {livermore/multiplexer} Package}{31}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Functions}{31}{section.12.1}%
+\contentsline {subsection}{\numberline {12.1.1}The \texttt {random-bit} Function}{31}{subsection.12.1.1}%
+\contentsline {subsection}{\numberline {12.1.2}The \texttt {random-bit-vector} Function}{31}{subsection.12.1.2}%
+\contentsline {subsection}{\numberline {12.1.3}The \texttt {binary-decoder} Function}{31}{subsection.12.1.3}%
+\contentsline {subsection}{\numberline {12.1.4}The \texttt {multiplexer-length} Function}{31}{subsection.12.1.4}%
+\contentsline {subsection}{\numberline {12.1.5}The \texttt {multiplexer} Function}{32}{subsection.12.1.5}%
+\contentsline {subsection}{\numberline {12.1.6}The \texttt {truth-vector} Function}{32}{subsection.12.1.6}%
+\contentsline {chapter}{\numberline {13}The \texttt {livermore/csv} Package}{33}{chapter.13}%
+\contentsline {section}{\numberline {13.1}Parameters}{33}{section.13.1}%
+\contentsline {subsection}{\numberline {13.1.1}The \texttt {*separator*} Parameter}{33}{subsection.13.1.1}%
+\contentsline {subsection}{\numberline {13.1.2}The \texttt {*quote*} Parameter}{33}{subsection.13.1.2}%
+\contentsline {section}{\numberline {13.2}Functions}{33}{section.13.2}%
+\contentsline {subsection}{\numberline {13.2.1}The \texttt {character-list-from-stream} Function}{33}{subsection.13.2.1}%
+\contentsline {subsection}{\numberline {13.2.2}The \texttt {parse-character-list} Function}{33}{subsection.13.2.2}%
+\contentsline {subsection}{\numberline {13.2.3}The \texttt {parse-stream} Function}{34}{subsection.13.2.3}%
+\contentsline {subsection}{\numberline {13.2.4}The \texttt {parse-file} Function}{34}{subsection.13.2.4}%
+\contentsline {chapter}{\numberline {14}The \texttt {livermore/stocks} Package}{35}{chapter.14}%
+\contentsline {section}{\numberline {14.1}Parameters}{35}{section.14.1}%
+\contentsline {subsection}{\numberline {14.1.1}The \texttt {*initial-money*} Parameter}{35}{subsection.14.1.1}%
+\contentsline {subsection}{\numberline {14.1.2}The \texttt {*livermore-data-directory*} Parameter}{35}{subsection.14.1.2}%
+\contentsline {section}{\numberline {14.2}Classes}{35}{section.14.2}%
+\contentsline {subsection}{\numberline {14.2.1}The \texttt {table-record} Class}{35}{subsection.14.2.1}%
+\contentsline {subsection}{\numberline {14.2.2}The \texttt {table} Class}{36}{subsection.14.2.2}%
+\contentsline {section}{\numberline {14.3}Loading}{36}{section.14.3}%
+\contentsline {subsection}{\numberline {14.3.1}The \texttt {canonical-ticker} Function}{36}{subsection.14.3.1}%
+\contentsline {subsection}{\numberline {14.3.2}The \texttt {table-filename} Function}{36}{subsection.14.3.2}%
+\contentsline {subsection}{\numberline {14.3.3}The \texttt {load-table} Function}{36}{subsection.14.3.3}%
+\contentsline {section}{\numberline {14.4}Changes and Statistics}{37}{section.14.4}%
+\contentsline {section}{\numberline {14.5}Indicators}{37}{section.14.5}%
+\contentsline {chapter}{\numberline {15}The \texttt {livermore/stock-ticker-descriptions} Package}{39}{chapter.15}%
+\contentsline {subsection}{\numberline {15.0.1}The \texttt {stock-description} Generic}{39}{subsection.15.0.1}%
+\contentsline {chapter}{\numberline {16}The \texttt {livermore/stocks-xcs} Package}{41}{chapter.16}%
+\contentsline {section}{\numberline {16.1}Classes}{41}{section.16.1}%
+\contentsline {subsection}{\numberline {16.1.1}The \texttt {stocks-xcs-analyzer} Class}{41}{subsection.16.1.1}%
+\contentsline {subsection}{\numberline {16.1.2}The \texttt {stocks-experiment} Class}{41}{subsection.16.1.2}%
+\contentsline {section}{\numberline {16.2}Methods}{42}{section.16.2}%
+\contentsline {chapter}{\numberline {17}The \texttt {livermore/animat-xcs} Package}{43}{chapter.17}%
+\contentsline {section}{\numberline {17.1}Classes}{43}{section.17.1}%
+\contentsline {subsection}{\numberline {17.1.1}The \texttt {animat-analyzer} Class}{43}{subsection.17.1.1}%
+\contentsline {subsection}{\numberline {17.1.2}The \texttt {animat-experiment} Class}{43}{subsection.17.1.2}%
+\contentsline {section}{\numberline {17.2}Methods}{43}{section.17.2}%
+\contentsline {subsection}{\numberline {17.2.1}The \texttt {sensor-code} Function}{44}{subsection.17.2.1}%
+\contentsline {subsection}{\numberline {17.2.2}The \texttt {start-animat-experiment} Function}{44}{subsection.17.2.2}%
+\contentsline {chapter}{\numberline {18}The \texttt {livermore/whitley-test-functions} Package}{45}{chapter.18}%
+\contentsline {section}{\numberline {18.1}Functions}{45}{section.18.1}%
+\contentsline {subsection}{\numberline {18.1.1}The \texttt {f1} Function}{45}{subsection.18.1.1}%
+\contentsline {subsection}{\numberline {18.1.2}The \texttt {f2} Function}{45}{subsection.18.1.2}%
+\contentsline {subsection}{\numberline {18.1.3}The \texttt {f3} Function}{47}{subsection.18.1.3}%
+\contentsline {subsection}{\numberline {18.1.4}The \texttt {f4} Function}{47}{subsection.18.1.4}%
+\contentsline {subsection}{\numberline {18.1.5}The \texttt {f5} Function}{47}{subsection.18.1.5}%
+\contentsline {subsection}{\numberline {18.1.6}The \texttt {f6} Function}{48}{subsection.18.1.6}%
+\contentsline {subsection}{\numberline {18.1.7}The \texttt {f7} Function}{48}{subsection.18.1.7}%
+\contentsline {subsection}{\numberline {18.1.8}The \texttt {f8} Function}{48}{subsection.18.1.8}%
+\contentsline {subsection}{\numberline {18.1.9}The \texttt {f9} Function}{50}{subsection.18.1.9}%
+\contentsline {subsection}{\numberline {18.1.10}The \texttt {f10} Function}{50}{subsection.18.1.10}%
+\contentsline {chapter}{Bibliography}{53}{section*.32}%

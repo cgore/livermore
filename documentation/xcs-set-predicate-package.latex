@@ -1,0 +1,84 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/xcs-set-predicate}
+
+The \texttt{livermore/xcs-set-predicate} package is an allele whose match is
+membership in a set, or the whole universe if the covering flag is set.  Share
+the \texttt{possible-members} list among predicates of the same problem.
+
+\section{Classes}
+
+\lispClassSubsection{set-predicate}
+
+\begin{description}
+\item[\texttt{members}] The values matched when the predicate is not covering.
+\item[\texttt{possible-members}] The universe of values this allele may name.
+\item[\texttt{covering?}] True if the predicate matches every possible member.
+\end{description}
+
+\section{Methods}
+
+\lispFunctionSubsection{non-members}
+
+The possible members that are not in \texttt{members}.  Empty when the
+predicate is covering.
+
+\lispFunctionSubsection{universal?}
+
+True if the predicate covers the whole universe, either by the covering flag
+or by listing every possible member.
+
+\lispFunctionSubsection{equivalent?}
+
+True if two predicates match the same situations.  A covering predicate and a
+predicate that lists every possible member are equivalent.
+
+\texttt{identical?} is stricter: the covering flags must agree as well.
+
+\texttt{match?} against a situation is true if the predicate is covering or
+the situation is a member.  \texttt{match?} against another set predicate is
+true if this predicate matches everything the other matches.
+
+\texttt{more-general?} is true when this predicate matches the other and they
+are not equivalent.
+
+\texttt{cover} builds a predicate whose members are the given situations, and
+sets the covering flag with the given probability.
+
+\texttt{mutate} may drop the covering flag, raise it, add a member, or remove
+a member other than the current situation.
+
+\texttt{covering-score} is $1$ if covering, otherwise the fraction of possible
+members listed.

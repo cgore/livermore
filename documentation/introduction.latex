@@ -1,0 +1,168 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\chapter{Introduction}
+
+This library originated from my master's thesis, \emph{A Time Series
+Classifier}~\cite{gore-2008}, written at the Missouri University of Science and
+Technology.  That work introduced \textsc{Tsc}, a learning classifier system for
+modeling and predicting time series, derived from Wilson's
+XCSR~\cite{wilson-2000}.  Livermore is that code, grown into a general
+implementation of XCS~\cite{wilson-1995,butz-wilson-2002}, XCSR, and the
+time-multiseries classifier system (\textsc{Tmscs}, the later name for
+\textsc{Tsc}~\cite{gore-2008}), with the surrounding problem environments and
+stock-table utilities.
+
+A time series is a sequence of data measured at successive intervals.  Time
+series analysis is the set of methods used to understand such data, either to
+explain the underlying system or to predict future points~\cite{gore-2008}.
+Weather and the financial markets are the usual historical examples; there are
+many more real-world time series problems.
+
+No learning classifier system before that thesis had been designed for time
+series.  Existing systems were generally limited to Markov processes with no
+memory, which we viewed as a major limitation of
+\textsc{Lcs}'s~\cite{gore-2008}.  Learning classifier systems exist to evolve
+an effective rule set for a specified problem, which is specifically the sort
+of capability that would be desirable for time series analysis and prediction:
+generating useful rule sets.
+
+The library is named for Jesse Lauriston Livermore, the early twentieth-century
+speculator whose trading rules were explicit, situational, and revised by
+experience~\cite{lefevre-1923}.  That is the same shape as a learning classifier system: a
+population of rules, each pairing a condition with an action, whose fitness is
+updated from the payoff they actually earn.
+
+The XCS implementation follows the algorithmic description of Butz and
+Wilson~\cite{butz-wilson-2002}.  Their paper names are kept in the source and
+in this document: the population is $[P]$, the match set is $[M]$, the action
+set is $[A]$, and so on.  The thesis is available at\\
+\url{https://cgore.com/cgore-thesis-final.pdf}.
+
+You can download the library from GitHub at:\\
+\url{https://github.com/cgore/livermore}\\
+The companion utility library $\Sigma$~\cite{gore-sigma} is at:\\
+\url{https://github.com/cgore/sigma}
+
+\section*{Getting Lisp}
+
+Before using this library you need a working Lisp.  I use and recommend
+\textsc{Sbcl}, Steel Bank Common Lisp, which is available at:\\
+\url{http://www.sbcl.org}
+
+If you are using Debian or a similar Linux distribution (including Ubuntu), you
+can run as root:
+
+\begin{lstlisting}[language=bash]
+apt-get install rlwrap sbcl libpq-dev texlive-full
+\end{lstlisting}
+
+On Fedora or Red Hat:
+
+\begin{lstlisting}[language=bash]
+sudo dnf install sbcl rlwrap curl postgresql-devel texlive-scheme-full
+\end{lstlisting}
+
+\section*{Getting \textsc{Emacs} and \textsc{Slime}}
+
+After installing, the best way to interact with any Common Lisp is via
+\textsc{Slime}, the Superior Lisp Interaction Mode for \textsc{Emacs}, which is
+available at:\\
+\url{http://common-lisp.net/project/slime/}\\
+This can be installed on Debian by:
+
+\begin{lstlisting}[language=bash]
+apt-get install slime emacs emacs-goodies-el
+\end{lstlisting}
+
+\section*{Quicklisp}
+
+Livermore depends on $\Sigma$~\cite{gore-sigma}, \texttt{md5}, and
+\texttt{clsql}.  $\Sigma$ supplies sequences, control, random sampling,
+probability, time-series types, and the \texttt{behavior} tests used throughout
+this library.  The usual way to obtain the dependencies is Quicklisp:
+
+\begin{lstlisting}[language=bash]
+curl -O https://beta.quicklisp.org/quicklisp.lisp
+sbcl --load quicklisp.lisp \
+     --eval '(quicklisp-quickstart:install)' \
+     --eval '(ql:add-to-init-file)' \
+     --eval '(quit)'
+\end{lstlisting}
+
+\section*{Using the Library}
+
+Clone the repository and register it with \textsc{Asdf}.  There are several
+ways to do that; a symlink into a directory already on
+\texttt{asdf:*central-registry*} is enough.
+
+\begin{lstlisting}[language=bash]
+mkdir -p ~/programming/lisp
+cd ~/programming/lisp
+git clone git@github.com:cgore/livermore.git
+\end{lstlisting}
+
+Then, in the \textsc{Repl}:
+
+\begin{lstlisting}
+(asdf:load-system :livermore)
+\end{lstlisting}
+
+A typical single-step experiment builds an environment, an XCS, and an
+\texttt{experiment}, then calls \texttt{start}:
+
+\begin{lstlisting}
+(let* ((lp (make-instance 'livermore/learning-parameters:learning-parameters
+                          :minimum-number-of-actions 2
+                          :possible-actions '(0 1)))
+       (xcs (make-instance 'livermore/xcs:xcs
+                           :learning-parameters lp)))
+  xcs)
+\end{lstlisting}
+
+The chapters that follow document each package.  Start with
+\texttt{livermore/learning-parameters} and \texttt{livermore/xcs} if you want
+the classifier system itself; start with \texttt{livermore/stocks} if you want
+the market data.
+
+\section*{Building this Document}
+
+From the \texttt{documentation} directory:
+
+\begin{lstlisting}[language=bash]
+make
+\end{lstlisting}
+
+That produces \texttt{livermore.dvi}, \texttt{livermore.ps}, and
+\texttt{livermore.pdf}.

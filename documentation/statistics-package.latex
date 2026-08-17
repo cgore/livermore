@@ -1,0 +1,78 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/statistics}
+
+The \texttt{livermore/statistics} package is a small set of sample statistics
+on sequences.  Each generic takes \texttt{\&key key start end}.  The
+underlying sequence helpers come from $\Sigma$~\cite{gore-sigma}.
+
+\section{Generics}
+
+\lispGenericSubsection{arithmetic-mean}
+
+The sample mean $\bar{x}$.  Returns \texttt{nil} on an empty sequence.
+
+\lispGenericSubsection{sample-variance}
+
+The second central moment $s_N^2$, divided by $N$.
+
+\lispGenericSubsection{unbiased-sample-variance}
+
+The unbiased estimator $s_{N-1}^2$, divided by $N-1$.  Returns
+\texttt{nil} when the sequence has fewer than two elements.
+
+\lispGenericSubsection{sample-standard-deviation}
+
+$\sqrt{s_N^2}$.
+
+\lispGenericSubsection{unbiased-sample-standard-deviation}
+
+$\sqrt{s_{N-1}^2}$.
+
+\lispGenericSubsection{stat-report}
+
+Prints the mean, unbiased standard deviation, minimum, and maximum of
+\lispVar{data} to \lispVar{destination}.
+
+\lispSyntax
+
+\texttt{(stat-report \lispVar{destination} \lispVar{data} \&key key start end pre-string format-string post-string)}
+
+\lispExamples
+
+\begin{lstlisting}
+(arithmetic-mean '(1 2 3))           ; => 2
+(unbiased-sample-variance '(1 2 3))  ; => 1
+\end{lstlisting}

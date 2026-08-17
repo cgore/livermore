@@ -1,0 +1,131 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/time}
+
+The \texttt{livermore/time} package names the fields of a Common Lisp
+decoded time, parses and formats dates, and computes Julian and ordinal
+dates.  Most functions take an optional \lispVar{time}, which may be a
+universal time or a decoded-time list.  The default is the current time.
+
+\section{Decoded Time}
+
+\lispGenericSubsection{decoded-time-list}
+
+Returns \lispVar{time} as the nine-value list produced by
+\texttt{decode-universal-time}.  An integer is decoded; a list is returned
+unchanged.
+
+\lispFunctionSubsection{get-decoded-time-list}
+
+The current time as a decoded-time list.
+
+The accessors \texttt{time-second}, \texttt{time-minute}, \texttt{time-hour},
+\texttt{time-date}, \texttt{time-month}, \texttt{time-year},
+\texttt{time-day}, \texttt{time-daylight-p}, and \texttt{time-zone} are the
+nine fields in order.  \texttt{time-day} is the weekday, Monday~$=0$ through
+Sunday~$=6$.  \texttt{time-month-name} and \texttt{time-month-short-name}
+are English names.  \texttt{time-quarter} is $1$ through $4$.
+
+\lispFunctionSubsection{month-to-number}
+
+The month number for an English name, January~$=1$.  Short names such as
+\texttt{"Jan"} are accepted.
+
+\lispFunctionSubsection{month-name}
+
+The full English name for a month number.
+
+\lispFunctionSubsection{month-short-name}
+
+The abbreviated English name.
+
+\lispFunctionSubsection{encode-month-year}
+
+The universal time of the first of \lispVar{month} in \lispVar{year}.
+
+\lispFunctionSubsection{encode-year}
+
+The universal time of 1~January of \lispVar{year}.
+
+\section{Parsing}
+
+\lispFunctionSubsection{yyyy-mm-dd-to-universal-time}
+
+Parses a string of the form \texttt{YYYY-MM-DD}.
+
+\lispFunctionSubsection{dd-month-yyyy-to-universal-time}
+
+Parses a string of the form \texttt{DD-Mon-YYYY} or \texttt{DD-Monthname-YY}.
+
+\lispFunctionSubsection{date-string-to-universal-time}
+
+Chooses between those two by the length of the middle field.
+
+\texttt{dd-month-yyyy-to-decoded-time} and
+\texttt{dd-month-yyyy-to-decoded-time-list} decode the same strings.
+
+\section{Julian and Ordinal Dates}
+
+\lispFunctionSubsection{time-julian-day-number}
+
+The Julian Day Number at noon for a Gregorian date.  Years work as
+1~\textsc{Bc}~$=0$, 2~\textsc{Bc}~$=-1$, and so on.  Also called
+\texttt{time-jdn}.
+
+\lispFunctionSubsection{time-julian-date}
+
+The Julian Date, including the fraction of the day past noon.  Also called
+\texttt{time-jd}.
+
+\lispFunctionSubsection{time-ordinal-date}
+
+The day of the year, $1$ through $366$.  Also called
+\texttt{time-day-of-year}.
+
+\section{Formatting}
+
+\begin{description}
+\item[\texttt{yyyy-string}] \texttt{"2020"}
+\item[\texttt{qqyyyy-string}] \texttt{"1Q2020"}
+\item[\texttt{qq-yyyy-string}] \texttt{"Q1-2020"}
+\item[\texttt{mon-yyyy-string}] \texttt{"Mar-2020"}
+\item[\texttt{dd-mon-yyyy-string}] \texttt{"15-Mar-2020"}
+\item[\texttt{yyyy-mm-dd-string}] \texttt{"2020-3-15"}, also
+  \texttt{iso-extended-date-string} and \texttt{iso-date-string}
+\item[\texttt{yyyymmdd-string}] unpadded \texttt{YYYYMMDD}, also
+  \texttt{iso-short-date-string}
+\item[\texttt{date-time-string}] month, weekday (Monday~$=0$), year, and
+  zero-padded hours, minutes, and seconds
+\end{description}

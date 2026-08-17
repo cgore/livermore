@@ -1,0 +1,83 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/animat-xcs}
+
+The \texttt{livermore/animat-xcs} package is Woods-style maze navigation, the
+classic multi-step XCS problem.  The animat sees the eight neighboring cells
+and must walk to food.  Maze files live under
+\texttt{data/animat-data/}.
+
+\section{Classes}
+
+\lispClassSubsection{animat-analyzer}
+
+An environment and reinforcement program.  Construction reads
+\texttt{file-name}: width, height, then one character per cell.
+\texttt{*} is empty, \texttt{O} and \texttt{Q} are rocks, \texttt{F} and
+\texttt{G} are food.
+
+The situation is a $24$-element truth list: a three-bit sensor code for
+each of the eight neighbors, counter-clockwise from north.  Edges wrap.
+
+\lispClassSubsection{animat-experiment}
+
+An experiment that uses an \texttt{animat-analyzer}.
+
+\section{Methods}
+
+\texttt{reset} places the animat on a random empty cell.
+\texttt{execute-action} moves in one of eight directions; a rock is a no-op.
+\texttt{get-reward} is $1000$ on food and $0$ otherwise.
+\texttt{end-of-problem?} is true on food.
+
+\lispFunctionSubsection{sensor-code}
+
+The three-bit code for a cell symbol.
+
+\lispFunctionSubsection{start-animat-experiment}
+
+Builds an experiment from the maze in \lispVar{file-name} and starts it.
+
+\lispSyntax
+
+\texttt{(start-animat-experiment \lispVar{file-name})}
+
+\lispExamples
+
+\begin{lstlisting}
+(start-animat-experiment
+  (asdf:system-relative-pathname "livermore"
+                                 "data/animat-data/Woods1.txt"))
+\end{lstlisting}

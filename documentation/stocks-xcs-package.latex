@@ -1,0 +1,82 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/stocks-xcs}
+
+The \texttt{livermore/stocks-xcs} package walks a price table and asks XCS
+whether to be in the stock or in cash.  The situation is a vector of extrema
+and $z$-score features from recent prices and volume.  Reward is chosen by
+\texttt{*reward-method*}.
+
+\section{Classes}
+
+\lispClassSubsection{stocks-xcs-analyzer}
+
+A subclass of \texttt{analyzer}.
+
+\begin{description}
+\item[\texttt{table}] The price table.
+\item[\texttt{initial-index}, \texttt{current-index}] The bar under
+  consideration.
+\item[\texttt{money}, \texttt{previous-money}] Cash marked to market.
+\item[\texttt{previous-action}] The last action.
+\end{description}
+
+\lispClassSubsection{stocks-experiment}
+
+An experiment that uses a \texttt{stocks-xcs-analyzer}.
+\texttt{terminate?} is true at the last record or when money is not
+positive.
+
+\section{Methods}
+
+\texttt{current-record} and \texttt{previous-record} are the bars at and
+before \texttt{current-index}.
+
+\texttt{should-have-bought-stock?} is true when today's adjusted close is
+above yesterday's.  \texttt{buy-stock?} is true when the current action is
+\texttt{:stock}, or when it is \texttt{:hold} and the previous action was
+\texttt{:stock}.  \texttt{correct-action?} is true when that buy decision
+matches whether the price rose.
+
+\texttt{money-from-stock} marks to today's close as many shares as
+yesterday's cash would buy.
+
+\texttt{execute-action} advances one bar and, if buying, updates money.
+\texttt{get-reward} returns a value chosen by \texttt{*reward-method*}
+(\texttt{:money}, \texttt{:delta-money}, \texttt{:weighted-delta-money},
+\texttt{:diff-money}, \texttt{:weighted-diff-money}, or
+\texttt{:correctness}) and may print a periodic report.
+
+\texttt{load-*table*} loads a ticker into \texttt{*table*}.

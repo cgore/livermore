@@ -1,0 +1,90 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/xcsr}
+
+The \texttt{livermore/xcsr} package is XCS with interval
+predicates~\cite{wilson-2000}.  Each allele is a closed interval
+$[\mathit{lower},\mathit{upper}]$ over a real input.
+
+\section{Classes}
+
+\lispClassSubsection{range-predicate}
+
+\begin{description}
+\item[\texttt{lower}] The inclusive lower bound.
+\item[\texttt{upper}] The inclusive upper bound.
+\end{description}
+
+\texttt{spread} is half the width.  \texttt{center} is the midpoint.  If
+\texttt{lower} exceeds \texttt{upper}, the two are swapped first.
+
+\lispClassSubsection{xcsr-learning-parameters}
+
+A subclass of \texttt{learning-parameters} with extra slots:
+
+\begin{description}
+\item[\texttt{problem-range}] The range of the input, default
+  \texttt{(0.0 1.0)}.
+\item[\texttt{covering-maximum}] How large a fraction of the range covering
+  may add to both bounds.  Default $0.1$.
+\item[\texttt{mutation-maximum}] How large a fraction of the range mutation
+  may add or subtract from each bound.  Default $0.10$.
+\item[\texttt{initial-spread-limit}] $s_0$ in Wilson's XCSR paper, the
+  largest initial spread when covering.  Default $0.5$.
+\end{description}
+
+\lispClassSubsection{xcsr}
+
+An XCS whose default predicate type is \texttt{range-predicate} and whose
+learning parameters are \texttt{xcsr-learning-parameters}.
+
+\section{Methods}
+
+\texttt{match?} against a number is true when the number lies in the
+interval.  \texttt{match?} against another range is true when this interval
+contains the other.
+
+\texttt{more-general?} is true when this interval strictly contains the
+other.
+
+\texttt{cover} builds, for each situation element, an interval centered on
+that element with a random spread no larger than
+\texttt{initial-spread-limit}.
+
+\texttt{mutate} adds a random amount, bounded by \texttt{mutation-maximum}
+times the spread, to each bound, clipped to the problem range.
+
+\texttt{covering-score} is the width of the interval as a fraction of the
+problem range.

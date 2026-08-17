@@ -1,0 +1,329 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/whitley-test-functions}
+
+The \texttt{livermore/whitley-test-functions} package is the test suite of
+Whitley, Mathias, Rana, and Dzubera~\cite{whitley-1996}, including De
+Jong's classical functions~\cite{dejong-1975}.  Each \texttt{f\textit{n}}
+takes a list of floats in the published domain.  The figures below are
+two-variable slices (remaining coordinates, if any, are zero), drawn with
+PGFPlots.  Darker blue is lower; yellow is higher.
+
+\pgfplotsset{
+  whitley heatmap/.style={
+    width=0.72\textwidth,
+    height=0.58\textwidth,
+    view={0}{90},
+    colormap/viridis,
+    colorbar,
+    xlabel={$x_1$},
+    ylabel={$x_2$},
+    enlargelimits=false,
+    axis on top,
+    hide z axis,
+    trig format plots=rad,
+  }
+}
+\tikzset{
+  declare function={
+    shekelfoxholes(\x,\y)=
+      1/(0.002
+        +1/(1 +(\x+32)^6+(\y+32)^6)
+        +1/(2 +(\x+16)^6+(\y+32)^6)
+        +1/(3 +(\x)^6   +(\y+32)^6)
+        +1/(4 +(\x-16)^6+(\y+32)^6)
+        +1/(5 +(\x-32)^6+(\y+32)^6)
+        +1/(6 +(\x+32)^6+(\y+16)^6)
+        +1/(7 +(\x+16)^6+(\y+16)^6)
+        +1/(8 +(\x)^6   +(\y+16)^6)
+        +1/(9 +(\x-16)^6+(\y+16)^6)
+        +1/(10+(\x-32)^6+(\y+16)^6)
+        +1/(11+(\x+32)^6+(\y)^6)
+        +1/(12+(\x+16)^6+(\y)^6)
+        +1/(13+(\x)^6   +(\y)^6)
+        +1/(14+(\x-16)^6+(\y)^6)
+        +1/(15+(\x-32)^6+(\y)^6)
+        +1/(16+(\x+32)^6+(\y-16)^6)
+        +1/(17+(\x+16)^6+(\y-16)^6)
+        +1/(18+(\x)^6   +(\y-16)^6)
+        +1/(19+(\x-16)^6+(\y-16)^6)
+        +1/(20+(\x-32)^6+(\y-16)^6)
+        +1/(21+(\x+32)^6+(\y-32)^6)
+        +1/(22+(\x+16)^6+(\y-32)^6)
+        +1/(23+(\x)^6   +(\y-32)^6)
+        +1/(24+(\x-16)^6+(\y-32)^6)
+        +1/(25+(\x-32)^6+(\y-32)^6));
+  }
+}
+
+\section{Functions}
+
+\lispFunctionSubsection{f1}
+
+$F_1$ is De Jong's sphere, a unimodal sum of squares in three variables.
+
+\begin{equation}
+  f_1(\mathbf{x}) = \sum_{i=1}^{3} x_i^2,
+  \qquad x_i \in [-5.12,\,5.11].
+\end{equation}
+
+The global minimum is $0$ at the origin.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-5.12:5.11, y domain=-5.12:5.11]
+\addplot3[surf, shader=interp, samples=29] {x^2 + y^2};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_1$ on the $x_1x_2$ plane with $x_3=0$.}
+\label{fig:whitley-f1}
+\end{figure}
+
+\lispFunctionSubsection{f2}
+
+$F_2$ is De Jong's two-variable Rosenbrock function.
+
+\begin{equation}
+  f_2(x_1,x_2) = 100\,(x_2-x_1^2)^2 + (1-x_1)^2,
+  \qquad x_i \in [-2.048,\,2.047].
+\end{equation}
+
+The global minimum is $0$ at $(1,1)$, at the end of a narrow curved valley.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-2.048:2.047, y domain=-2.048:2.047]
+\addplot3[surf, shader=interp, samples=29]
+  {ln(1 + 100*(y - x^2)^2 + (1 - x)^2)};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_2$, shown on a $\log(1+f)$ scale so the valley is visible.}
+\label{fig:whitley-f2}
+\end{figure}
+
+\lispFunctionSubsection{f3}
+
+$F_3$ is De Jong's step function, a sum of floors in five variables.
+
+\begin{equation}
+  f_3(\mathbf{x}) = \sum_{i=1}^{5} \lfloor x_i \rfloor,
+  \qquad x_i \in [-5.12,\,5.11].
+\end{equation}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-5.12:5.11, y domain=-5.12:5.11]
+\addplot3[surf, shader=flat corner, samples=41] {floor(x) + floor(y)};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_3$ on the $x_1x_2$ plane with the other coordinates zero.}
+\label{fig:whitley-f3}
+\end{figure}
+
+\lispFunctionSubsection{f4}
+
+$F_4$ is De Jong's noisy quartic in thirty variables.  $N(0,1)$ is a standard
+normal sample, drawn anew on each call.
+
+\begin{equation}
+  f_4(\mathbf{x}) = \sum_{i=1}^{30} i\,x_i^4 + N(0,1),
+  \qquad x_i \in [-1.28,\,1.27].
+\end{equation}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-1.28:1.27, y domain=-1.28:1.27]
+\addplot3[surf, shader=interp, samples=29] {x^4 + 2*y^4};
+\end{axis}
+\end{tikzpicture}
+\caption{The deterministic part of $f_4$ in two variables, $x_1^4+2x_2^4$,
+  with the remaining coordinates zero and no noise.}
+\label{fig:whitley-f4}
+\end{figure}
+
+\lispFunctionSubsection{f5}
+
+$F_5$ is Shekel's foxholes, a two-variable function with twenty-five local
+wells.
+
+\begin{equation}
+  f_5(\mathbf{x})
+  = \Biggl(0.002 + \sum_{j=1}^{25}
+      \frac{1}{j + \displaystyle\sum_{i=1}^{2}(x_i-a_{ij})^6}\Biggr)^{-1},
+  \qquad x_i \in [-65.536,\,65.535].
+\end{equation}
+
+The columns of $A=(a_{ij})$ are the grid
+$\{-32,-16,0,16,32\}\times\{-32,-16,0,16,32\}$, in that order.  Each foxhole
+is a local minimum near $1/(j+0.002)$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-65.536:65.535, y domain=-65.536:65.535]
+\addplot3[surf, shader=interp, samples=25] {log10(shekelfoxholes(x,y))};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_5$ on a $\log_{10}$ scale.  The twenty-five dark wells are the
+  foxholes.}
+\label{fig:whitley-f5}
+\end{figure}
+
+\lispFunctionSubsection{f6}
+
+$F_6$ is the Rastrigin function, also called \texttt{rastrigin}.  The
+dimension $n$ is the length of the argument.
+
+\begin{equation}
+  f_6(\mathbf{x}) = 10n + \sum_{i=1}^{n}\bigl(x_i^2 - 10\cos(2\pi x_i)\bigr),
+  \qquad x_i \in [-5.12,\,5.11].
+\end{equation}
+
+The global minimum is $0$ at the origin.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-5.12:5.11, y domain=-5.12:5.11]
+\addplot3[surf, shader=interp, samples=41]
+  {20 + x^2 - 10*cos(2*pi*x) + y^2 - 10*cos(2*pi*y)};
+\end{axis}
+\end{tikzpicture}
+\caption{Two-variable Rastrigin, $f_6(x_1,x_2)$.}
+\label{fig:whitley-f6}
+\end{figure}
+
+\lispFunctionSubsection{f7}
+
+$F_7$ is the Schwefel function, also called \texttt{schwefel}.
+
+\begin{equation}
+  f_7(\mathbf{x}) = \sum_{i=1}^{n} -x_i\sin\sqrt{\lvert x_i\rvert},
+  \qquad x_i \in [-512,\,511].
+\end{equation}
+
+This is the raw Schwefel sum, without the usual $418.9829\,n$ offset.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-512:511, y domain=-512:511]
+\addplot3[surf, shader=interp, samples=41]
+  {-x*sin(sqrt(abs(x))) - y*sin(sqrt(abs(y)))};
+\end{axis}
+\end{tikzpicture}
+\caption{Two-variable Schwefel, $f_7(x_1,x_2)$.}
+\label{fig:whitley-f7}
+\end{figure}
+
+\lispFunctionSubsection{f8}
+
+$F_8$ is the Griewangk function, also called \texttt{griewangk}.
+
+\begin{equation}
+  f_8(\mathbf{x})
+  = 1 + \sum_{i=1}^{n}\frac{x_i^2}{4000}
+    - \prod_{i=1}^{n}\cos\Bigl(\frac{x_i}{\sqrt{i}}\Bigr),
+  \qquad x_i \in [-5.12,\,5.11].
+\end{equation}
+
+The global minimum is $0$ at the origin.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-5.12:5.11, y domain=-5.12:5.11]
+\addplot3[surf, shader=interp, samples=41]
+  {1 + x^2/4000 + y^2/4000 - cos(x)*cos(y/sqrt(2))};
+\end{axis}
+\end{tikzpicture}
+\caption{Two-variable Griewangk, $f_8(x_1,x_2)$.}
+\label{fig:whitley-f8}
+\end{figure}
+
+\lispFunctionSubsection{f9}
+
+$F_9$ is the sine-envelope sine wave, also called
+\texttt{sine-envelope-sine-wave}.
+
+\begin{equation}
+  f_9(x_1,x_2)
+  = 0.5 + \frac{\sin^2\sqrt{x_1^2+x_2^2}-0.5}
+               {\bigl(1+0.001\,(x_1^2+x_2^2)\bigr)^2},
+  \qquad x_i \in [-100,\,100].
+\end{equation}
+
+The global minimum is $0$ at the origin.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-100:100, y domain=-100:100]
+\addplot3[surf, shader=interp, samples=41]
+  {0.5 + (sin(sqrt(x^2+y^2))^2 - 0.5) / (1 + 0.001*(x^2+y^2))^2};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_9$, the sine-envelope sine wave.}
+\label{fig:whitley-f9}
+\end{figure}
+
+\lispFunctionSubsection{f10}
+
+$F_{10}$ is the stretched $V$ sine wave, also called
+\texttt{stretched-v-sine-wave}.  Let $r^2=x_1^2+x_2^2$.
+
+\begin{equation}
+  f_{10}(x_1,x_2)
+  = (r^2)^{1/4}\Bigl(1+\sin^2\bigl(50\,(r^2)^{1/10}\bigr)\Bigr),
+  \qquad x_i \in [-100,\,100].
+\end{equation}
+
+The global minimum is $0$ at the origin.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[whitley heatmap, domain=-100:100, y domain=-100:100]
+\addplot3[surf, shader=interp, samples=41]
+  {(x^2+y^2)^0.25 * (1 + sin(50*(x^2+y^2)^0.1)^2)};
+\end{axis}
+\end{tikzpicture}
+\caption{$f_{10}$, the stretched $V$ sine wave.}
+\label{fig:whitley-f10}
+\end{figure}

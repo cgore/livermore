@@ -1,0 +1,121 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/xcs-predicate}
+
+The \texttt{livermore/xcs-predicate} package is the protocol for a single
+allele of an XCS condition.  Ternary bits, sets, intervals, and time-series
+paths are all subclasses of \texttt{xcs-predicate}.  Specialize the generics
+below for a new representation.
+
+\section{Classes}
+
+\lispClassSubsection{xcs-predicate}
+
+The empty base class.  Make a subclass for each representation.
+
+\section{Generics}
+
+\lispGenericSubsection{cover}
+
+Generate a covering predicate that matches \lispVar{situation}.  This is the
+operation used by \texttt{generate-covering-classifier}.
+
+\lispSyntax
+
+\texttt{(cover \lispVar{predicate} \lispVar{situation} \lispVar{learning-parameters})}
+
+A method on \texttt{symbol} builds an instance of that class and covers with
+it, so \texttt{(cover 'ternary-predicate situation lp)} is legal.
+
+\lispGenericSubsection{covering-score}
+
+A numeric score for how general the predicate is.  Used when choosing
+subsumers.
+
+\lispSyntax
+
+\texttt{(covering-score \lispVar{predicate} \lispVar{learning-parameters})}
+
+The default method returns $0$.
+
+\lispGenericSubsection{covering?}
+
+True if the predicate matches every possible situation.
+
+\lispSyntax
+
+\texttt{(covering? \lispVar{predicate})}
+
+The default method returns false.
+
+\lispGenericSubsection{identical?}
+
+True if \lispVar{a} and \lispVar{b} are the same for all situations.
+
+\lispSyntax
+
+\texttt{(identical? \lispVar{a} \lispVar{b})}
+
+\lispGenericSubsection{match?}
+
+True if \lispVar{predicate} matches \lispVar{situation}.  The default method
+signals an error; subclasses must specialize it.
+
+\lispSyntax
+
+\texttt{(match? \lispVar{predicate} \lispVar{situation})}
+
+\lispGenericSubsection{more-general?}
+
+True if \lispVar{general} is strictly more general than \lispVar{specific}.
+
+\lispSyntax
+
+\texttt{(more-general? \lispVar{general} \lispVar{specific})}
+
+\lispGenericSubsection{mutate}
+
+Mutate \lispVar{predicate} according to \lispVar{learning-parameters},
+preserving a match on \lispVar{situation}.  The default method signals an
+error.
+
+\lispSyntax
+
+\texttt{(mutate \lispVar{predicate} \lispVar{situation} \lispVar{learning-parameters})}
+
+\lispGenericSubsection{duplicate}
+
+Return a newly created copy.  The default method copies a \texttt{value} slot
+if one exists.

@@ -1,0 +1,79 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/xcs-analyzer}
+
+The \texttt{livermore/xcs-analyzer} package is a combined environment and
+reinforcement program that scores actions and keeps a running history of
+correctness.  Most single-step problems subclass \texttt{analyzer} and
+define \texttt{correct-action} and \texttt{get-situation}.
+
+\section{Classes}
+
+\lispClassSubsection{analyzer}
+
+Subclass of both \texttt{environment} and \texttt{reinforcement-program}.
+
+\begin{description}
+\item[\texttt{current-situation}] The situation most recently presented.
+\item[\texttt{number-of-situations}] How many situations have been presented.
+\item[\texttt{current-action}] The action most recently taken.
+\item[\texttt{actions}] How many actions have been taken.
+\item[\texttt{correct-actions}] How many of those were correct.
+\item[\texttt{action-history}] \texttt{t} or \texttt{nil} for each action,
+  newest first.
+\item[\texttt{odd-action-history}] The same history for odd-numbered actions.
+\item[\texttt{even-action-history}] The same history for even-numbered actions.
+\end{description}
+
+\section{Methods}
+
+\lispGenericSubsection{correct-action}
+
+The action that should have been taken.  The default method signals an
+error; define this for each problem.
+
+\lispGenericSubsection{correct-action?}
+
+True if \texttt{current-action} equals \texttt{correct-action}.
+
+\lispGenericSubsection{get-reward}
+
+Returns $1000.0$ for a correct action and $0.0$ otherwise.
+
+\lispGenericSubsection{execute-action}
+
+Records the action, updates the correctness counts, and prints a short
+running report, including the last fifty actions split into odd and even
+trials.

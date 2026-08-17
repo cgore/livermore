@@ -2,6 +2,8 @@
 
 [Jesse Lauriston Livermore](https://en.wikipedia.org/wiki/Jesse_Lauriston_Livermore)
 
+**[View PDF Documentation](documentation/livermore.pdf)**
+
 # Introduction
 
 Livermore is an evolutionary rules-based AI library in Common Lisp.

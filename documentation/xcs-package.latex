@@ -1,0 +1,265 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/xcs}
+
+The \texttt{livermore/xcs} package is Wilson's XCS~\cite{wilson-1995}, written
+from the algorithmic description of Butz and Wilson~\cite{butz-wilson-2002}.
+A classifier is a rule $C \to A$ with a prediction, an error, and a fitness.
+The system matches the current situation, picks an action, updates the
+classifiers that advocated that action, and from time to time runs a genetic
+algorithm on the action set rather than on the whole population.
+
+\section{Classes}
+
+\lispClassSubsection{classifier}
+
+A single rule.  The slots are those of Butz and Wilson:
+
+\begin{description}
+\item[\texttt{environment-condition}] $C$, a sequence of predicates.
+\item[\texttt{action}] $A$, the recommended action.
+\item[\texttt{prediction}] $p$, the predicted payoff.
+\item[\texttt{prediction-error}] $\epsilon$.
+\item[\texttt{fitness}] $F$, used by the genetic algorithm.
+\item[\texttt{experience}] $\mathrm{exp}$.
+\item[\texttt{time-stamp}] $\mathrm{ts}$.
+\item[\texttt{action-set-size}] $\mathrm{as}$.
+\item[\texttt{numerosity}] $n$, how many identical copies this macroclassifier
+  stands for.
+\item[\texttt{accuracy}] $\kappa$.
+\end{description}
+
+\lispClassSubsection{xcs}
+
+The running system.  Important slots:
+
+\begin{description}
+\item[\texttt{learning-parameters}] The parameter set.
+\item[\texttt{population}] $[P]$.
+\item[\texttt{match-set}] $[M]$.
+\item[\texttt{action-set}] $[A]$.
+\item[\texttt{previous-action-set}] $[A]_{-1}$.
+\item[\texttt{prediction-array}] $[\mathrm{PA}]$.
+\item[\texttt{reward}] $\rho$.
+\item[\texttt{previous-reward}] $\rho_{-1}$.
+\item[\texttt{payoff}] $P$.
+\item[\texttt{predicate-type}] The class of alleles, usually
+  \texttt{ternary-predicate}.
+\item[\texttt{classifier-type}] Usually \texttt{classifier}.
+\item[\texttt{situation}] $\sigma$.
+\item[\texttt{previous-situation}] $\sigma_{-1}$.
+\item[\texttt{action}] $\mathrm{act}$.
+\item[\texttt{number-of-situations}] How many situations have been seen.
+\item[\texttt{explore?}] True while the current trial is exploring.
+\end{description}
+
+\lispClassSubsection{environment}
+
+Presents situations and accepts actions.  Specialize \texttt{get-situation},
+\texttt{execute-action}, and \texttt{reset}.  The \texttt{multistep?} slot is
+true when a problem lasts for more than one action.
+
+\lispClassSubsection{reinforcement-program}
+
+Scores actions.  Specialize \texttt{get-reward} and \texttt{end-of-problem?}.
+
+\lispClassSubsection{experiment}
+
+Holds an environment, a reinforcement program, and an XCS.  Many problems use
+the same object for the first two.
+
+\begin{description}
+\item[\texttt{number-of-trials}] How many multi-step trials to run.
+  Default $10000$.
+\end{description}
+
+\section{Match, Action, and Update}
+
+\lispGenericSubsection{generate-match-set}
+
+The ``GENERATE MATCH SET'' function.  $[M]$ is every classifier in $[P]$ that
+matches the current situation.  Covering classifiers are added until
+$\theta_{\mathrm{mna}}$ distinct actions are present.
+
+\lispGenericSubsection{generate-covering-classifier}
+
+The ``GENERATE COVERING CLASSIFIER'' function.  Builds a classifier whose
+condition covers the situation and whose action is a random action missing
+from $[M]$.
+
+\lispGenericSubsection{system-prediction}
+
+The fitness-weighted mean prediction of classifiers in $[M]$ that advocate
+\lispVar{action}.
+
+\lispSyntax
+
+\texttt{(system-prediction \lispVar{xcs} \lispVar{action})}
+
+\lispGenericSubsection{select-action-learning}
+
+The ``SELECT ACTION'' function.  With probability $P_{\mathrm{explr}}$ picks a
+random action from $[M]$; otherwise picks the action of highest system
+prediction.
+
+\texttt{select-action-random} and \texttt{select-action-best} are the two
+halves of that choice.
+
+\lispGenericSubsection{generate-action-set}
+
+The ``GENERATE ACTION SET'' function.  $[A]$ is the classifiers in $[M]$ whose
+action is the chosen one.  The previous action set is saved first.
+
+\lispGenericSubsection{update-set}
+
+The ``UPDATE SET'' function.  Updates prediction, error, action-set size, and
+fitness for the classifiers in an action set, then may run action-set
+subsumption.
+
+\lispGenericSubsection{update-fitness}
+
+The ``UPDATE FITNESS'' function.  Accuracy is $1$ when the error is below
+$\epsilon_0$, otherwise $\alpha(\epsilon/\epsilon_0)^{-\nu}$.  Fitness then
+moves toward the classifier's share of the accuracy sum.
+
+\section{The Genetic Algorithm}
+
+\lispGenericSubsection{run-ga?}
+
+True when the action set is non-empty and the average time since the last
+\texttt{GA} exceeds $\theta_{\mathrm{GA}}$.
+
+\lispGenericSubsection{run-ga}
+
+The ``RUN GA'' function.  Selects two parents by fitness, crosses them,
+mutates the children, and either subsumes each child into a parent or inserts
+it into $[P]$.  Insertion may delete a low-fitness classifier if numerosity
+has reached $N$.
+
+\lispGenericSubsection{select-offspring}
+
+The ``SELECT OFFSPRING'' function.  Roulette selection on fitness.
+
+\lispGenericSubsection{crossover}
+
+The ``APPLY CROSSOVER'' function.  Two-point crossover on the condition,
+then the midpoint of prediction, error, and fitness.
+
+\lispGenericSubsection{could-subsume?}
+
+The ``COULD SUBSUME'' function.  True when experience exceeds
+$\theta_{\mathrm{sub}}$ and error is below $\epsilon_0$.
+
+\lispGenericSubsection{subsume?}
+
+The ``DOES SUBSUME'' function.  True when the actions agree, the general
+classifier could subsume, and it is more general.
+
+\lispGenericSubsection{deletion-vote}
+
+The ``DELETION VOTE'' function.  Ranks a classifier for deletion, raising
+the vote when experience is high and fitness is a small fraction of the
+average.
+
+\lispGenericSubsection{delete-from-population}
+
+The ``DELETE FROM POPULATION'' function.  When total numerosity is at least
+$N$, reduces the numerosity of a classifier chosen by deletion vote, or
+removes it if numerosity is $1$.
+
+\lispGenericSubsection{insert-into-population}
+
+The ``INSERT IN POPULATION'' function.  If an identical classifier is
+already present, its numerosity is increased; otherwise the new classifier
+is pushed.
+
+\lispGenericSubsection{do-action-set-subsumption}
+
+The ``DO ACTION SET SUBSUMPTION'' function.  A random most-general subsumer
+absorbs every more-specific classifier in the action set.
+
+\section{The Experiment Loop}
+
+\lispGenericSubsection{start}
+
+Starts an experiment.  Multi-step environments use
+\texttt{multi-step-experiment}; single-step environments use
+\texttt{single-step-experiment}.
+
+\lispGenericSubsection{single-step-experiment}
+
+Runs trials until \texttt{terminate?} is true.  Each trial explores with
+probability $P_{\mathrm{explr}}$.
+
+\texttt{single-step-explore} matches, acts, updates, and may run the
+\texttt{GA}.  \texttt{single-step-exploit} takes the best action and does not
+learn.
+
+\lispGenericSubsection{multi-step-experiment}
+
+Runs \texttt{number-of-trials} problems.  Even-numbered trials (from zero)
+explore and learn; odd-numbered trials exploit.
+
+\texttt{multi-step-explore} uses a discounted payoff
+$\rho_{-1} + \gamma\max[\mathrm{PA}]$ to update the previous action set.
+\texttt{multi-step-exploit} always takes the best action.
+
+\lispGenericSubsection{get-situation}
+
+On an experiment, records the previous situation, reads a new one from the
+environment, and advances the situation counter.
+
+\lispGenericSubsection{get-reward}
+
+On an experiment, records the previous reward and reads a new one from the
+reinforcement program.
+
+\lispGenericSubsection{terminate?}
+
+True when the experiment should stop.  Specialize this on each experiment
+class.
+
+\lispGenericSubsection{single-step-output}
+
+Optional report after a single-step trial.
+
+\section{Identity and Generality}
+
+\texttt{identical?} on two classifiers compares conditions and actions.
+\texttt{match?} on a classifier and a situation tests the condition.
+\texttt{more-general?} on two classifiers tests the conditions.
+\texttt{actions-in} returns the distinct actions in a sequence of
+classifiers.
+\texttt{duplicate} copies a classifier, including its condition.

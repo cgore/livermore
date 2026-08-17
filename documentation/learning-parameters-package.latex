@@ -1,0 +1,101 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/learning-parameters}
+
+The \texttt{livermore/learning-parameters} package holds the numeric knobs for
+an XCS run.  Each slot is an accessor on the \texttt{learning-parameters}
+class.  The names in quotes below are those used by Butz and
+Wilson~\cite{butz-wilson-2002}; the defaults match the values they recommend.
+
+\section{Classes}
+
+\lispClassSubsection{learning-parameters}
+
+An instance of \texttt{learning-parameters} is passed to every XCS.  Only
+\texttt{minimum-number-of-actions} has no default; it must be supplied, and is
+usually equal to the number of legal actions so that covering can fill any
+missing action.
+
+\lispSyntax
+
+\texttt{(make-instance 'learning-parameters :minimum-number-of-actions \lispVar{n} \&key \ldots)}
+
+\lispArgs
+
+\begin{description}
+\item[\texttt{maximum-total-numerosity}] $N$ in the paper, usually in the
+  hundreds.  Default $100$.
+\item[\texttt{learning-rate}] $\beta$, usually in $[0.1, 0.2]$.  Default $0.1$.
+\item[\texttt{multiplier-parameter}] $\alpha$, usually $0.1$.  Default $0.1$.
+\item[\texttt{equal-error-threshold}] $\epsilon_0$, usually about one percent
+  of the reward.  Default $10.0$.
+\item[\texttt{power-parameter}] $\nu$, usually $5$.  Default $5$.
+\item[\texttt{discount-factor}] $\gamma$, usually $0.71$.  Default $0.71$.
+\item[\texttt{ga-threshold}] $\theta_{\mathrm{GA}}$, usually in $[25, 50]$.
+  Default $50$.
+\item[\texttt{crossover-probability}] $\chi$, usually in $[0.5, 1.0]$.
+  Default $0.5$.
+\item[\texttt{mutation-probability}] $\mu$, usually in $[0.01, 0.05]$.
+  Default $0.025$.
+\item[\texttt{deletion-threshold}] $\theta_{\mathrm{del}}$, usually $20$.
+  Default $20$.
+\item[\texttt{fitness-fraction-threshold}] Used by \texttt{deletion-vote}.
+  Default $0.1$.
+\item[\texttt{minimum-subsumption-experience}] $\theta_{\mathrm{sub}}$,
+  usually at least $20$.  Default $20$.
+\item[\texttt{covering-probability}] $P_{\#}$, the chance that a covering
+  allele is don't-care.  Default $0.33$.
+\item[\texttt{initial-prediction}] $p_I$, slightly more than zero.
+  Default $0.001$.
+\item[\texttt{initial-prediction-error}] $\epsilon_I$.  Default $0.001$.
+\item[\texttt{initial-fitness}] $F_I$.  Default $0.001$.
+\item[\texttt{exploration-probability}] $P_{\mathrm{explr}}$.  Default $0.5$.
+\item[\texttt{minimum-number-of-actions}] $\theta_{\mathrm{mna}}$.  Required.
+\item[\texttt{maximum-number-of-steps}] The cap on a multi-step trial.
+  Default $50$.
+\item[\texttt{ga-subsumption?}] \texttt{doGASubsumption}.  Default true.
+\item[\texttt{action-set-subsumption?}] \texttt{doActionSetSubsumption}.
+  Default true.
+\item[\texttt{possible-actions}] The legal actions.  Default \texttt{(nil t)}.
+\end{description}
+
+\lispExamples
+
+\begin{lstlisting}
+(make-instance 'learning-parameters
+               :minimum-number-of-actions 2
+               :possible-actions '(0 1)
+               :maximum-total-numerosity 800)
+\end{lstlisting}

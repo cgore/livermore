@@ -1,0 +1,157 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/stocks}
+
+The \texttt{livermore/stocks} package is a price table: daily bars loaded from
+Yahoo-style \textsc{Csv} files, optional monthly and yearly aggregates, and a
+set of moving-average and directional signals.  The working series is
+\texttt{(records \lispVar{table})}, which applies \texttt{preferred-records}
+and then clips to \texttt{records-start} and \texttt{records-end}.
+
+\section{Parameters}
+
+\lispParameterSubsection{*initial-money*}
+
+The default cash stake for the analyzers.  Default $100000.00$.
+
+\lispParameterSubsection{*livermore-data-directory*}
+
+The directory of Yahoo \textsc{Csv} files, under the \textsc{Asdf} system
+source directory.
+
+\section{Classes}
+
+\lispClassSubsection{table-record}
+
+One \textsc{Ohlc} bar.
+
+\begin{description}
+\item[\texttt{opening-time}, \texttt{closing-time}] Universal times.
+\item[\texttt{descriptive-time}] A printable date.
+\item[\texttt{opening-price}, \texttt{high-price}, \texttt{low-price},
+  \texttt{closing-price}] Unadjusted prices.
+\item[\texttt{trading-volume}] Session volume.
+\item[\texttt{adjusted-closing-price}] Split-adjusted close.
+\end{description}
+
+\texttt{adjustment} is adjusted close over close.
+\texttt{adjusted-opening-price}, \texttt{adjusted-high-price}, and
+\texttt{adjusted-low-price} multiply the unadjusted prices by that factor.
+\texttt{table-record} is also a constructor.
+
+\lispClassSubsection{table}
+
+A price series for one ticker.
+
+\begin{description}
+\item[\texttt{ticker-symbol}] Canonical ticker.
+\item[\texttt{preferred-records}] A function of the table that returns the
+  working bars, default \texttt{\#'daily-records}.
+\item[\texttt{records-start}, \texttt{records-end}] The slice of that series.
+\end{description}
+
+\texttt{daily-records} is the raw daily series.
+\texttt{monthly-records} and \texttt{yearly-records} build \textsc{Ohlc}
+aggregates on first use.
+
+On a table, \texttt{opening-time}, \texttt{opening-price}, and the other
+price accessors map over \texttt{records} and return a list.
+
+\section{Loading}
+
+\lispFunctionSubsection{canonical-ticker}
+
+Uppercase ticker string, following Yahoo's style.
+
+\lispFunctionSubsection{table-filename}
+
+The path of the local \texttt{\textit{TICKER}-table.csv}.
+
+\lispFunctionSubsection{load-table}
+
+Also called \texttt{load-table-from-yahoo}.  Reads that file, skips the
+header row, and sorts the bars by opening time.
+
+\lispSyntax
+
+\texttt{(load-table \lispVar{ticker-symbol} \&key preferred-records)}
+
+\texttt{retrieve-stock-data} fetches a Yahoo \texttt{table.csv} with
+\texttt{wget}.  \texttt{retrieve-stocks-data} does so for every ticker in
+\texttt{*ticker-descriptions*}.
+
+\section{Changes and Statistics}
+
+\texttt{difference}, \texttt{value-ratio}, and \texttt{percent-change}
+compare a key at \texttt{start} and \texttt{end}.
+\texttt{percent-change} is $100$ times the value ratio.
+\texttt{spread-difference} and its siblings compare
+\texttt{position+spread} to \texttt{position}.
+
+The sample statistics from \texttt{livermore/statistics} are specialized on
+\texttt{table}.  \texttt{sample-z-score} and
+\texttt{unbiased-sample-z-score} are the $z$-score of the key at
+\texttt{start}.
+
+\texttt{shares-buyable} is how many whole shares a sum of money buys at the
+adjusted close.  \texttt{buy-and-hold} grows an initial sum by the value
+ratio.
+
+\section{Indicators}
+
+\texttt{simple-moving-average} (\texttt{sma}) is the unweighted mean of each
+window.  \texttt{arithmetically-weighted-moving-average} (\texttt{awma})
+weights the newest point most.  \texttt{exponential-moving-average}
+(\texttt{ema}) uses $\alpha = 2/(n+1)$.
+
+\texttt{moving-average-convergence-divergence} (\texttt{macd}) is the
+difference of two \textsc{Ema}s.  \texttt{macd-signal} is an \textsc{Ema} of
+that difference.
+
+\texttt{upward-changes} and \texttt{downward-changes} are the positive
+day-to-day moves, else $0$.  \texttt{relative-strength} is the ratio of a
+moving average of those two series.  \texttt{ema-rs} is Wilder's form;
+\texttt{ema-rs-27} is the textbook period.
+
+\texttt{simple-directional-signal} is true where the price \lispVar{period}
+steps later is higher.  The matching \texttt{*-gains} and
+\texttt{*-performance} functions turn a signal into a product of day-to-day
+returns, holding cash when the signal is false.
+
+\texttt{sma-crossover-signal} is true when the short \textsc{Sma} exceeds
+\lispVar{ratio} times the long \textsc{Sma}.
+\texttt{directional-sma-crossover-signal} returns \texttt{:long},
+\texttt{:short}, or \texttt{:cash} from those averages and the slope of the
+long average.  The \texttt{*-optimal} functions search period and ratio.

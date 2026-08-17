@@ -1,0 +1,120 @@
+%%%% Copyright (C) 2005 -- 2026, Christopher Mark Gore,
+%%%% Soli Deo Gloria,
+%%%% All rights reserved.
+%%%%
+%%%% 22 Forest Glade Court, Saint Charles, Missouri 63304 USA.
+%%%% Web: http://cgore.com
+%%%% Email: cgore@cgore.com
+%%%%
+%%%% Redistribution and use in source and binary forms, with or without
+%%%% modification, are permitted provided that the following conditions are met:
+%%%%
+%%%%     * Redistributions of source code must retain the above copyright
+%%%%       notice, this list of conditions and the following disclaimer.
+%%%%
+%%%%     * Redistributions in binary form must reproduce the above copyright
+%%%%       notice, this list of conditions and the following disclaimer in the
+%%%%       documentation and/or other materials provided with the distribution.
+%%%%
+%%%%     * Neither the name of Christopher Mark Gore nor the names of other
+%%%%       contributors may be used to endorse or promote products derived from
+%%%%       this software without specific prior written permission.
+%%%%
+%%%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%%%% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%%%% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%%%% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+%%%% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%%%% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%%%% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%%%% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%%%% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%%%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%%%% POSSIBILITY OF SUCH DAMAGE.
+
+\lispPackageChapter{livermore/tmscs}
+
+The \texttt{livermore/tmscs} package is the time series classifier
+(\textsc{Tsc}) of~\cite{gore-2008}, later named \textsc{Tmscs} when the
+representation was allowed more than one series.  It is XCSR whose alleles are
+paths through a time series rather than intervals on a single real.
+Situations are time series or time multiseries as defined in
+$\Sigma$~\cite{gore-sigma}.
+
+A rule is a collection of predicates; each predicate must match the current
+situation for the rule to match~\cite{gore-2008}.  A single predicate consists
+of an initial and a final position, a field selector $\phi$, an operator
+$\omega$, and a range $[l,u]$.  Taking the data along the straight line
+segment from the initial point to the final point forms a vector $d$; applying
+$\phi$ to each element yields $d'$.  The predicate matches if and only if
+$l \le \omega(d') \le u$.  When all of the predicates of the rule match, the
+rule recommends a particular classification or action.
+
+\section{Classes}
+
+\lispClassSubsection{tms-predicate}
+
+A subclass of \texttt{range-predicate}.
+
+\begin{description}
+\item[\texttt{initial}] The start of the path: temporal index first, then
+  array coordinates.
+\item[\texttt{final}] The end of the path, in the same form.
+\item[\texttt{field}] A function applied to each cell, default
+  \texttt{identity}.
+\item[\texttt{operation}] A function applied to the sequence of field
+  values, default \texttt{identity}.
+\end{description}
+
+\texttt{tms-predicate} is also a constructor that applies
+\texttt{make-instance}.
+
+\lispClassSubsection{tms-classifier}
+
+A classifier whose condition is a list of \texttt{tms-predicate}s.  It
+matches a situation when every predicate matches.
+
+\lispClassSubsection{tmscs-learning-parameters}
+
+A subclass of \texttt{xcsr-learning-parameters}.
+
+\begin{description}
+\item[\texttt{maximum-environment-condition-length}] How many predicates a
+  covering classifier may have.  Default $1$.
+\item[\texttt{maximum-temporal-mutation}] The largest random change to the
+  temporal coordinate.  Default $5$.
+\item[\texttt{maximum-position-mutation}] The largest random change to any
+  spatial coordinate.  Default $5$.
+\item[\texttt{valid-operations}] The operations covering and mutation may
+  choose.
+\item[\texttt{valid-fields}] The fields they may choose.  Default
+  \texttt{(list \#'identity)}.
+\item[\texttt{visible-time-range}] The window of history the classifiers
+  may see.  Default \texttt{(0 100)}.
+\end{description}
+
+\lispClassSubsection{tmscs}
+
+An XCSR whose predicate type is \texttt{tms-predicate} and whose classifier
+type is \texttt{tms-classifier}.
+
+\section{Methods}
+
+\texttt{path} is the raster line from \texttt{initial} to \texttt{final}.
+\texttt{field-path} is the field applied to each cell on that path.
+\texttt{operate} applies the operation to that sequence.
+
+\texttt{match?} is true when the operated value lies in the range.
+\texttt{more-general?} is true when the ranges and paths nest strictly.
+
+\texttt{cover} picks random endpoints in the visible window, a random field
+and operation, and a range around the operated value.
+
+\texttt{mutate} may slide the path a little along its line and move the
+bounds, keeping the current situation classified as before.
+
+\texttt{crossover} is one-point on the list of predicates, and may also
+swap a prefix of slots inside the predicate at the cut.
+
+\texttt{covering-score} is the path length times the range width as a
+fraction of the problem range.
