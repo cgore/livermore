@@ -227,7 +227,8 @@
   ((learning-parameters
      :accessor learning-parameters
      :initarg :learning-parameters
-     :type learning-parameters)
+     :type learning-parameters
+     :documentation "The parameter set that controls this XCS.")
    (population
      :accessor population
      :initform nil
@@ -321,12 +322,14 @@
      :accessor number-of-situations
      :initform 0
      :initarg :number-of-situations
-     :type integer)
+     :type integer
+     :documentation "How many situations this XCS has seen.")
    (explore?
      :accessor explore?
      :initform nil
      :initarg :explore?
-     :type boolean)
+     :type boolean
+     :documentation "True while the current trial is exploring rather than exploiting.")
    (exploration-length
      :accessor exploration-length
      :initform 1000
@@ -354,53 +357,81 @@
      :accessor multistep?
      :initform nil
      :initarg :multistep?
-     :type boolean)))
+     :type boolean
+     :documentation
+     "True if a problem lasts for more than one action.  Single-step
+     problems such as the multiplexer leave this NIL."))
+  (:documentation
+   "The environment presents situations and accepts actions.  Specialize
+   GET-SITUATION, EXECUTE-ACTION, and RESET for each problem."))
 
 (defmethod single-step? ((env environment))
+  "This predicate is true when ENV is a single-step problem."
   (not (multistep? env)))
 
 (defmethod reset ((env environment))
+  "This restores ENV to a fresh problem.  The default calls the next method
+  if one exists."
   (when (next-method-p)
     (call-next-method)))
 
 (defmethod get-situation ((env environment))
+  "This returns the current situation from ENV.  The default calls the next
+  method if one exists."
   (when (next-method-p)
     (call-next-method)))
 
 (defmethod execute-action ((env environment) action)
+  "This applies ACTION to ENV.  The default calls the next method if one
+  exists."
   (when (next-method-p)
     (call-next-method)))
 
 (defclass reinforcement-program ()
-  ())
+  ()
+  (:documentation
+   "The reinforcement program scores actions.  Specialize GET-REWARD and
+   END-OF-PROBLEM? for each problem."))
 
 (defmethod get-reward ((rp reinforcement-program))
+  "This returns the reward for the last action.  The default calls the next
+  method if one exists."
   (when (next-method-p)
     (call-next-method)))
 
 (defmethod end-of-problem? ((rp reinforcement-program))
+  "This predicate is true when the current problem is finished.  The default
+  calls the next method if one exists."
   (when (next-method-p)
     (call-next-method)))
 
 (defclass experiment ()
   ((environment
      :accessor environment
-     :initarg :environment)
+     :initarg :environment
+     :documentation "The environment that presents situations and accepts actions.")
    (reinforcement-program
      :accessor reinforcement-program
-     :initarg :reinforcement-program)
+     :initarg :reinforcement-program
+     :documentation "The program that scores actions and ends problems.")
    (xcs
      :accessor xcs
-     :initarg :xcs)
+     :initarg :xcs
+     :documentation "The XCS instance under test.")
    (number-of-trials
       :accessor number-of-trials
       :initform 10000
       :initarg :number-of-trials
-      :type integer))
+      :type integer
+      :documentation "How many trials a multi-step experiment should run."))
   (:documentation "This class holds an instance of a single experiment, which
                   contains an XCS, reinforcement program, and environment."))
-(defgeneric single-step-output (experiment))
-(defgeneric terminate? (experiment))
+(defgeneric single-step-output (experiment)
+  (:documentation
+   "This prints or records a report after one single-step trial."))
+(defgeneric terminate? (experiment)
+  (:documentation
+   "This predicate is true when the experiment should stop."))
 
 (defmethod could-subsume? ((classifier classifier)
                            (learning-parameters learning-parameters))
@@ -421,6 +452,8 @@
        (more-general? general specific)))
 
 (defmethod duplicate ((classifier classifier))
+  "This returns a newly created copy of CLASSIFIER, including its condition
+  and all of the numerical parameters."
   (make-instance (type-of classifier)
     :environment-condition (duplicate (environment-condition classifier))
     :action (action classifier)
@@ -435,16 +468,22 @@
 
 (defmethod identical? ((situation-1 sequence)
                        (situation-2 sequence))
+  "This predicate is true when the two sequences have the same length and
+  each pair of elements is identical."
   (and (= (length situation-1)
           (length situation-2))
        (every 'identical? situation-1 situation-2)))
 
 (defmethod identical? ((classifier classifier)
                        (situation sequence))
+  "This predicate is true when CLASSIFIER's condition is identical to
+  SITUATION."
   (identical? (environment-condition classifier) situation))
 
 (defmethod identical? ((classifier-1 classifier)
                        (classifier-2 classifier))
+  "This predicate is true when the two classifiers have identical conditions
+  and the same action."
   (and (identical? (environment-condition classifier-1)
                    (environment-condition classifier-2))
        (equalp (action classifier-1)
@@ -572,10 +611,13 @@
       (/ sum-of-p*F sum-of-F))))
 
 (defmethod select-action-random ((xcs xcs))
+  "This sets the action of XCS to a random action present in the match set."
   (setf (action xcs)
         (random-element (actions-in (match-set xcs)))))
 
 (defmethod select-action-best ((xcs xcs))
+  "This sets the action of XCS to the action in the match set with the
+  highest system prediction."
   (setf (action xcs)
         (best (actions-in (match-set xcs))
               #'>
@@ -767,6 +809,9 @@
         (push classifier population)))))
 
 (defmethod more-general? ((general sequence) (specific sequence))
+  "This predicate is true when GENERAL matches SPECIFIC and at least one
+  element of GENERAL is strictly more general than the corresponding element
+  of SPECIFIC."
   (and (match? general specific)
        (some 'more-general? general specific)))
 
@@ -822,6 +867,8 @@
               (delete-from-population xcs))))))))
 
 (defmethod get-situation ((experiment experiment))
+  "This records the previous situation, reads a new situation from the
+  environment, and advances the situation counter."
   (with-slots (xcs environment) experiment
     (with-slots (situation previous-situation) xcs
       (setf previous-situation situation
@@ -829,6 +876,8 @@
       (incf (number-of-situations xcs)))))
 
 (defmethod get-reward ((experiment experiment))
+  "This records the previous reward and reads a new reward from the
+  reinforcement program."
   (with-slots (reward previous-reward) (xcs experiment)
     (setf previous-reward reward
           reward (get-reward (reinforcement-program experiment)))))
@@ -836,6 +885,10 @@
 ;;;; New stuff from Butz's xcs.c starts here.
 
 (defmethod multi-step-explore ((experiment experiment))
+  "This runs one multi-step trial with exploration.  Each step matches,
+  selects an action, acts, and, after the first step, updates the previous
+  action set with a discounted payoff.  The trial ends when the problem
+  ends or the step limit is reached."
   (with-slots (xcs environment reinforcement-program) experiment
     (with-slots (learning-parameters
                   match-set
@@ -870,6 +923,8 @@
 	      (return-from multi-step-explore)))))))
 
 (defmethod multi-step-exploit ((experiment experiment))
+  "This runs one multi-step trial that always takes the best predicted
+  action.  It does not update the population or run the genetic algorithm."
   (with-slots (xcs environment reinforcement-program) experiment
     (with-slots (learning-parameters) xcs
       (dotimes (step (maximum-number-of-steps learning-parameters))
@@ -882,6 +937,8 @@
 	  (return-from multi-step-exploit))))))
 
 (defmethod multi-step-experiment ((experiment experiment))
+  "This runs NUMBER-OF-TRIALS multi-step problems.  Even-numbered trials
+  (counting from zero) explore and learn; odd-numbered trials exploit."
   (with-slots (xcs number-of-trials environment) experiment
     (with-slots (explore?) xcs
       (dotimes (trial number-of-trials)
@@ -894,6 +951,9 @@
           (multi-step-exploit experiment))))))
 
 (defmethod single-step-explore ((experiment experiment))
+  "This runs one single-step trial with exploration.  It matches, selects
+  an action, acts, updates the action set, and may run the genetic
+  algorithm."
   (with-slots (xcs environment) experiment
     (with-slots (action reward payoff situation match-set action-set) xcs
       (generate-match-set xcs)
@@ -909,6 +969,8 @@
             action-set nil))))
 
 (defmethod single-step-exploit ((experiment experiment))
+  "This runs one single-step trial that always takes the best predicted
+  action.  It does not update the population or run the genetic algorithm."
   (with-slots (xcs environment) experiment
     (generate-match-set xcs)
     ; generate prediction array
@@ -918,6 +980,8 @@
     (setf (match-set xcs) nil)))
 
 (defmethod single-step-experiment ((experiment experiment))
+  "This runs single-step trials until TERMINATE? is true.  Each trial
+  explores with probability P_explr and otherwise exploits."
   (with-slots (xcs environment number-of-trials) experiment
     (with-slots (explore? situation learning-parameters) xcs
       (with-slots (exploration-probability) learning-parameters
@@ -953,6 +1017,7 @@
 
 (defmethod start-experiments ((experiment experiment)
                               (number-of-experiments integer))
+  "This calls START on EXPERIMENT NUMBER-OF-EXPERIMENTS times."
   (dotimes (experiment-number number-of-experiments)
     (start experiment)))
 
@@ -977,6 +1042,7 @@
                               (action-set-size 1)
                               (time-stamp 0)
                               (accuracy 0.0))
+  "This builds a classifier for the unit tests."
   (make-instance 'classifier
                  :environment-condition condition
                  :action action
@@ -990,14 +1056,19 @@
                  :accuracy accuracy))
 
 (defun %test-lp (&rest args)
+  "This builds learning parameters for the unit tests, with one required
+  action unless ARGS overrides it."
   (apply #'make-instance 'learning-parameters
          :minimum-number-of-actions 1
          args))
 
 (defun %hash-condition (length)
+  "This returns a condition of LENGTH don't-care ternary predicates."
   (loop repeat length collect (ternary-predicate :#)))
 
 (defun %specific-condition (bits)
+  "This returns a condition of ternary predicates, one for each element of
+  BITS."
   (mapcar #'ternary-predicate bits))
 
 (behavior 'classifier-identity

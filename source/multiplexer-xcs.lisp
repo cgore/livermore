@@ -54,27 +54,35 @@
   ((current-situation
      :accessor current-situation
      :initarg :current-situation
-     :type bit-vector)
+     :type bit-vector
+     :documentation "The last random bit vector presented as a situation.")
    (address-width
      :accessor address-width
      :initform 2
      :initarg :address-width
-     :type (integer 0 *))))
+     :type (integer 0 *)
+     :documentation "The number of address bits of the multiplexer."))
+  (:documentation
+   "An environment for the Boolean multiplexer problem."))
 
 (defclass multiplexer-experiment (experiment)
-  ())
+  ()
+  (:documentation "An XCS experiment that uses a multiplexer-analyzer."))
 
 (defmethod random-situation ((multiplexer-analyzer multiplexer-analyzer))
+  "This returns a random bit vector of the multiplexer length."
   (random-bit-vector
     (multiplexer-length
       (address-width multiplexer-analyzer))))
 
 (defmethod get-situation ((multiplexer-analyzer multiplexer-analyzer))
+  "This stores a new random bit vector and returns it as a truth vector."
   (incf (number-of-situations multiplexer-analyzer))
   (truth-vector (setf (current-situation multiplexer-analyzer)
                       (random-situation multiplexer-analyzer))))
 
 (defmethod correct-action ((multiplexer-analyzer multiplexer-analyzer))
+  "This is the multiplexer output for the current situation."
   (multiplexer (address-width multiplexer-analyzer)
                (current-situation multiplexer-analyzer)))
 
@@ -89,12 +97,15 @@
        (if (correct-action? multiplexer-analyzer) 300 0))))
 
 (defmethod end-of-problem? ((multiplexer-analyzer multiplexer-analyzer))
+  "This predicate is always true.  Each multiplexer trial is a single step."
   t)
 
 (defmethod terminate? ((multiplexer-experiment multiplexer-experiment))
+  "This predicate is true after 10000 actions."
   (<= 10000 (actions (environment multiplexer-experiment))))
 
 (defun start-multiplexer-experiment (&optional (address-width 2))
+  "This builds a multiplexer experiment of ADDRESS-WIDTH and starts it."
   (defparameter *multiplexer-analyzer*
     (make-instance 'multiplexer-analyzer
                    :address-width address-width))

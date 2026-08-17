@@ -86,12 +86,18 @@
      :accessor initial-history-depth
      :initform 200
      :initarg :initial-history-depth
-     :type (integer 0 *))))
+     :type (integer 0 *)))
+  (:documentation
+   "An environment that presents a piecewise linear series and asks
+   whether the next point is uptrending or downtrending."))
 
 (defclass ikeda-tmscs-experiment (experiment)
-  ())
+  ()
+  (:documentation "A TMSCS experiment that uses an ikeda-tmscs-analyzer."))
 
 (defmethod single-step-output ((experiment ikeda-tmscs-experiment))
+  "This prints the last action and, when *STAT-REPORT* is true, statistics
+  for the population, match set, and action set."
   (with-slots (environment reinforcement-program xcs) experiment
     (with-slots (current-action
                   history
@@ -124,6 +130,8 @@
                        :pre-string "~&  A F :: "))))))
 
 (defun situation-function[3] (time-step)
+  "This returns the value at TIME-STEP of a piecewise linear series whose
+  slope is perturbed by *IKEDA-PERTURBATION*."
   (labels ((perturb (percentage)
                     (random-in-range (1+ (- percentage)) (1+ percentage)))
            (new-situation ()
@@ -161,6 +169,8 @@
     (ihs-value (nth-from-end time-step *ikeda-hist*))))
 
 (defun situation-function (time-step)
+  "This returns the value at TIME-STEP of a piecewise linear series whose
+  heading may flip with probability *IKEDA-FLIP*."
   (labels ((flip? (probability)
                   (if (probability? probability) -1 1))
            (new-situation ()
@@ -213,6 +223,7 @@
   (if (= n 0)
 
 (defmethod get-situation ((analyzer ikeda-tmscs-analyzer))
+  "This pushes the next series value onto the history."
   (with-slots (number-of-situations history initial-history-depth) analyzer
     (push (situation-function (incf number-of-situations)) history)))
 
@@ -225,31 +236,39 @@
       :downtrending)))
 
 (defmethod correct-action ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
+  "This is :UPTRENDING or :DOWNTRENDING for the next point."
   (classify ikeda-tmscs-analyzer))
 
 (defmethod correct-action? ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
+  "This predicate is true when the last action matches the next-point class."
   (equalp (current-action ikeda-tmscs-analyzer)
           (correct-action ikeda-tmscs-analyzer)))
 
 (defmethod get-reward ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
+  "This returns 1000.0 for a correct action and 0.0 otherwise."
   (if (correct-action? ikeda-tmscs-analyzer)
     1000.0
     0.0))
 
 (defmethod end-of-problem? ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
+  "This predicate is always true.  Each trial is a single step."
   ;; Does this really make any sense in TMSCS?
   t)
 
 (defmethod terminate? ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
+  "This predicate is true after 10000 actions."
   (<= 10000 (number-of-actions ikeda-tmscs-analyzer)))
 
 (defmethod initialize-instance :after ((analyzer ikeda-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  "This fills HISTORY to INITIAL-HISTORY-DEPTH."
   (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
 
 (defmethod execute-action ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer) action)
+  "This records ACTION, updates the correctness counts, and appends a
+  record to *IKEDA-ACTION-HISTORY*."
   (with-slots (current-action
                 number-of-actions
                 number-of-correct-actions) ikeda-tmscs-analyzer
@@ -264,6 +283,7 @@
           *ikeda-action-history*)))
 
 (defun simple-slope (list &key (key #'identity) (start 0) (end nil))
+  "This is the slope of LIST from START to END, using KEY on each element."
   (assert (listp list))
   (when (null end)
     (setf end (1- (length list))))
@@ -283,6 +303,7 @@
 (load "ikeda-tmscs-parameters")
 
 (defun start-ikeda-tmscs-experiment ()
+  "This builds an Ikeda TMSCS experiment and starts it."
   (defparameter *ikeda-hist* nil)
   (defparameter *ikeda-action-history* nil)
   (defparameter *ikeda-tmscs-analyzer*

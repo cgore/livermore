@@ -68,6 +68,8 @@
         (incf result (expt 2 index))))))
 
 (defmethod multiplexer-length ((address-width integer))
+  "This returns the bit-vector length of a multiplexer whose address is
+  ADDRESS-WIDTH bits: ADDRESS-WIDTH plus 2^ADDRESS-WIDTH data bits."
   (assert (plusp address-width))
   (+ address-width (expt 2 address-width)))
 
@@ -83,6 +85,8 @@
        (binary-decoder (subseq bits 0 address-width))))
 
 (defmethod truth-vector ((bvec bit-vector))
+  "This returns a general vector of T and NIL corresponding to the 1 and 0
+  bits of BVEC."
   (let ((tvec (make-array (length bvec))))
     (dotimes (i (length tvec) tvec)
       (setf (aref tvec i)

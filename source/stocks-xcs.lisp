@@ -86,7 +86,8 @@
 (defclass stocks-xcs-analyzer (analyzer)
   ((table
     :accessor table
-    :initarg :table)
+    :initarg :table
+    :documentation "The price table this analyzer walks.")
    (initial-index
     :accessor initial-index
     :initform *stock-starting-index*
@@ -120,24 +121,33 @@
     :accessor positive-actions
     :initform 0
     :initarg :positive-actions
-    :type integer)))
+    :type integer))
+  (:documentation
+   "An environment that walks a stock table and chooses :STOCK, cash, or
+   :HOLD."))
 
 (defmethod elt-record ((stocks-xcs-analyzer stocks-xcs-analyzer) (n integer) &optional (key #'identity))
+  "This is record N of the analyzer's table, or KEY applied to it."
   (assert (not (minusp n)))
   (elt-record (table stocks-xcs-analyzer) n key))
 
 (defmethod current-record ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This is the record at CURRENT-INDEX."
   (elt-record stocks-xcs-analyzer (current-index stocks-xcs-analyzer)))
 
 (defmethod elt-previous-record ((stocks-xcs-analyzer stocks-xcs-analyzer)
                                 (n integer))
+  "This is the record N bars before CURRENT-INDEX."
   (assert (not (minusp n)))
   (elt-record stocks-xcs-analyzer (- (current-index stocks-xcs-analyzer) n)))
 
 (defmethod previous-record ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This is the record immediately before CURRENT-INDEX."
   (elt-previous-record stocks-xcs-analyzer 1))
 
 (defmethod money-from-stock ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This is MONEY after buying as many shares as possible yesterday and
+  marking them to today's adjusted close."
   (with-slots (money) stocks-xcs-analyzer
     (let* ((shares (shares-buyable (previous-record stocks-xcs-analyzer) money))
            (prev-adj-close (adjusted-closing-price (previous-record
@@ -148,10 +158,13 @@
          (- money (* shares prev-adj-close))))))
 
 (defmethod should-have-bought-stock? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true when today's adjusted close is above yesterday's."
   (> (adjusted-closing-price (current-record stocks-xcs-analyzer))
      (adjusted-closing-price (previous-record stocks-xcs-analyzer))))
 
 (defmethod buy-stock? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true when the current action is :STOCK, or when it is
+  :HOLD and the previous action was :STOCK."
   (with-slots (current-action previous-action) stocks-xcs-analyzer
     (or (equal current-action :stock)
         (and (equal current-action :hold)
@@ -160,21 +173,27 @@
 (defvar *correct-actions-history* nil)
 
 (defmethod correct-action? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true when the buy decision matches whether the price
+  rose."
   (or (and (buy-stock? stocks-xcs-analyzer)
            (should-have-bought-stock? stocks-xcs-analyzer))
       (and (not (buy-stock? stocks-xcs-analyzer))
            (not (should-have-bought-stock? stocks-xcs-analyzer)))))
 
 (defmethod positive-action? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true when MONEY increased."
   (> (money stocks-xcs-analyzer)
      (previous-money stocks-xcs-analyzer)))
 
 (defmethod negative-action? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true when MONEY decreased."
   (< (money stocks-xcs-analyzer)
      (previous-money stocks-xcs-analyzer)))
 
 ;; Version exists in xcs-analyzer.lisp.
 (defmethod execute-action ((stocks-xcs-analyzer stocks-xcs-analyzer) action)
+  "This advances one bar, applies ACTION to MONEY if buying, and updates
+  the correctness counts."
   (with-slots (table
                 current-index initial-index
                 previous-action current-action
@@ -200,6 +219,8 @@
           *correct-actions-history*)))
 
 (defmethod get-situation ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This returns a vector of extrema and z-score features from recent
+  prices and volume."
   (with-slots (table current-index) stocks-xcs-analyzer
     (let ((yesterday (1- current-index)))
       (flet ((z+? (f days)
@@ -226,6 +247,8 @@
 
 ;; Version exists in xcs-analyzer.lisp.
 (defmethod get-reward ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This returns a reward chosen by *REWARD-METHOD* and may print a
+  periodic report."
   (with-slots (money previous-money
                 current-index
                 table
@@ -261,20 +284,26 @@
         (:correctness (if (correct-action? stocks-xcs-analyzer) 1000.0 0.0))))))
 
 (defmethod end-of-problem? ((stocks-xcs-analyzer stocks-xcs-analyzer))
+  "This predicate is true on odd current indices."
  (oddp (current-index stocks-xcs-analyzer)))
 
-(defclass stocks-experiment (experiment) ())
+(defclass stocks-experiment (experiment)
+  ()
+  (:documentation "An XCS experiment that uses a stocks-xcs-analyzer."))
 
 (defmethod records ((stocks-experiment stocks-experiment))
+  "This returns the records of the experiment's stock table."
   (records (table (environment stocks-experiment))))
 
 (defmethod terminate? ((stocks-experiment stocks-experiment))
+  "This predicate is true at the last record or when MONEY is not positive."
   (with-slots (current-index money) (environment stocks-experiment)
     (or (= current-index
            (1- (length (records stocks-experiment))))
         (not (plusp money)))))
 
 (defun load-*table* (stock-ticker)
+  "This loads STOCK-TICKER into *TABLE*."
   (setf *table* (load-table stock-ticker)))
 (load-*table* *initial-stock-ticker*)
 

@@ -71,6 +71,7 @@
   (frame-exit *application-frame*))
 
 (defun rescale ()
+  "This fits the chart axes to the current table records."
   (setf (x0 *application-frame*)
         (apply #'min (opening-time (table *application-frame*)))
         (y0 *application-frame*)
@@ -127,6 +128,7 @@
     (rescale)))
 
 (defun line-chart (frame pane key &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
+  "This draws a line chart of KEY on the records of FRAME."
   (let* ((w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
          (xr (- (x1 frame) (x0 frame)))
@@ -149,6 +151,7 @@
               (mapcar key (rest (records (table *application-frame*)))))))))
 
 (defun closing-line-chart (frame pane)
+  "This draws a line chart of the adjusted closing price."
   (line-chart frame pane #'adjusted-closing-price))
 
 (defun naked-bar-chart (frame
@@ -159,6 +162,7 @@
                          (up-ink (up-ink frame))
                          (down-ink (down-ink frame))
                          (line-thickness 1))
+  "This draws a vertical bar from START to END for each record."
   (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
          (yr (- (y1 frame) (y0 frame)))
@@ -191,6 +195,7 @@
                    :line-thickness line-thickness))
 
 (defun bar-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
+  "This draws a high-low bar with a mark at the close."
   (naked-bar-chart frame pane :up-ink up-ink :down-ink down-ink)
   (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
@@ -211,6 +216,7 @@
               (records (table frame)))))))
 
 (defun ohlc-bar-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
+  "This draws a high-low bar with marks at the open and the close."
   (bar-chart frame pane :up-ink up-ink :down-ink down-ink)
   (let* (;(w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
@@ -231,14 +237,17 @@
               (records (table frame)))))))
 
 (defun bar-and-closing-line-chart (frame pane)
+  "This draws a closing-price line over high-low bars."
   (closing-line-chart frame pane)
   (naked-bar-chart frame pane))
 
 (defun candlestick-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
+  "This draws a high-low bar with a thick open-close body."
   (naked-bar-chart frame pane :up-ink up-ink :down-ink down-ink)
   (body-bar-chart frame pane :up-ink up-ink :down-ink down-ink :line-thickness 3))
 
 (defun empty-candlestick-chart (frame pane &key (up-ink (up-ink frame)) (down-ink (down-ink frame)))
+  "This draws candlesticks whose up bodies are hollow."
   (naked-bar-chart frame pane :up-ink up-ink :down-ink down-ink)
   (let* ((w (bounding-rectangle-width pane))
          (h (bounding-rectangle-height pane))
@@ -267,12 +276,14 @@
               (records (table frame)))))))
 
 (defun four-line-chart (frame pane)
+  "This draws lines for the adjusted low, high, open, and close."
   (line-chart frame pane #'adjusted-low-price :up-ink +black+ :down-ink +black+)
   (line-chart frame pane #'adjusted-high-price :up-ink +black+ :down-ink +black+)
   (line-chart frame pane #'adjusted-opening-price :up-ink +green+ :down-ink +green+)
   (line-chart frame pane #'adjusted-closing-price :up-ink +red+ :down-ink +red+))
 
 (defun display-chart (frame pane)
+  "This draws the ticker, the description, and the current chart style."
   (draw-text* pane (canonical-ticker (ticker-symbol (table frame)))
 	      0 0 :align-x :left :align-y :top)
   (draw-text* pane (stock-description (table frame))
@@ -280,6 +291,7 @@
   (funcall (chart-style frame) frame pane))
 
 (defun make-trade-chart (table)
+  "This builds a trade-chart frame for TABLE."
   (make-application-frame 'trade-chart
                           :x0 (apply #'min (opening-time table))
                           :y0 (apply #'min (adjusted-low-price table))
@@ -289,7 +301,9 @@
                           :pretty-name "Trade Chart"))
 
 (defun trade-chart (table)
+  "This opens a trade-chart window for TABLE."
   (run-frame-top-level (make-trade-chart table)))
 
 (defun demo ()
+  "This opens a yearly chart of the Dow Jones Industrial Average."
   (trade-chart (load-table '^dji :preferred-records #'yearly-records)))

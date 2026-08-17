@@ -64,17 +64,22 @@
     :accessor members
     :initform nil
     :initarg :members
-    :type list)
+    :type list
+    :documentation "The values this predicate matches when it is not covering.")
    (possible-members
     :accessor possible-members
     :initform nil
     :initarg :possible-members
-    :type list)
+    :type list
+    :documentation
+    "The universe of values this predicate may mention.  Share this list
+    among predicates of the same problem.")
    (covering?
     :accessor covering?
     :initform nil
     :initarg :covering?
-    :type boolean))
+    :type boolean
+    :documentation "True if this predicate matches every possible member."))
   (:documentation
    "A set predicate consists of a list of members of the set, or can cover all
     conditions if the COVERING? member is T.  The POSSIBLE-MEMBERS list should
@@ -125,10 +130,13 @@
                   (members y))))
 
 (defmethod match? ((set-predicate set-predicate) condition)
+  "This predicate is true when SET-PREDICATE covers CONDITION, either
+  because it is fully covering or because CONDITION is one of its members."
   (or (covering? set-predicate)
       (member condition (members set-predicate))))
 
 (defmethod match? ((x set-predicate) (y set-predicate))
+  "This predicate is true when X matches every situation that Y matches."
   (or (covering? x)
       (and (not (covering? y))
            (subsetp (members y) (members x)))))
@@ -145,6 +153,8 @@
 (defmethod cover ((set-predicate set-predicate)
                   (situations list)
                   (covering-probability float))
+  "This returns a set predicate whose members are SITUATIONS.  With
+  probability COVERING-PROBABILITY the new predicate is fully covering."
   (make-instance 'set-predicate
                  :members (duplicate situations)
                  :covering? (probability? covering-probability)))
@@ -152,11 +162,16 @@
 (defmethod cover ((set-predicate set-predicate)
                   situation
                   (covering-probability float))
+  "This covers a single SITUATION as a one-element member list."
   (cover set-predicate (list situation) covering-probability))
 
 (defmethod mutate ((set-predicate set-predicate)
                    situation
                    (mutation-probability float))
+  "This mutates SET-PREDICATE with probability MUTATION-PROBABILITY.  A
+  covering predicate becomes a singleton of SITUATION.  Otherwise the
+  predicate may become covering, gain a member, or lose a member other
+  than SITUATION."
   (when (probability? mutation-probability)
     (with-slots (members covering? possible-members) set-predicate
       ;; The list of possible members should include at least two possibilities.

@@ -48,14 +48,18 @@ another of the same length when every coordinate satisfies that same
 comparison."))
 
 (defmethod threshold-indicator ((threshold list) (instance list))
+  "This predicate is true when every element of INSTANCE is at least the
+  corresponding element of THRESHOLD."
   (assert (= (length threshold)
              (length instance)))
   (every #'>= instance threshold))
 
 (defmethod threshold-indicator ((threshold vector) (instance vector))
+  "This predicate applies the list rule to two vectors of the same length."
   (threshold-indicator (vector-to-list threshold) (vector-to-list instance)))
 
 (defmethod threshold-indicator ((threshold number) (instance number))
+  "This predicate is true when INSTANCE is at least THRESHOLD."
   (>= instance threshold))
 
 (behavior 'threshold-indicator

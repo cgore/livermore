@@ -81,15 +81,22 @@
      :accessor initial-history-depth
      :initform 200
      :initarg :initial-history-depth
-     :type natural-number)))
+     :type natural-number
+     :documentation "How many history points to generate before learning."))
+  (:documentation
+   "An environment that presents a sine wave and asks whether the next
+   point is up or down."))
 
 (defclass linear-tmscs-experiment (experiment)
-  ())
+  ()
+  (:documentation "A TMSCS experiment that uses a linear-tmscs-analyzer."))
 
 (defun situation-function (time-step)
+  "This is a sine wave with period 50."
   (sin (* time-step pi 1/25)))
 
 (defmethod get-situation ((analyzer linear-tmscs-analyzer))
+  "This pushes the next sine value onto the history."
   (with-slots (number-of-situations history initial-history-depth) analyzer
     (push (situation-function (incf number-of-situations)) history)))
 
@@ -100,29 +107,37 @@
        (situation-function (1+ number-of-situations)))))
 
 (defmethod correct-action ((linear-tmscs-analyzer linear-tmscs-analyzer))
+  "This is the up-or-down class of the next point."
   (classify linear-tmscs-analyzer))
 
 (defmethod correct-action? ((linear-tmscs-analyzer linear-tmscs-analyzer))
+  "This predicate is true when the last action matches the next-point class."
   (equalp (current-action linear-tmscs-analyzer)
           (correct-action linear-tmscs-analyzer)))
 
 (defmethod get-reward ((linear-tmscs-analyzer linear-tmscs-analyzer))
+  "This returns 1000.0 for a correct action and 0.0 otherwise."
   (if (correct-action? linear-tmscs-analyzer) 1000.0 0.0))
 
 (defmethod end-of-problem? ((linear-tmscs-analyzer linear-tmscs-analyzer))
+  "This predicate is always true.  Each trial is a single step."
   ;; Does this really make any sense in TMSCS?
   t)
 
 (defmethod terminate? ((linear-tmscs-analyzer linear-tmscs-analyzer))
+  "This predicate is true after 10000 actions."
   (<= 10000 (number-of-actions linear-tmscs-analyzer)))
 
 (defmethod initialize-instance :after ((analyzer linear-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  "This fills HISTORY to INITIAL-HISTORY-DEPTH."
   (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
 
 (defmethod execute-action ((linear-tmscs-analyzer linear-tmscs-analyzer) action)
+  "This records ACTION, updates the correctness counts, and prints a short
+  running report."
   (with-slots (current-action
                 history
                 number-of-actions
@@ -146,6 +161,8 @@
             (first history))))
 
 (defun simple-slope (sequence &key (key #'identity) (start 0) (end nil))
+  "This is the slope of SEQUENCE from START to END, using KEY on each
+  element."
   (assert (sequence? sequence))
   (when (null end)
     (setf end (1- (length sequence))))
@@ -154,6 +171,7 @@
      (- start end)))
 
 (defun start-linear-tmscs-experiment ()
+  "This builds a linear TMSCS experiment and starts it."
   (defparameter *linear-tmscs-analyzer*
     (make-instance 'linear-tmscs-analyzer))
   (defparameter *linear-tmscs-learning-parameters*

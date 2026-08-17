@@ -48,7 +48,9 @@
            :stat-report))
 (in-package :livermore/statistics)
 
-(defgeneric arithmetic-mean (sequence &key key start end))
+(defgeneric arithmetic-mean (sequence &key key start end)
+  (:documentation
+   "This is the arithmetic mean of SEQUENCE between START and END."))
 
 (defmethod arithmetic-mean
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -61,7 +63,9 @@
       (/ (sum subsequence :key key)
          (length subsequence)))))
 
-(defgeneric sample-variance (sequence &key key start end))
+(defgeneric sample-variance (sequence &key key start end)
+  (:documentation
+   "This is the sample variance of SEQUENCE, divided by N."))
 
 (defmethod sample-variance
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -77,7 +81,9 @@
                             key))
          (length subsequence)))))
 
-(defgeneric unbiased-sample-variance (sequence &key key start end))
+(defgeneric unbiased-sample-variance (sequence &key key start end)
+  (:documentation
+   "This is the unbiased sample variance of SEQUENCE, divided by N-1."))
 
 (defmethod unbiased-sample-variance
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -91,7 +97,9 @@
                                           key))
            (1- (length subsequence)))))))
 
-(defgeneric sample-standard-deviation (sequence &key key start end))
+(defgeneric sample-standard-deviation (sequence &key key start end)
+  (:documentation
+   "This is the square root of the sample variance of SEQUENCE."))
 
 (defmethod sample-standard-deviation
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -101,7 +109,9 @@
     (unless (null variance)
       (sqrt variance))))
 
-(defgeneric unbiased-sample-standard-deviation (sequence &key key start end))
+(defgeneric unbiased-sample-standard-deviation (sequence &key key start end)
+  (:documentation
+   "This is the square root of the unbiased sample variance of SEQUENCE."))
 
 (defmethod unbiased-sample-standard-deviation
   ((sequence sequence) &key (key #'identity) (start 0) (end nil))
@@ -114,7 +124,10 @@
 
 (defgeneric stat-report (destination data
                           &key key start end
-                            pre-string format-string post-string))
+                            pre-string format-string post-string)
+  (:documentation
+   "This prints the mean, unbiased standard deviation, minimum, and
+   maximum of DATA to DESTINATION."))
 
 (defmethod stat-report
   (destination (data sequence)

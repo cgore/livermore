@@ -161,28 +161,90 @@
 ;; (clsql:connect '("localhost" "livermore" "livermore" "stupidhead")
 ;;                  :database-type :postgresql-socket)
 
-(defgeneric records (table))
-(defgeneric adjustment (table-record))
-(defgeneric adjusted-opening-price (table-record))
-(defgeneric adjusted-high-price (table-record))
-(defgeneric adjusted-low-price (table-record))
-(defgeneric generate-daily-records (table))
-(defgeneric daily-records (table))
-(defgeneric generate-monthly-records (table))
-(defgeneric monthly-records (table))
-(defgeneric generate-yearly-records (table))
-(defgeneric yearly-records (table))
-(defgeneric elt-record (table position &optional key))
-(defgeneric difference (table &key key start end))
-(defgeneric value-ratio (table &key key start end))
-(defgeneric percent-change (table &key key start end))
-(defgeneric spread-difference (table &key key position spread))
-(defgeneric spread-ratio (table &key key position spread))
-(defgeneric spread-percent-change (table &key key position spread))
-(defgeneric sample-z-score (table &key key start end))
-(defgeneric unbiased-sample-z-score (table &key key start end))
-(defgeneric shares-buyable (record money))
-(defgeneric buy-and-hold (table initial-money &key start end))
+(defgeneric records (table)
+  (:documentation
+   "This returns the preferred records of TABLE, clipped to RECORDS-START
+   and RECORDS-END."))
+
+(defgeneric adjustment (table-record)
+  (:documentation
+   "This is the split-adjustment factor: adjusted close over close."))
+
+(defgeneric adjusted-opening-price (table-record)
+  (:documentation "This is the opening price times the adjustment factor."))
+
+(defgeneric adjusted-high-price (table-record)
+  (:documentation "This is the high price times the adjustment factor."))
+
+(defgeneric adjusted-low-price (table-record)
+  (:documentation "This is the low price times the adjustment factor."))
+
+(defgeneric generate-daily-records (table)
+  (:documentation "This returns the daily records of TABLE."))
+
+(defgeneric daily-records (table)
+  (:documentation "This returns the daily records of TABLE."))
+
+(defgeneric generate-monthly-records (table)
+  (:documentation
+   "This builds and stores monthly OHLC records from the daily records."))
+
+(defgeneric monthly-records (table)
+  (:documentation
+   "This returns the monthly records, generating them if needed."))
+
+(defgeneric generate-yearly-records (table)
+  (:documentation
+   "This builds and stores yearly OHLC records from the daily records."))
+
+(defgeneric yearly-records (table)
+  (:documentation
+   "This returns the yearly records, generating them if needed."))
+
+(defgeneric elt-record (table position &optional key)
+  (:documentation
+   "This returns the record at POSITION, or KEY applied to it.  A NIL
+   position is the last record."))
+
+(defgeneric difference (table &key key start end)
+  (:documentation
+   "This is KEY at END minus KEY at START."))
+
+(defgeneric value-ratio (table &key key start end)
+  (:documentation
+   "This is KEY at END divided by KEY at START."))
+
+(defgeneric percent-change (table &key key start end)
+  (:documentation
+   "This is 100 times VALUE-RATIO from START to END."))
+
+(defgeneric spread-difference (table &key key position spread)
+  (:documentation
+   "This is the difference of KEY between POSITION+SPREAD and POSITION."))
+
+(defgeneric spread-ratio (table &key key position spread)
+  (:documentation
+   "This is the ratio of KEY between POSITION+SPREAD and POSITION."))
+
+(defgeneric spread-percent-change (table &key key position spread)
+  (:documentation
+   "This is the percent change of KEY between POSITION+SPREAD and POSITION."))
+
+(defgeneric sample-z-score (table &key key start end)
+  (:documentation
+   "This is the sample z-score of KEY at START over the range START to END."))
+
+(defgeneric unbiased-sample-z-score (table &key key start end)
+  (:documentation
+   "This is the unbiased sample z-score of KEY at START over START to END."))
+
+(defgeneric shares-buyable (record money)
+  (:documentation
+   "This is how many whole shares MONEY buys at the adjusted close."))
+
+(defgeneric buy-and-hold (table initial-money &key start end)
+  (:documentation
+   "This is INITIAL-MONEY grown by the value ratio from START to END."))
 
 ;; This is the initial quantity of money for the various analyzer methods.
 (defparameter *initial-money* 100000.00)
@@ -219,18 +281,21 @@ Finance's style of tickers for now."
   "Absolute path to the yahoo-finance-data directory.")
 
 (defun description-filename (ticker-symbol)
+  "This is the path of the Yahoo description CSV for TICKER-SYMBOL."
   (merge-pathnames (make-pathname
                     :name (concatenate 'string (canonical-ticker ticker-symbol) "-description")
                     :type "csv")
                    *livermore-data-directory*))
 
 (defun table-filename (ticker-symbol)
+  "This is the path of the Yahoo price table CSV for TICKER-SYMBOL."
   (merge-pathnames (make-pathname
                     :name (concatenate 'string (canonical-ticker ticker-symbol) "-table")
                     :type "csv")
                    *livermore-data-directory*))
 
 (defun components-filename (index-symbol)
+  "This is the path of the index-components CSV for INDEX-SYMBOL."
   (merge-pathnames (make-pathname
                     :name (concatenate 'string (canonical-ticker index-symbol) "-components")
                     :type "csv")
@@ -240,39 +305,50 @@ Finance's style of tickers for now."
   ((opening-time
     :accessor opening-time
     :initarg :opening-time
-    :type integer)
+    :type integer
+    :documentation "The session open as a Lisp universal time.")
    (closing-time
     :accessor closing-time
     :initarg :closing-time
-    :type integer)
+    :type integer
+    :documentation "The session close as a Lisp universal time.")
    (descriptive-time
     :accessor descriptive-time
     :initarg :descriptive-time
-    :type string)
+    :type string
+    :documentation "A printable date for this record.")
    (opening-price
     :accessor opening-price
     :initarg :opening-price
-    :type float)
+    :type float
+    :documentation "The unadjusted opening price.")
    (high-price
     :accessor high-price
     :initarg :high-price
-    :type float)
+    :type float
+    :documentation "The unadjusted high price.")
    (low-price
     :accessor low-price
     :initarg :low-price
-    :type float)
+    :type float
+    :documentation "The unadjusted low price.")
    (closing-price
     :accessor closing-price
     :initarg :closing-price
-    :type float)
+    :type float
+    :documentation "The unadjusted closing price.")
    (trading-volume
     :accessor trading-volume
     :initarg :trading-volume
-    :type (integer 0 *))
+    :type (integer 0 *)
+    :documentation "The session volume.")
    (adjusted-closing-price
     :accessor adjusted-closing-price
     :initarg :adjusted-closing-price
-    :type float)))
+    :type float
+    :documentation "The split-adjusted closing price."))
+  (:documentation
+   "One OHLC bar: times, prices, volume, and an adjusted close."))
 
 (defmethod print-object ((table-record table-record) stream)
   (format stream "(stocks:table-record ~%:opening-time ~A :closing-time ~A :descriptive-time ~A ~%:opening-price ~A :high-price ~A :low-price ~A ~%:closing-price ~A :trading-volume ~A :adjusted-closing-price ~A)"
@@ -287,9 +363,11 @@ Finance's style of tickers for now."
           (adjusted-closing-price table-record)))
 
 (defun table-record (&rest rest)
+  "This is a simple constructor for the TABLE-RECORD class."
   (apply #'make-instance 'table-record rest))
 
 (defmethod duplicate ((table-record table-record))
+  "This returns a newly created copy of TABLE-RECORD."
   (make-instance 'table-record
                  :opening-time (opening-time table-record)
                  :closing-time (closing-time table-record)
@@ -321,19 +399,24 @@ Finance's style of tickers for now."
      :accessor ticker-symbol
      :initform ""
      :initarg :ticker-symbol
-     :type string)
+     :type string
+     :documentation "The ticker this table holds, in canonical form.")
    (preferred-records
      :accessor preferred-records
      :initform #'daily-records
-     :initarg :preferred-records)
+     :initarg :preferred-records
+     :documentation
+     "A function of the table that returns the working bar series.")
    (records-start
      :accessor records-start
      :initform 0
-     :initarg :records-start)
+     :initarg :records-start
+     :documentation "The first index of RECORDS to use.")
    (records-end
      :accessor records-end
      :initform nil
-     :initarg :records-end)
+     :initarg :records-end
+     :documentation "The exclusive end index of RECORDS, or NIL for the end.")
    (weekly-records
      :initform nil
      :initarg weekly-records
@@ -353,7 +436,9 @@ Finance's style of tickers for now."
    (records
      :initform nil
      :initarg :records
-     :type list)))
+     :type list))
+  (:documentation
+   "A price table for one ticker, with daily bars and optional aggregates."))
 
 
 (defmethod records ((table table))
@@ -362,6 +447,7 @@ Finance's style of tickers for now."
           (records-end table)))
 
 (defmethod duplicate ((table table))
+  "This returns a newly created copy of TABLE, including its records."
   (make-instance 'table
                  :ticker-symbol (duplicate (ticker-symbol table))
                  :preferred-records (duplicate (preferred-records table))
@@ -496,42 +582,54 @@ Finance's style of tickers for now."
   (aif (slot-value table 'yearly-records) it (generate-yearly-records table)))
 
 (defmethod opening-time ((table table))
+  "This returns the opening time of each record in TABLE."
   (mapcar #'opening-time (records table)))
 
 (defmethod closing-time ((table table))
   (mapcar #'opening-time (records table)))
 
 (defmethod descriptive-time ((table table))
+  "This returns the descriptive time of each record in TABLE."
   (mapcar #'descriptive-time (records table)))
 
 (defmethod opening-price ((table table))
+  "This returns the opening price of each record in TABLE."
   (mapcar #'opening-price (records table)))
 
 (defmethod adjustment ((table table))
+  "This returns the adjustment factor of each record in TABLE."
   (mapcar #'adjustment (records table)))
 
 (defmethod adjusted-opening-price ((table table))
+  "This returns the adjusted opening price of each record in TABLE."
   (mapcar #'adjusted-opening-price (records table)))
 
 (defmethod high-price ((table table))
+  "This returns the high price of each record in TABLE."
   (mapcar #'high-price (records table)))
 
 (defmethod adjusted-high-price ((table table))
+  "This returns the adjusted high price of each record in TABLE."
   (mapcar #'adjusted-high-price (records table)))
 
 (defmethod low-price ((table table))
+  "This returns the low price of each record in TABLE."
   (mapcar #'low-price (records table)))
 
 (defmethod adjusted-low-price ((table table))
+  "This returns the adjusted low price of each record in TABLE."
   (mapcar #'adjusted-low-price (records table)))
 
 (defmethod closing-price ((table table))
+  "This returns the closing price of each record in TABLE."
   (mapcar #'closing-price (records table)))
 
 (defmethod trading-volume ((table table))
+  "This returns the trading volume of each record in TABLE."
   (mapcar #'trading-volume (records table)))
 
 (defmethod adjusted-closing-price ((table table))
+  "This returns the adjusted closing price of each record in TABLE."
   (mapcar #'adjusted-closing-price (records table)))
 
 (defmethod elt-record ((table table) position &optional (key #'identity))
@@ -549,6 +647,7 @@ Finance's style of tickers for now."
           (descriptive-time (elt-record table nil))))
 
 (defmethod stock-description ((table table))
+  "This is the long name of TABLE's ticker."
   (stock-description (ticker-symbol table)))
 
 (defun parse-yahoo-finance-stock-csv-record (record)
@@ -578,6 +677,7 @@ an equivalent stock table record."
                  :adjusted-closing-price (seventh record)))
 
 (defun load-table-from-yahoo (ticker-symbol &key (preferred-records #'daily-records))
+  "This loads a price table from the local Yahoo CSV for TICKER-SYMBOL."
   (make-instance 'table
                  :ticker-symbol ticker-symbol
                  :preferred-records preferred-records
@@ -689,6 +789,8 @@ MAXIMUM of the stock table's records."
 
 (defmethod sample-z-score
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
+  "This is (KEY at START minus the mean) divided by the sample standard
+  deviation, or 0.0 if the deviation is zero."
   (let ((sdev (sample-standard-deviation
                 table :key key :start start :end end)))
     (if (zerop sdev)
@@ -699,6 +801,8 @@ MAXIMUM of the stock table's records."
 
 (defmethod unbiased-sample-z-score
   ((table table) &key (key #'adjusted-closing-price) (start 0) (end nil))
+  "This is (KEY at START minus the mean) divided by the unbiased sample
+  standard deviation, or 0.0 if the deviation is zero."
   (let ((sdev (unbiased-sample-standard-deviation
                 table :key key :start start :end end)))
     (if (zerop sdev)
@@ -708,13 +812,16 @@ MAXIMUM of the stock table's records."
          sdev))))
 
 (defmethod shares-buyable ((record table-record) money)
+  "This is how many whole shares MONEY buys at the adjusted close of RECORD."
   (floor (/ money (adjusted-closing-price record))))
 
 (defmethod buy-and-hold ((table table) initial-money
                          &key (start 0) (end nil))
+  "This is INITIAL-MONEY grown by the value ratio of TABLE from START to END."
   (* initial-money (value-ratio table :start start :end end)))
 
 (defun retrieve-stock-description (ticker-symbol)
+  "This fetches the Yahoo name for TICKER-SYMBOL and returns it."
   (wget "-O" (description-filename ticker-symbol)
         (concatenate 'simple-string
                      "http://quote.yahoo.com/d/quotes.csv"
@@ -817,11 +924,13 @@ the file retrieved from Yahoo! Finance's backend servers."
           (read-lines filename)))
 
 (defun buy-and-hold-gains (sequence)
+  "This returns the successive price ratios of SEQUENCE."
   (mapcar #'/ (rest sequence) sequence))
 
 (function-alias 'buy-and-hold-gains 'b&h-gains)
 
 (defun buy-and-hold-performance (sequence)
+  "This is the last price of SEQUENCE divided by the first."
   (/ (car (last sequence)) (first sequence)))
 
 (function-alias 'buy-and-hold-performance 'b&h-performance)
@@ -833,6 +942,7 @@ days but always gain on up days."
   (mapcar (curry #'max 1) (buy-and-hold-gains sequence)))
 
 (defun cash-optimal-performance (sequence)
+  "This is the product of the cash-optimal gains of SEQUENCE."
   (product (cash-optimal-gains sequence)))
 
 (defun simple-moving-average (period sequence)
@@ -905,6 +1015,7 @@ It is routinely used as a signal/trigger."
   (ema smoothing-period (macd period-a period-b sequence)))
 
 (defun upward-changes (sequence)
+  "This returns the positive day-to-day changes of SEQUENCE, else 0."
   (mapcar #'(lambda (yesterday today)
               (if (< yesterday today) ; Are we upward?
                 (- today yesterday)
@@ -913,6 +1024,7 @@ It is routinely used as a signal/trigger."
           (rest sequence)))
 
 (defun downward-changes (sequence)
+  "This returns the positive day-to-day drops of SEQUENCE, else 0."
   (mapcar #'(lambda (yesterday today)
               (if (> yesterday today) ; Are we downward?
                 (- yesterday today)
@@ -921,6 +1033,8 @@ It is routinely used as a signal/trigger."
           (rest sequence)))
 
 (defun relative-strength (moving-average sequence)
+  "This is the ratio of the moving average of upward changes to that of
+  downward changes."
   (mapcar #'/
           (funcall moving-average (upward-changes sequence))
           (funcall moving-average (downward-changes sequence))))
@@ -928,6 +1042,7 @@ It is routinely used as a signal/trigger."
 (function-alias 'relative-strength 'rs)
 
 (defun ema-rs (period sequence)
+  "This is relative strength using an EMA of PERIOD."
   (relative-strength (curry #'ema period) sequence))
 
 (function-alias 'ema-rs 'wilder-rs)
@@ -964,10 +1079,13 @@ It is routinely used as a signal/trigger."
 (function-alias 'sma-rsi 'cutler-rsi)
 
 (defun simple-directional-signal (period sequence)
+  "This is true at each point where the price PERIOD steps later is higher."
   (assert (positive-integer? period))
   (mapcar #'< sequence (nthcdr period sequence)))
 
 (defun simple-directional-gains (period sequence)
+  "This returns the day-to-day gains of a strategy that is long when
+  SIMPLE-DIRECTIONAL-SIGNAL is true and otherwise holds cash."
   (let* ((signals (simple-directional-signal period sequence))
          (start (- (length sequence) (length signals))))
     (mapcar #'(lambda (today tomorrow signal)
@@ -979,14 +1097,19 @@ It is routinely used as a signal/trigger."
             signals)))
 
 (defun simple-directional-performance (period sequence)
+  "This is the product of the simple-directional gains."
   (product (simple-directional-gains period sequence)))
 
 (defun dual-simple-directional-signal (period-a period-b sequence)
+  "This is true when both PERIOD-A and PERIOD-B simple directional signals
+  are true."
   (reverse (mapcar #'(lambda (a b) (and a b))
                    (reverse (simple-directional-signal period-a sequence))
                    (reverse (simple-directional-signal period-b sequence)))))
 
 (defun dual-simple-directional-gains (period-a period-b sequence)
+  "This returns the day-to-day gains of a strategy that is long when both
+  directional signals are true and otherwise holds cash."
   (let* ((signals (dual-simple-directional-signal period-a period-b sequence))
          (start (- (length sequence) (length signals))))
     (mapcar #'(lambda (today tomorrow signal)
@@ -998,9 +1121,11 @@ It is routinely used as a signal/trigger."
             signals)))
 
 (defun dual-simple-directional-performance (period-a period-b sequence)
+  "This is the product of the dual simple-directional gains."
   (product (dual-simple-directional-gains period-a period-b sequence)))
 
 (defun sma-crossover-signal (short-period long-period ratio sequence)
+  "This is true when the short SMA exceeds RATIO times the long SMA."
   (assert (positive-integer? short-period))
   (assert (positive-integer? long-period))
   (assert (< short-period long-period))
@@ -1014,6 +1139,8 @@ It is routinely used as a signal/trigger."
 
 (defun directional-sma-crossover-signal
   (short-period long-period ratio sequence)
+  "This returns :LONG, :SHORT, or :CASH from the short and long SMAs and
+  the slope of the long SMA."
   (assert (positive-integer? short-period))
   (assert (positive-integer? long-period))
   (assert (< short-period long-period))
@@ -1033,6 +1160,7 @@ It is routinely used as a signal/trigger."
             long-sma)))
 
 (defun sma-crossover-gains (short-period long-period ratio sequence)
+  "This returns the day-to-day gains of a long-or-cash SMA crossover."
   (let* ((signals (sma-crossover-signal short-period long-period ratio
                                         sequence))
          (start (- (length sequence) (length signals))))
@@ -1070,19 +1198,24 @@ It is routinely used as a signal/trigger."
             signals)))
 
 (defun sma-crossover-performance (short-period long-period ratio sequence)
+  "This is the product of the long-or-cash SMA crossover gains."
   (product (sma-crossover-gains short-period long-period ratio sequence)))
 
 (defun directional-sma-crossover-performance
   (short-period long-period ratio sequence)
+  "This is the product of the directional SMA crossover gains."
   (product (directional-sma-crossover-gains
              short-period long-period ratio sequence)))
 
 (defun sma-crossover-long/short-performance
   (short-period long-period ratio sequence)
+  "This is the product of the long-or-short SMA crossover gains."
   (product (sma-crossover-long/short-gains short-period long-period ratio
                                            sequence)))
 
 (defun sma-crossover-optimal (sequence)
+  "This searches short period, long period, and ratio for the best
+  long-or-cash SMA crossover on SEQUENCE."
   (let ((optimal-short-period nil)
         (optimal-long-period nil)
         (optimal-ratio nil)
@@ -1112,6 +1245,8 @@ It is routinely used as a signal/trigger."
           optimal-performance)))
 
 (defun sma-crossover-long/short-optimal (sequence)
+  "This searches short period, long period, and ratio for the best
+  long-or-short SMA crossover on SEQUENCE."
   (let ((optimal-short-period nil)
         (optimal-long-period nil)
         (optimal-ratio nil)
@@ -1140,6 +1275,8 @@ It is routinely used as a signal/trigger."
           optimal-performance)))
 
 (defun directional-sma-crossover-optimal (sequence)
+  "This searches short period, long period, and ratio for the best
+  directional SMA crossover on SEQUENCE."
   (let ((optimal-short-period nil)
         (optimal-long-period nil)
         (optimal-ratio nil)

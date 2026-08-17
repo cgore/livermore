@@ -64,7 +64,9 @@
 
 
 (defclass tms-classifier (classifier)
-  ())
+  ()
+  (:documentation
+   "A classifier whose condition is a list of time-multiseries predicates."))
 
 (defmethod match? ((tms-classifier tms-classifier) situation)
   "This predicate returns true only if the classifier matches the situation."
@@ -179,6 +181,7 @@
           (upper tms-predicate)))
 
 (defun tms-predicate (&rest rest)
+  "This is a simple constructor for the TMS-PREDICATE class."
   (apply #'make-instance 'tms-predicate rest))
 
 (defmethod duplicate ((tms-predicate tms-predicate))
@@ -258,7 +261,9 @@
    (classifier-type
      :initform 'tms-classifier)
    (learning-parameters
-     :type tmscs-learning-parameters)))
+     :type tmscs-learning-parameters))
+  (:documentation
+   "TMSCS is XCSR specialized for time-multiseries predicates."))
 
 (defmethod generate-covering-classifier ((tmscs tmscs))
   "This creates a classifier which matches the current situation."
@@ -381,12 +386,17 @@
 
 (defmethod covering-score ((tms-predicate tms-predicate)
                            (parameters tmscs-learning-parameters))
+  "This is the path length times the width of the range as a fraction of
+  the problem range."
   (with-slots (lower upper) tms-predicate
     (* (length (path tms-predicate))
        (abs (/ (- lower upper)
                (apply #'- (problem-range parameters)))))))
 
 (defmethod crossover ((p tms-classifier) (q tms-classifier) (tmscs tmscs))
+  "This applies one-point crossover to the environment conditions of P and
+  Q, then averages their prediction, error, and fitness.  It may also swap
+  a prefix of slots inside the predicate at the cut."
   (flet ((midpoint (x y)
                    (/ (+ x y) 2)))
     (when (probability? (crossover-probability (learning-parameters tmscs)))

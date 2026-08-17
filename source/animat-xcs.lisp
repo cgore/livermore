@@ -60,7 +60,8 @@
 (defclass animat-analyzer (environment reinforcement-program)
   ((file-name
     :accessor file-name
-    :initarg :file-name)
+    :initarg :file-name
+    :documentation "The maze file this analyzer loads.")
    (current-situation
     :accessor current-situation
     :initarg :current-situation
@@ -115,10 +116,14 @@
     :accessor even-action-history
     :initform nil
     :initarg :even-action-history
-    :type list)))
+    :type list))
+  (:documentation
+   "A Woods-style maze environment.  The animat sees the eight neighboring
+   cells and must walk to food."))
 
 (defclass animat-experiment (experiment)
-  ())
+  ()
+  (:documentation "An XCS experiment that uses an animat-analyzer."))
 
 (defmethod initialize-instance :after ((analyzer animat-analyzer) &rest initargs &key &allow-other-keys)
   "Reads the file given by file-name into the world array"
@@ -175,6 +180,7 @@
     (:* (list nil nil nil))))
 
 (defmethod multistep? ((analyzer animat-analyzer))
+  "This maze problem lasts for more than one action."
   t)
 
 (defmethod get-situation ((analyzer animat-analyzer))
@@ -226,6 +232,8 @@
            (setf y-location new-y)))))))
 
 (defmethod update-histories ((analyzer animat-analyzer))
+  "This records the step count of the finished problem and prints the mean
+  steps over the last fifty problems."
   (with-slots (number-of-problems action-history
                odd-action-history even-action-history
                current-step-count) analyzer
@@ -269,6 +277,8 @@
           nil))))
 
 (defun start-animat-experiment (file-name)
+  "This builds an animat experiment from the maze in FILE-NAME and starts
+  it."
   (setf *animat-analyzer*
         (make-instance 'animat-analyzer
                        :file-name file-name))

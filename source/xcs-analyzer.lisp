@@ -55,40 +55,51 @@
 (defclass analyzer (environment reinforcement-program)
   ((current-situation
     :accessor current-situation
-    :initarg :current-situation)
+    :initarg :current-situation
+    :documentation "The situation most recently presented to XCS.")
    (number-of-situations
     :accessor number-of-situations
     :initform 0
     :initarg :number-of-situations
-    :type (integer 0 *))
+    :type (integer 0 *)
+    :documentation "How many situations this analyzer has presented.")
    (current-action
     :accessor current-action
-    :initarg :current-action)
+    :initarg :current-action
+    :documentation "The action most recently taken.")
    (actions
     :accessor actions
     :initform 0
     :initarg :actions
-    :type (integer 0 *))
+    :type (integer 0 *)
+    :documentation "How many actions have been taken.")
    (correct-actions
     :accessor correct-actions
     :initform 0
     :initarg :correct-actions
-    :type (integer 0 *))
+    :type (integer 0 *)
+    :documentation "How many of those actions were correct.")
    (action-history
     :accessor action-history
     :initform nil
     :initarg :action-history
-    :type list)
+    :type list
+    :documentation "A list of T or NIL for each action, newest first.")
    (odd-action-history
     :accessor odd-action-history
     :initform nil
     :initarg :odd-action-history
-    :type list)
+    :type list
+    :documentation "The same history, but only for odd-numbered actions.")
    (even-action-history
     :accessor even-action-history
     :initform nil
     :initarg :even-action-history
-    :type list)))
+    :type list
+    :documentation "The same history, but only for even-numbered actions."))
+  (:documentation
+   "A combined environment and reinforcement program that scores actions
+   and records a running history of correctness."))
 
 (defmethod correct-action ((analyzer analyzer))
  "Define this method for each individual problem."
@@ -104,6 +115,8 @@
   (if (correct-action? analyzer) 1000.0 0.0))
 
 (defmethod execute-action ((analyzer analyzer) action)
+  "This records ACTION, updates the correctness counts, and prints a short
+  running report."
   (with-slots (current-situation
                 actions
                 correct-actions

@@ -54,7 +54,8 @@
      :accessor thresholds
      :initform nil
      :initarg :thresholds
-     :type list)
+     :type list
+     :documentation "The threshold vector the agent must meet or exceed.")
    (problem-range-lower
      :accessor problem-range-lower
      :initform 0.0
@@ -68,15 +69,22 @@
    (current-situation
      :accessor current-situation
      :initarg :current-situation
-     :type list)))
+     :type list
+     :documentation "The last random point presented as a situation."))
+  (:documentation
+   "An environment whose correct action is whether a random point meets a
+   fixed threshold vector."))
 
 (defclass threshold-experiment (experiment)
-  ())
+  ()
+  (:documentation "An XCSR experiment that uses a threshold-analyzer."))
 
 (defmethod problem-length ((threshold-analyzer threshold-analyzer))
+  "This is the number of coordinates in the threshold."
   (length (thresholds threshold-analyzer)))
 
 (defmethod random-situation ((threshold-analyzer threshold-analyzer))
+  "This returns a random point in the problem range."
   (let ((result nil))
     (dotimes (i (problem-length threshold-analyzer) result)
       (push (random-in-range (problem-range-lower threshold-analyzer)
@@ -84,16 +92,19 @@
             result))))
 
 (defmethod get-situation ((threshold-analyzer threshold-analyzer))
+  "This stores and returns a new random situation."
   (incf (number-of-situations threshold-analyzer))
   (setf (current-situation threshold-analyzer)
         (random-situation threshold-analyzer)))
 
 (defmethod correct-action ((threshold-analyzer threshold-analyzer))
+  "This is true when the current situation meets the threshold."
   (threshold-indicator (thresholds threshold-analyzer)
                        (current-situation threshold-analyzer)))
 
 (defun start-threshold-experiment
   (&key (problem-length 6) (problem-range-lower 0.0) (problem-range-upper 1.0))
+  "This builds a threshold XCSR experiment of PROBLEM-LENGTH and starts it."
   (defparameter *threshold-analyzer*
     (make-instance 'threshold-analyzer
                    :thresholds

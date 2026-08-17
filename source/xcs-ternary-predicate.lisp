@@ -56,6 +56,7 @@
 
 
 (defun ternary-value? (x)
+  "This predicate is true when X is T, NIL, or the don't-care symbol :#."
   (member x '(nil t :#)))
 
 (deftype ternary-value ()
@@ -66,14 +67,17 @@
      :accessor value
      :initform :#
      :initarg :value
-     :type ternary-value))
+     :type ternary-value
+     :documentation "T, NIL, or :# (don't-care)."))
   (:documentation "A ternary predicate is either T for true, or NIL for false,
      or :# which matches either T or NIL"))
 
 (defmethod covering? ((p ternary-predicate))
+  "This predicate is true when P is the don't-care value :#."
   (equal (value p) :#))
 
 (defmethod ? ((p ternary-predicate))
+  "This returns the boolean sense of P's value.  :# is treated as true."
   (? (value p)))
 
 (defun ternary-predicate (value)
@@ -84,6 +88,7 @@
   (format stream "~A" (value tern)))
 
 (defmethod duplicate ((tern ternary-predicate))
+  "This returns a newly created copy of TERN."
   (make-instance 'ternary-predicate :value (value tern)))
 
 (defmethod identical? ((x ternary-predicate) y)
@@ -132,6 +137,7 @@
 (defmethod mutate ((tern ternary-predicate)
                    situation
                    (learning-parameters learning-parameters))
+  "This flips TERN between :# and SITUATION with probability MU."
   (with-slots (mutation-probability) learning-parameters
     (when (probability? mutation-probability)
       (with-slots (value) tern
@@ -139,6 +145,7 @@
 
 (defmethod covering-score ((ternary-predicate ternary-predicate)
                            (learning-parameters learning-parameters))
+  "This returns 1 if the predicate is don't-care, otherwise 0."
   (if (covering? ternary-predicate) 1 0))
 
 (behavior 'ternary-value?

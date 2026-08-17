@@ -81,20 +81,26 @@
            :iso-short-date-string))
 (in-package :livermore/time)
 
-(defgeneric decoded-time-list (time))
+(defgeneric decoded-time-list (time)
+  (:documentation
+   "This returns TIME as a decoded-time list of nine values, the same
+   values DECODE-UNIVERSAL-TIME produces."))
 
 (defmethod decoded-time-list ((time integer))
+  "This decodes a Lisp universal time."
   (multiple-value-list (decode-universal-time time)))
 
 (defmethod decoded-time-list ((time list))
+  "This returns TIME unchanged when it is already a decoded-time list."
   time)
 
 (defun get-decoded-time-list ()
+  "This returns the current time as a decoded-time list."
   (multiple-value-list (get-decoded-time)))
 
-;;; The function MONTH-TO-NUMBER takes a string that is an (English) month name
-;;; and returns the number of the month, where January=1, ..., December=12.
 (defun month-to-number (month)
+  "This returns the month number for an English month name, January = 1
+  through December = 12.  Short names such as \"Jan\" are accepted."
   (let ((months '(("jan" 1) ("january" 1)
                   ("feb" 2) ("february" 2)
                   ("mar" 3) ("march" 3)
@@ -109,9 +115,9 @@
                   ("dec" 12) ("december" 12))))
     (second (assoc month months :test #'string-equal))))
 
-;;; The function MONTH-NAME, given a month number (1=January, ..., 12=December),
-;;; returns the full month name.
 (defun month-name (month-number)
+  "This returns the full English month name for MONTH-NUMBER, where
+  January = 1 and December = 12."
   (svref #("January" "February" "March" "April" "May" "June"
            "July" "August" "September" "October" "November" "December")
          (1- month-number)))
@@ -123,51 +129,64 @@
            "Jul" "Aug" "Sep" "Oct" "Nov" "Dec")
          (1- month-number)))
 
-;;;; These functions provide named access to the elements of the specified time.
 (defun time-second (&optional (time (get-decoded-time-list)))
+  "This returns the second field of TIME, 0 through 59."
   (first (decoded-time-list time)))
 
 (defun time-minute (&optional (time (get-decoded-time-list)))
+  "This returns the minute field of TIME, 0 through 59."
   (second (decoded-time-list time)))
 
 (defun time-hour (&optional (time (get-decoded-time-list)))
+  "This returns the hour field of TIME, 0 through 23."
   (third (decoded-time-list time)))
 
 (defun time-date (&optional (time (get-decoded-time-list)))
+  "This returns the day of the month of TIME, 1 through 31."
   (fourth (decoded-time-list time)))
 
 (defun time-month (&optional (time (get-decoded-time-list)))
+  "This returns the month number of TIME, January = 1 through December = 12."
   (fifth (decoded-time-list time)))
 
 (defun time-month-name (&optional (time (get-decoded-time-list)))
+  "This returns the full English month name of TIME."
   (month-name (time-month time)))
 
 (defun time-month-short-name (&optional (time (get-decoded-time-list)))
+  "This returns the abbreviated English month name of TIME."
   (month-short-name (time-month time)))
 
 (defun time-quarter (&optional (time (get-decoded-time-list)))
+  "This returns the calendar quarter of TIME, 1 through 4."
   ;; N.B.: We use the IDENTITY function to get rid of the fractional part of
   ;; the result from the FLOOR function.
   (identity (floor (1+ (/ (1- (time-month time)) 3)))))
 
 (defun time-year (&optional (time (get-decoded-time-list)))
+  "This returns the year of TIME."
   (sixth (decoded-time-list time)))
 
 (defun time-day (&optional (time (get-decoded-time-list)))
+  "This returns the day of the week of TIME, Monday = 0 through Sunday = 6."
   (seventh (decoded-time-list time)))
 
 (defun time-daylight-p (&optional (time (get-decoded-time-list)))
+  "This is true when TIME is in daylight-saving time."
   (eighth (decoded-time-list time)))
 
 (defun time-zone (&optional (time (get-decoded-time-list)))
+  "This returns the time zone of TIME as hours west of GMT."
   (ninth (decoded-time-list time)))
 
 (defun encode-month-year (month year)
+  "This returns the universal time of the first of MONTH in YEAR."
   (encode-universal-time
     0 0 0 1; Second, minute, hour, day.
     month year (time-zone)))
 
 (defun encode-year (year)
+  "This returns the universal time of 1 January of YEAR."
   (encode-month-year 1 year))
 
 (defun yyyy-mm-dd-to-universal-time
@@ -197,6 +216,8 @@
 (defun date-string-to-universal-time
   (date-string
     &key (second 0) (minute 0) (hour 0) (time-zone (time-zone)))
+  "This parses DATE-STRING as either YYYY-MM-DD or DD-Mon-YYYY, choosing
+  by the length of the middle field."
   (if (= 3 (length (second (split date-string #\-))))
     (dd-month-yyyy-to-universal-time date-string
                                      :second second
@@ -255,6 +276,8 @@
 (function-alias 'time-julian-day-number 'time-jdn)
 
 (defun time-julian-date (&optional (time (get-decoded-time-list)))
+  "This returns the Julian Date of TIME, including the fraction of the day
+  past noon."
   (+ (time-julian-day-number time)
      (/ (- (time-hour time) 12) 24)
      (/ (time-minute time) 1440)
@@ -263,6 +286,7 @@
 (function-alias 'time-julian-date 'time-jd)
 
 (defun time-ordinal-date (&optional (time (get-decoded-time-list)))
+  "This returns the day of the year of TIME, 1 through 366."
   (1+ (- (time-julian-day-number time)
          (time-julian-day-number
            (decoded-time-list (encode-year (time-year time)))))))
@@ -272,21 +296,28 @@
 
 
 (defun yyyy-string (&optional (time (get-decoded-time-list)))
+  "This returns the year of TIME as a four-digit string."
   (format nil "~4D" (time-year time)))
 
 (defun qqyyyy-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"1Q2020\"."
   (format nil "~AQ~4D" (time-quarter time) (time-year time)))
 
 (defun qq-yyyy-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"Q1-2020\"."
   (format nil "Q~A-~4D" (time-quarter time) (time-year time)))
 
 (defun mon-yyyy-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"Mar-2020\"."
   (format nil "~3A-~4D" (time-month-short-name time) (time-year time)))
 
 (defun dd-mon-yyyy-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"15-Mar-2020\"."
   (format nil "~2D-~A" (time-date time) (mon-yyyy-string time)))
 
 (defun date-time-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string of month, weekday (Monday = 0), year, and
+  zero-padded hours, minutes, and seconds."
   (format nil "~D/~D/~D ~2,'0D:~2,'0D:~2,'0D"
           (time-month time)
           (time-day time)
@@ -296,6 +327,7 @@
           (time-second time)))
 
 (defun yyyy-mm-dd-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"2020-3-15\"."
   (format nil "~4D-~2D-~2D"
           (time-year time) (time-month time) (time-date time)))
 
@@ -304,6 +336,7 @@
 (function-alias 'iso-extended-date-string 'iso-date-string)
 
 (defun yyyymmdd-string (&optional (time (get-decoded-time-list)))
+  "This returns TIME as a string such as \"2020315\"."
   (format nil "~4D~2D~2D"
           (time-year time) (time-month time) (time-date time)))
 

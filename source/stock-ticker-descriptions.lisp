@@ -208,10 +208,14 @@
                *us-commodities-indices*
                *misc-stocks*))
 
-(defgeneric stock-description (item))
+(defgeneric stock-description (item)
+  (:documentation
+   "This returns the long name of a ticker, or NIL if it is unknown."))
 
 (defmethod stock-description ((string string))
+  "This looks up STRING in *TICKER-DESCRIPTIONS*."
   (gethash (string-downcase string) *ticker-descriptions*))
 
 (defmethod stock-description ((symbol symbol))
+  "This looks up SYMBOL by its name."
   (stock-description (symbol-name symbol)))

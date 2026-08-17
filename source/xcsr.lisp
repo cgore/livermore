@@ -114,7 +114,9 @@
   ((predicate-type
      :initform 'range-predicate)
    (learning-parameters
-     :type xcsr-learning-parameters)))
+     :type xcsr-learning-parameters))
+  (:documentation
+   "XCSR is XCS with interval predicates over real-valued inputs."))
 
 (defmethod print-object ((range-predicate range-predicate) stream)
   (format stream "[~A,~A]" (lower range-predicate) (upper range-predicate)))
@@ -209,6 +211,7 @@
 
 (defmethod covering-score ((range-predicate range-predicate)
                            (parameters xcsr-learning-parameters))
+  "This is the width of the range as a fraction of the problem range."
   (with-slots (lower upper) range-predicate
     (abs (/ (- lower upper)
             (apply #'- (problem-range parameters))))))

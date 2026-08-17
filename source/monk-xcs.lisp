@@ -60,6 +60,8 @@
 (load "monk-xcs-parameters.lisp")
 
 (defun monk-attributes? (attributes)
+  "This predicate is true when ATTRIBUTES is a six-element Monk feature
+  vector with the legal ranges (3, 3, 2, 3, 4, 2)."
   (and (listp attributes)
        (= 6 (length attributes))
        (member (first  attributes) '(1 2 3))
@@ -88,6 +90,7 @@
           finally return result)))
 
 (defun random-monk-attributes ()
+  "This returns a random legal six-element Monk feature vector."
   (list (random-element '(1 2 3))
         (random-element '(1 2 3))
         (random-element '(1 2))
@@ -140,25 +143,36 @@
    (monk-problem
      :accessor monk-problem
      :initform #'monk-1?
-     :initarg :monk-problem)))
+     :initarg :monk-problem
+     :documentation "The Monk target function, such as #'MONK-1?."))
+  (:documentation
+   "An environment for the Monk's problems.  Situations are six-element
+   attribute lists."))
 
-(defclass monk-analyzer-ternary (monk-analyzer))
+(defclass monk-analyzer-ternary (monk-analyzer)
+  ()
+  (:documentation
+   "A Monk analyzer that presents situations as a binary encoding."))
 
 (defmethod monk? ((analyzer monk-analyzer) attributes)
   "This method evaluates calls the current monk problem on the attributes."
   (funcall (monk-problem analyzer) attributes))
 
 (defmethod random-situation ((analyzer monk-analyzer))
+  "This returns a random Monk attribute list."
   (random-monk-attributes))
 
 (defmethod random-situation ((analyzer monk-analyzer-ternary))
+  "This returns a random Monk attribute list encoded as truth values."
   (monk-attributes-to-truth-values (random-monk-attributes)))
 
 (defmethod get-situation ((analyzer monk-analyzer))
+  "This sets and returns a new random situation."
   (setf (current-situation analyzer)
         (random-situation analyzer)))
 
 (defmethod correct-action ((analyzer monk-analyzer))
+  "This is the Boolean label of the current situation under MONK-PROBLEM."
   (monk? analyzer (current-situation analyzer)))
 
 (defmethod correct-action? ((analyzer monk-analyzer))
@@ -168,6 +182,7 @@
      (correct-action analyzer)))
 
 (defmethod execute-action ((analyzer monk-analyzer) action)
+  "This does nothing.  The Monk problems are single-step."
   )
 
 (defmethod get-reward ((analyzer monk-analyzer))
@@ -175,9 +190,12 @@
   (if (correct-action? analyzer) 100 -200))
 
 (defmethod end-of-problem? ((analyzer monk-analyzer))
+  "This predicate is true after more than 1000 actions."
   (< 1000 (actions analyzer)))
 
 (defun start-monk (&optional (address-width 2))
+  "This builds Monk experiments for set predicates and ternary predicates
+  and starts the set-predicate experiment."
   (defparameter *monk-analyzer* (make-instance 'monk-analyzer))
   (defparameter *monk-analyzer-ternary* (make-instance 'monk-analyzer-ternary))
   (defparameter *monk-xcs*

@@ -84,12 +84,18 @@
      :accessor initial-history-depth
      :initform 200
      :initarg :initial-history-depth
-     :type (integer 0 *))))
+     :type (integer 0 *)))
+  (:documentation
+   "An environment that presents a piecewise linear series and classifies
+   the next move into three or five slope categories."))
 
 (defclass multislope-tmscs-experiment (experiment)
-  ())
+  ()
+  (:documentation "A TMSCS experiment that uses a multislope-tmscs-analyzer."))
 
 (defmethod single-step-output ((experiment multislope-tmscs-experiment))
+  "This prints the last action and, when *STAT-REPORT* is true, statistics
+  for the population, match set, and action set."
   (with-slots (environment reinforcement-program xcs) experiment
     (with-slots (current-action
                   history
@@ -122,6 +128,8 @@
                        :pre-string "~&  A F :: "))))))
 
 (defun situation-function[3] (time-step)
+  "This returns the value at TIME-STEP of a piecewise linear series whose
+  slope is perturbed by *MULTISLOPE-PERTURBATION*."
   (labels ((perturb (percentage)
                     (random-in-range (1+ (- percentage)) (1+ percentage)))
            (new-situation ()
@@ -159,6 +167,8 @@
     (ihs-value (nth-from-end time-step *multislope-hist*))))
 
 (defun situation-function (time-step)
+  "This returns the value at TIME-STEP of a piecewise linear series whose
+  heading may flip with probability *MULTISLOPE-FLIP*."
   (labels ((flip? (probability)
                   (if (probability? probability) -1 1))
            (new-situation ()
@@ -196,6 +206,7 @@
     (ihs-value (nth-from-end time-step *multislope-hist*))))
 
 (defmethod get-situation ((analyzer multislope-tmscs-analyzer))
+  "This pushes the next series value onto the history."
   (with-slots (number-of-situations history initial-history-depth) analyzer
     (push (situation-function (incf number-of-situations)) history)))
 
@@ -221,36 +232,46 @@
             ((<=  3 slope)    :strong-up)))))
 
 (defmethod classify ((analyzer multislope-tmscs-analyzer))
+  "This classifies the next point with three or five categories, as
+  selected by *MULTISLOPE-CATEGORIES*."
   (if (= 3 *multislope-categories*)     
     (classify-3 analyzer)
     (classify-5 analyzer)))
 
 (defmethod correct-action ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
+  "This is the slope category of the next point."
   (classify multislope-tmscs-analyzer))
 
 (defmethod correct-action? ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
+  "This predicate is true when the last action matches the next-point class."
   (equalp (current-action multislope-tmscs-analyzer)
           (correct-action multislope-tmscs-analyzer)))
 
 (defmethod get-reward ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
+  "This returns 1000.0 for a correct action and 0.0 otherwise."
   (if (correct-action? multislope-tmscs-analyzer)
     1000.0
     0.0))
 
 (defmethod end-of-problem? ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
+  "This predicate is always true.  Each trial is a single step."
   ;; Does this really make any sense in TMSCS?
   t)
 
 (defmethod terminate? ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
+  "This predicate is true after 10000 actions."
   (<= 10000 (number-of-actions multislope-tmscs-analyzer)))
 
 (defmethod initialize-instance :after ((analyzer multislope-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  "This fills HISTORY to INITIAL-HISTORY-DEPTH."
   (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
 
 (defmethod execute-action ((multislope-tmscs-analyzer multislope-tmscs-analyzer) action)
+  "This records ACTION, updates the correctness counts, and appends a
+  record to *MULTISLOPE-ACTION-HISTORY*."
   (with-slots (current-action
                 number-of-actions
                 number-of-correct-actions) multislope-tmscs-analyzer
@@ -265,6 +286,7 @@
           *multislope-action-history*)))
 
 (defun simple-slope (list &key (key #'identity) (start 0) (end nil))
+  "This is the slope of LIST from START to END, using KEY on each element."
   (assert (listp list))
   (when (null end)
     (setf end (1- (length list))))
@@ -284,6 +306,7 @@
 (load "multislope-tmscs-parameters")
 
 (defun start-multislope-tmscs-experiment ()
+  "This builds a multislope TMSCS experiment and starts it."
   (defparameter *multislope-hist* nil)
   (defparameter *multislope-action-history* nil)
   (defparameter *multislope-tmscs-analyzer*

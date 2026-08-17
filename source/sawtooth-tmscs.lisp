@@ -81,12 +81,18 @@
      :accessor initial-history-depth
      :initform 200
      :initarg :initial-history-depth
-     :type (integer 0 *))))
+     :type (integer 0 *)))
+  (:documentation
+   "An environment that presents a sine wave and asks whether the next
+   point is up or down."))
 
 (defclass sawtooth-tmscs-experiment (experiment)
-  ())
+  ()
+  (:documentation "A TMSCS experiment that uses a sawtooth-tmscs-analyzer."))
 
 (defmethod single-step-output ((experiment sawtooth-tmscs-experiment))
+  "This prints the last action and, when *STAT-REPORT* is true, statistics
+  for the population, match set, and action set."
   (with-slots (environment reinforcement-program xcs) experiment
     (with-slots (current-action
                   history
@@ -120,9 +126,11 @@
                        :pre-string "~&  A F :: "))))))
 
 (defun situation-function (time-step)
+  "This is a sine wave with period 50."
   (sin (* time-step pi 1/25)))
 
 (defmethod get-situation ((analyzer sawtooth-tmscs-analyzer))
+  "This pushes the next sine value onto the history."
   (with-slots (number-of-situations history initial-history-depth) analyzer
     (push (situation-function (incf number-of-situations)) history)))
 
@@ -133,31 +141,38 @@
        (situation-function (1+ number-of-situations)))))
 
 (defmethod correct-action ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
+  "This is the up-or-down class of the next point."
   (classify sawtooth-tmscs-analyzer))
 
 (defmethod correct-action? ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
+  "This predicate is true when the last action matches the next-point class."
   (equalp (current-action sawtooth-tmscs-analyzer)
           (correct-action sawtooth-tmscs-analyzer)))
 
 (defmethod get-reward ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
+  "This returns 1000.0 for a correct action and 0.0 otherwise."
   (if (correct-action? sawtooth-tmscs-analyzer)
     1000.0
     0.0))
 
 (defmethod end-of-problem? ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
+  "This predicate is always true.  Each trial is a single step."
   ;; Does this really make any sense in TMSCS?
   t)
 
 (defmethod terminate? ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
+  "This predicate is true after 10000 actions."
   (<= 10000 (number-of-actions sawtooth-tmscs-analyzer)))
 
 (defmethod initialize-instance :after ((analyzer sawtooth-tmscs-analyzer) &rest initargs &key &allow-other-keys)
+  "This fills HISTORY to INITIAL-HISTORY-DEPTH."
   (declare (ignore initargs))
   (with-slots (history initial-history-depth) analyzer
     (while (< (length history) initial-history-depth)
       (get-situation analyzer))))
 
 (defmethod execute-action ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer) action)
+  "This records ACTION and updates the correctness counts."
   (with-slots (current-action
                 number-of-actions
                 number-of-correct-actions) sawtooth-tmscs-analyzer
@@ -167,6 +182,8 @@
       (incf number-of-correct-actions))))
 
 (defun simple-slope (sequence &key (key #'identity) (start 0) (end nil))
+  "This is the slope of SEQUENCE from START to END, using KEY on each
+  element."
   (assert (sequence? sequence))
   (when (null end)
     (setf end (1- (length sequence))))
@@ -186,6 +203,7 @@
 (load "sawtooth-tmscs-parameters")
 
 (defun start-sawtooth-tmscs-experiment ()
+  "This builds a sawtooth TMSCS experiment and starts it."
   (defparameter *sawtooth-tmscs-analyzer*
     (make-instance 'sawtooth-tmscs-analyzer))
   (defparameter *sawtooth-tmscs*
