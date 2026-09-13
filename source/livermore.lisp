@@ -64,6 +64,22 @@
            :start-stocks-xcs-experiment
            :start-stocks-xcsr-experiment
            :start-stocks-tsc-experiment)
+  ;; :reexport only exports names; :mix imports the actual symbols.
+  (:mix :livermore/system
+        :livermore/csv
+        :livermore/learning-parameters
+        :livermore/multiplexer
+        :livermore/statistics
+        :livermore/stock-ticker-descriptions
+        :livermore/time
+        :livermore/threshold
+        :livermore/thesis-stats
+        :livermore/whitley-test-functions
+        :livermore/xcs
+        :livermore/xcs-analyzer
+        :livermore/xcsr
+        :livermore/tmscs
+        :livermore/stocks)
   (:reexport :livermore/system
              :livermore/csv
              :livermore/learning-parameters
@@ -95,6 +111,8 @@
   (should-be-true (umbrella-exports-p "TMSCS"))
   (should-be-true (umbrella-exports-p "SIMPLE-SLOPE"))
   (should-be-true (umbrella-exports-p "LOAD-TABLE"))
+  (should-be-true (fboundp (find-symbol "LOAD-TABLE" :livermore)))
+  (should-be-true (fboundp (find-symbol "RECORDS" :livermore)))
   (should-be-true (umbrella-exports-p "START-INDE-TMSCS-EXPERIMENT"))
   (should-be-true (umbrella-exports-p "START-STOCKS-TSC-EXPERIMENT"))
   (should-be-true (umbrella-exports-p "START-MULTIPLEXER-EXPERIMENT"))
