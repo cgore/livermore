@@ -32,39 +32,37 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :livermore/threshold-xcsr-parameters
+(defpackage :livermore/monk-xcs-parameters
   (:use :common-lisp
         :livermore/learning-parameters
-        :livermore/xcsr
+        :livermore/xcs
         :sigma/behave)
-  (:export :*threshold-learning-parameters*))
-(in-package :livermore/threshold-xcsr-parameters)
+  (:export :*monk-learning-parameters*))
+(in-package :livermore/monk-xcs-parameters)
 
-(defparameter *threshold-learning-parameters*
-  (make-instance 'xcsr-learning-parameters
-                 :maximum-total-numerosity 800 ; N = 800
-                 :learning-rate 0.2 ; beta = 0.2
-                 :discount-factor 0.71 ; gamma = 0.71
-                 :GA-threshold 12 ; theta = 25
-                 :equal-error-threshold 10.0 ; epsilon_0 = 10.0
-                 :multiplier-parameter 0.1 ; alpha = 0.1
-                 :crossover-probability 0.8 ; chi = 0.8
-                 :mutation-probability 0.04 ; mu = 0.04
+(defparameter *monk-learning-parameters*
+  (make-instance 'learning-parameters
+                 :maximum-total-numerosity 400
+                 :learning-rate 0.2
+                 :discount-factor 0.71
+                 :GA-threshold 25
+                 :equal-error-threshold 10.0
+                 :multiplier-parameter 0.1
+                 :crossover-probability 0.8
+                 :mutation-probability 0.04
                  :exploration-probability 0.5
-                 :fitness-fraction-threshold 0.1 ; delta = 0.1
-                 ; phi = 0.5, covering multiplier
-                 :covering-probability 0.33 ; P_# = 0.33
-                 :initial-prediction 10.0 ; p_I = 10.0
-                 :initial-prediction-error 0.0 ; epsilon_I = 0.0
-                 :initial-fitness 0.01 ; F_I = 0.01
+                 :fitness-fraction-threshold 0.1
+                 :covering-probability 0.33
+                 :initial-prediction 10.0
+                 :initial-prediction-error 0.0
+                 :initial-fitness 0.01
                  :minimum-number-of-actions 2
                  :possible-actions '(nil t)
-                 :covering-maximum 0.1
-                 :mutation-maximum 0.1
                  :GA-subsumption? nil
                  :action-set-subsumption? t))
 
-(behavior 'threshold-learning-parameters
-  (should-be-a 'xcsr-learning-parameters *threshold-learning-parameters*)
+(behavior 'monk-learning-parameters
+  (should-be-a 'learning-parameters *monk-learning-parameters*)
   (should-equal '(nil t)
-                (possible-actions *threshold-learning-parameters*)))
+                (possible-actions *monk-learning-parameters*))
+  (should= 2 (minimum-number-of-actions *monk-learning-parameters*)))

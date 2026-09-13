@@ -32,7 +32,18 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/multislope-tmscs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/tmscs
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*multislope-categories*
+           :*multislope-flip*
+           :*multislope-perturbation*
+           :*multislope-tmscs-learning-parameters*
+           :*stat-report*))
+(in-package :livermore/multislope-tmscs-parameters)
 
 (defparameter *stat-report* nil)
 (defparameter *multislope-categories* 5)
@@ -64,3 +75,9 @@
                    '(:strong-up :weak-up :steady :weak-down :strong-down))))
 (defparameter *multislope-perturbation* 1.0)
 (defparameter *multislope-flip* 0.0)
+
+(behavior 'multislope-tmscs-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *multislope-tmscs-learning-parameters*)
+  (should= 5 *multislope-categories*)
+  (should-equal '(:strong-up :weak-up :steady :weak-down :strong-down)
+                (possible-actions *multislope-tmscs-learning-parameters*)))

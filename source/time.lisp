@@ -395,4 +395,13 @@
     (should-string= "1Q2020" (qqyyyy-string time))
     (should-string= "Q1-2020" (qq-yyyy-string time))
     (should-string= "Mar-2020" (mon-yyyy-string time))
-    (should-string= "15-Mar-2020" (dd-mon-yyyy-string time))))
+    (should-string= "15-Mar-2020" (dd-mon-yyyy-string time))
+    (should-string= "2020- 3-15" (yyyy-mm-dd-string time))
+    (should-string= "2020- 3-15" (iso-date-string time))))
+
+(behavior 'julian-and-ordinal
+  (let ((time '(0 0 12 1 1 2000 5 nil 0)))
+    (should-be-a 'integer (time-julian-day-number time))
+    (should= (time-julian-day-number time) (time-jdn time))
+    (should= 1 (time-ordinal-date time))
+    (should= 1 (time-day-of-year time))))

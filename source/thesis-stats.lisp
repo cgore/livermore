@@ -35,6 +35,7 @@
 
 (defpackage :livermore/thesis-stats
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :sigma/sequence
         :livermore/statistics)
@@ -893,3 +894,43 @@
                            +reward-d-pess-stats+))
     (format t "~2%Reward method: ~A~%" reward-method)
     (report-stats reward-method)))
+
+(defun %column (stats index)
+  (mapcar (lambda (row) (nth index row)) stats))
+
+(behavior 'thesis-reward-a1-stats
+  "Table 4.2 of the thesis: reward method a1, 36 trials."
+  (should= 36 (length +reward-a1-stats+))
+  (should-be-true (< (abs (- 754 (arithmetic-mean (%column +reward-a1-stats+ 0))))
+                     1.0))
+  (should-be-true (< (abs (- 50.256 (arithmetic-mean (%column +reward-a1-stats+ 1))))
+                     0.01))
+  (should-be-true (< (abs (- 1853080.30 (arithmetic-mean (%column +reward-a1-stats+ 2))))
+                     1.0))
+  (should-be-true (< (abs (- 0.67500 (arithmetic-mean (%column +reward-a1-stats+ 3))))
+                     0.00001)))
+
+(behavior 'thesis-reward-a2-stats
+  "Table 4.3 of the thesis: reward method a2, 44 trials."
+  (should= 44 (length +reward-a2-stats+))
+  (should-be-true (< (abs (- 748 (arithmetic-mean (%column +reward-a2-stats+ 0))))
+                     1.0))
+  (should-be-true (< (abs (- 49.867 (arithmetic-mean (%column +reward-a2-stats+ 1))))
+                     0.01)))
+
+(behavior 'thesis-parameter-tables
+  (should= 30 (length +ga-threshold-35-stats+))
+  (should= 31 (length +ga-threshold-45-stats+))
+  (should= 30 (length +ga-threshold-50-stats+))
+  (should= 33 (length +crossover-probability-0.3-stats+))
+  (should= 31 (length +crossover-probability-0.5-stats+))
+  (should= 34 (length +crossover-probability-0.7-stats+))
+  (should= 39 (length +crossover-probability-0.9-stats+))
+  (should= 34 (length +mutation-probability-0.06-stats+))
+  (should= 39 (length +mutation-probability-0.08-stats+))
+  (should= 36 (length +mutation-probability-0.10-stats+))
+  (should= 32 (length +mutation-probability-0.15-stats+))
+  (should= 36 (length +mutation-probability-0.20-stats+))
+  (should= 42 (length +exploration-probability-0.1-stats+))
+  (should= 40 (length +exploration-probability-0.3-stats+))
+  (should= 47 (length +exploration-probability-0.4-stats+)))

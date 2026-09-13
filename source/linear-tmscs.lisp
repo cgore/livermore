@@ -32,26 +32,33 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "statistics")
-(load "tmscs")
-(in-package "XCS")
-(use-package "STATISTICS")
-(export '(linear-tmscs-analyzer
-           history
-           action-history
-           initial-history-depth
-           linear-tmscs-experiment
-           get-situation
-           classify
-           correct-action
-           end-of-problem?
-           terminate?
-           start-linear-tmscs-experiment
-           *linear-tmscs-analyzer*
-           *linear-tmscs-learning-parameters*
-           *linear-tmscs*
-           *linear-tmscs-experiment*))
+(defpackage :livermore/linear-tmscs
+  (:use :common-lisp
+        :livermore/linear-tmscs-parameters
+        :livermore/statistics
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric)
+  (:export :*linear-tmscs*
+           :*linear-tmscs-analyzer*
+           :*linear-tmscs-experiment*
+           :classify
+           :correct-action
+           :end-of-problem?
+           :get-situation
+           :history
+           :initial-history-depth
+           :linear-tmscs-analyzer
+           :linear-tmscs-experiment
+           :start-linear-tmscs-experiment
+           :terminate?))
+(in-package :livermore/linear-tmscs)
+
+(defparameter *linear-tmscs-analyzer* nil)
+(defparameter *linear-tmscs* nil)
+(defparameter *linear-tmscs-experiment* nil)
 
 (defclass linear-tmscs-analyzer (environment reinforcement-program)
   ((history
@@ -63,7 +70,7 @@
      :accessor number-of-situations
      :initform 0
      :initarg :number-of-situations
-     :type natural-number)
+     :type (integer 0 *))
    (current-action
      :accessor current-action
      :initarg :current-action)
@@ -71,17 +78,17 @@
      :accessor number-of-actions
      :initform 0
      :initarg :number-of-actions
-     :type natural-number)
+     :type (integer 0 *))
    (number-of-correct-actions
      :accessor number-of-correct-actions
      :initform 0
      :initarg :number-of-correct-actions
-     :type natural-number)
+     :type (integer 0 *))
    (initial-history-depth
      :accessor initial-history-depth
-     :initform 200
+     :initform 50
      :initarg :initial-history-depth
-     :type natural-number
+     :type (integer 0 *)
      :documentation "How many history points to generate before learning."))
   (:documentation
    "An environment that presents a sine wave and asks whether the next
@@ -96,9 +103,10 @@
   (sin (* time-step pi 1/25)))
 
 (defmethod get-situation ((analyzer linear-tmscs-analyzer))
-  "This pushes the next sine value onto the history."
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  "This pushes the next sine value onto the history and returns the series."
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-function (incf number-of-situations)) history)
+    history))
 
 (defmethod classify ((analyzer linear-tmscs-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -124,9 +132,10 @@
   ;; Does this really make any sense in TMSCS?
   t)
 
-(defmethod terminate? ((linear-tmscs-analyzer linear-tmscs-analyzer))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (number-of-actions linear-tmscs-analyzer)))
+(defmethod terminate? ((experiment linear-tmscs-experiment))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer linear-tmscs-analyzer) &rest initargs &key &allow-other-keys)
   "This fills HISTORY to INITIAL-HISTORY-DEPTH."
@@ -141,8 +150,6 @@
   (with-slots (current-action
                 history
                 number-of-actions
-                starting-index
-                ending-index
                 number-of-correct-actions) linear-tmscs-analyzer
     (setf current-action action)
     (incf number-of-actions)
@@ -160,36 +167,37 @@
             (mod number-of-actions 25)
             (first history))))
 
-(defun simple-slope (sequence &key (key #'identity) (start 0) (end nil))
-  "This is the slope of SEQUENCE from START to END, using KEY on each
-  element."
-  (assert (sequence? sequence))
-  (when (null end)
-    (setf end (1- (length sequence))))
-  (/ (- (funcall key (elt sequence start))
-        (funcall key (elt sequence end)))
-     (- start end)))
-
-(defun start-linear-tmscs-experiment ()
+(defun start-linear-tmscs-experiment
+    (&optional (number-of-trials 10000) (run t))
   "This builds a linear TMSCS experiment and starts it."
-  (defparameter *linear-tmscs-analyzer*
-    (make-instance 'linear-tmscs-analyzer))
-  (defparameter *linear-tmscs-learning-parameters*
-    (make-instance 'tmscs-learning-parameters
-                   :valid-operations (list #'simple-slope)
-                   :minimum-number-of-actions 2
-                   :possible-actions '(nil t)
-                   :learning-rate 0.3
-                   :equal-error-threshold 100
-                   :discount-factor 0.1
-                   :mutation-probability 0.1
-                   :exploration-probability 0.1))
-  (defparameter *linear-tmscs*
-    (make-instance 'tmscs
-                   :learning-parameters *linear-tmscs-learning-parameters*))
-  (defparameter *linear-tmscs-experiment*
-    (make-instance 'linear-tmscs-experiment
-                   :environment *linear-tmscs-analyzer*
-                   :reinforcement-program *linear-tmscs-analyzer*
-                   :xcs *linear-tmscs*))
-  (start *linear-tmscs-experiment*))
+  (setf *linear-tmscs-analyzer*
+        (make-instance 'linear-tmscs-analyzer))
+  (setf *linear-tmscs*
+        (make-instance 'tmscs
+                       :learning-parameters *linear-tmscs-learning-parameters*))
+  (setf *linear-tmscs-experiment*
+        (make-instance 'linear-tmscs-experiment
+                       :environment *linear-tmscs-analyzer*
+                       :reinforcement-program *linear-tmscs-analyzer*
+                       :xcs *linear-tmscs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *linear-tmscs-experiment*)
+    *linear-tmscs-experiment*))
+
+(behavior 'linear-situation-function
+  (should= 0 (situation-function 0))
+  (should-be-true (> (situation-function 6) 0))
+  (should-be-true (< (situation-function 30) 0)))
+
+(behavior 'linear-tmscs-analyzer
+  (let ((a (make-instance 'linear-tmscs-analyzer :initial-history-depth 10)))
+    (should= 10 (length (history a)))
+    (should-be-true (end-of-problem? a))
+    (should-be-true (member (classify a) '(t nil)))))
+
+(behavior 'linear-tmscs-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-linear-tmscs-experiment 6 t))
+  (should= 6 (number-of-actions *linear-tmscs-analyzer*))
+  (should-be-true (plusp (length (population *linear-tmscs*)))))

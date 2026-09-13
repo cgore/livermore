@@ -39,6 +39,7 @@
         :livermore/time
         :livermore/statistics
         :livermore/stock-ticker-descriptions
+        :sigma/behave
         :sigma/control
         :sigma/numeric
         :sigma/os
@@ -104,7 +105,6 @@
            :maximum?
            :sample-z-score
            :unbiased-sample-z-score
-           :plot
            :shares-buyable
            :simple-moving-average
            :sma
@@ -151,15 +151,8 @@
            :directional-sma-crossover-performance
            :sma-crossover-optimal
            :sma-crossover-long/short-optimal
-           :directional-sma-crossover-optimal
-           :^dji
-           :^gspc
-           :^ixic))
+           :directional-sma-crossover-optimal))
 (in-package :livermore/stocks)
-
-;; Connect to the database.
-;; (clsql:connect '("localhost" "livermore" "livermore" "stupidhead")
-;;                  :database-type :postgresql-socket)
 
 (defgeneric records (table)
   (:documentation
@@ -767,7 +760,6 @@ POSITION and at the POSITION + SPREAD."
   "This is the MAXIMUM of the stock table's records."
   (maximum (records table) :key key :start start :end end))
 
-;;; XXX: this is broken.
 (defmethod minimum?  ((table table)
                       &key
                       (position nil)
@@ -777,7 +769,6 @@ POSITION and at the POSITION + SPREAD."
 MINIMUM of the stock table's records."
   (minimum? (records table) :position position :key key :start start :end end))
 
-;;; XXX: this is broken.
 (defmethod maximum?  ((table table)
                       &key
                       (position nil)
@@ -830,22 +821,8 @@ MAXIMUM of the stock table's records."
   (second (first (livermore/csv:parse-file (description-filename ticker-symbol)))))
 
 (defun description (ticker-symbol)
-  (a?if database-result
-        (clsql:query
-          (format nil "SELECT description FROM tickers WHERE ticker = '~A';"
-                  (canonical-ticker ticker-symbol))
-          :flatp t
-          :field-names nil)
-        (first database-result)
-        (a?if yahoo-result
-              (retrieve-stock-description ticker-symbol)
-              (progn (clsql:query
-                       (format nil
-                "INSERT INTO tickers (ticker, description) VALUES ('~A', '~A');"
-                               (canonical-ticker ticker-symbol)
-                               yahoo-result))
-                     yahoo-result)
-              nil)))
+  "This is the long name of TICKER-SYMBOL from the local ticker table."
+  (stock-description ticker-symbol))
 
 (defun retrieve-stock-data (ticker-symbol
                              &key
@@ -998,21 +975,16 @@ whenever WMA is discussed."
 
 (function-alias 'moving-average-convergence-divergence 'macd)
 
-;(defun macd-signal-line (period-a period-b signal-period sequence)
-;  "This is the signal line for the moving average convergence/divergence (MACD)
-;of a sequence."
-;  (
-;
-;(defun macd-12-26-9 (sequence)
-;  "The MACD[12,26,9] is the textbook standard version."
-;  (macd 12 26 9 sequence))
-;
-;(function-alias 'macd-12-26-9 'macd-textbook)
-
 (defun macd-signal (smoothing-period period-a period-b sequence)
   "This is the MACD of a sequence with an EMA applied to smooth the results.
 It is routinely used as a signal/trigger."
   (ema smoothing-period (macd period-a period-b sequence)))
+
+(defun macd-12-26-9 (sequence)
+  "Textbook MACD signal line: 9-period EMA of EMA(12) minus EMA(26)."
+  (macd-signal 9 12 26 sequence))
+
+(function-alias 'macd-12-26-9 'macd-textbook)
 
 (defun upward-changes (sequence)
   "This returns the positive day-to-day changes of SEQUENCE, else 0."
@@ -1322,6 +1294,107 @@ It is routinely used as a signal/trigger."
   (fibs (reduce #'min (funcall key table))
         (reduce #'max (funcall key table))))
 
-(defparameter ^dji (load-table '^dji))
-(defparameter ^gspc (load-table '^gspc))
-(defparameter ^ixic (load-table '^ixic))
+(defun %test-record (day close &key (volume 1000))
+  "A table-record for tests, with DAY as a universal-time and CLOSE as every price."
+  (make-instance 'table-record
+                 :opening-time day
+                 :closing-time (+ day (* 6 60 60) (* 30 60))
+                 :descriptive-time (dd-mon-yyyy-string day)
+                 :opening-price close
+                 :high-price close
+                 :low-price close
+                 :closing-price close
+                 :trading-volume volume
+                 :adjusted-closing-price close))
+
+(behavior 'canonical-ticker
+  (should-string= "AAPL" (canonical-ticker "aapl"))
+  (should-string= "AAPL" (canonical-ticker 'aapl))
+  (should-string= "^DJI" (canonical-ticker "^dji")))
+
+(behavior 'table-filename
+  (should-be-true (search "^DJI-table.csv"
+                          (namestring (table-filename "^dji"))))
+  (should-be-true (probe-file (table-filename "^dji"))))
+
+(behavior 'table-record
+  (let* ((day (encode-universal-time 0 0 0 15 3 2020 0))
+         (r (%test-record day 100.0 :volume 50)))
+    (should-be-a 'table-record r)
+    (should= 100.0 (opening-price r) (closing-price r)
+             (adjusted-closing-price r))
+    (should= 1 (adjustment r))
+    (should= 100.0 (adjusted-opening-price r))
+    (should= 50 (trading-volume r))
+    (should= 10 (shares-buyable r 1000.0))
+    (let ((copy (duplicate r)))
+      (should= (opening-price r) (opening-price copy))
+      (should-not-eq r copy))))
+
+(behavior 'synthetic-table
+  (let* ((d0 (encode-universal-time 0 0 0 1 1 2020 0))
+         (day (* 24 60 60))
+         (table (make-instance 'table
+                               :ticker-symbol "TEST"
+                               :records (list (%test-record d0 10.0)
+                                              (%test-record (+ d0 day) 11.0)
+                                              (%test-record (+ d0 (* 2 day)) 12.0)
+                                              (%test-record (+ d0 (* 3 day)) 9.0)))))
+    (should= 4 (length (records table)))
+    (should= 10.0 (elt-record table 0 #'adjusted-closing-price))
+    (should= 9.0 (elt-record table nil #'adjusted-closing-price))
+    (should= 2.0 (difference table :start 0 :end 2))
+    (should= 1.2 (value-ratio table :start 0 :end 2))
+    (should= 12.0 (buy-and-hold table 10.0 :start 0 :end 2))
+    (should= 10.5 (arithmetic-mean table))
+    (should= 9.0 (minimum table))
+    (should= 12.0 (maximum table))
+    (should-be-true (minimum? table :position 3))
+    (should-be-false (minimum? table :position 0))
+    (should-be-true (maximum? table :position 2))
+    (should-be-false (maximum? table :position 0))))
+
+(behavior 'moving-averages
+  (should-equal '(2 3 4) (sma 3 '(1 2 3 4 5)))
+  (should-equal '(1) (sma 1 '(1)))
+  (should-equal '(2 5/2) (buy-and-hold-gains '(1 2 5)))
+  (should= 5 (buy-and-hold-performance '(1 2 5)))
+  (should-equal '(2 1) (cash-optimal-gains '(1 2 1)))
+  (should= 2 (cash-optimal-performance '(1 2 1)))
+  (should-equal '(1 2 0) (upward-changes '(1 2 4 3)))
+  (should-equal '(0 0 1) (downward-changes '(1 2 4 3)))
+  (should-equal '(t t nil) (simple-directional-signal 1 '(1 2 4 3)))
+  (let ((seq (loop for i from 1 to 40 collect (float i))))
+    (should-be-true (plusp (length (macd 12 26 seq))))
+    (should-equal (macd-signal 9 12 26 seq)
+                  (macd-12-26-9 seq))
+    (should-equal (macd-12-26-9 seq) (macd-textbook seq))))
+
+(behavior 'load-dji-table
+  (let ((table (load-table "^dji")))
+    (should-be-a 'table table)
+    (should-be-true (> (length (records table)) 1000))
+    (let ((first-bar (elt-record table 0))
+          (last-bar (elt-record table nil)))
+      (should= 1990 (time-year (opening-time first-bar)))
+      (should= 8 (time-month (opening-time first-bar)))
+      (should= 20 (time-date (opening-time first-bar)))
+      (should= 2006 (time-year (opening-time last-bar)))
+      (should= 8 (time-month (opening-time last-bar)))
+      (should= 18 (time-date (opening-time last-bar))))
+    (spec "thesis window: skip 100 bars, then 1500 trading days"
+      (let* ((start 100)
+             (end (+ start 1500))
+             (start-bar (elt-record table start))
+             (end-bar (elt-record table end))
+             (b&h (buy-and-hold table 1000000.0 :start start :end end)))
+        (should= 1991 (time-year (opening-time start-bar)))
+        (should= 1 (time-month (opening-time start-bar)))
+        (should= 11 (time-date (opening-time start-bar)))
+        (should= 1996 (time-year (opening-time end-bar)))
+        (should= 12 (time-month (opening-time end-bar)))
+        (should= 16 (time-date (opening-time end-bar)))
+        (should-be-true (> b&h 1000000.0))
+        ;; Thesis Table 4.2 published $2,745,309.50; allow for split-adjustment
+        ;; and inclusive/exclusive index differences in the local CSV.
+        (should-be-true (< 2.0 (/ b&h 1000000.0) 3.5))))))

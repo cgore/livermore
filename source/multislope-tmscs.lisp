@@ -32,29 +32,40 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "statistics")
-(load "tmscs")
-(in-package "XCS")
-(use-package "STATISTICS")
-(export '(multislope-tmscs-analyzer
-           history
-           action-history
-           initial-history-depth
-           multislope-tmscs-experiment
-           get-situation
-           classify
-           correct-action
-           end-of-problem?
-           terminate?
-           start-multislope-tmscs-experiment
-           *multislope-tmscs-analyzer*
-           *multislope-tmscs-learning-parameters*
-           *multislope-tmscs*
-           *multislope-tmscs-experiment*))
+(defpackage :livermore/multislope-tmscs
+  (:use :common-lisp
+        :livermore/multislope-tmscs-parameters
+        :livermore/statistics
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence)
+  (:export :*multislope-action-history*
+           :*multislope-hist*
+           :*multislope-tmscs*
+           :*multislope-tmscs-analyzer*
+           :*multislope-tmscs-experiment*
+           :classify
+           :correct-action
+           :end-of-problem?
+           :get-situation
+           :history
+           :initial-history-depth
+           :multislope-tmscs-analyzer
+           :multislope-tmscs-experiment
+           :start-multislope-tmscs-experiment
+           :terminate?))
+(in-package :livermore/multislope-tmscs)
 (defstruct ihs heading steps multiplier value)
 (defparameter *multislope-hist* nil)
 (defparameter *multislope-action-history* nil)
+(defparameter *multislope-tmscs-analyzer* nil)
+(defparameter *multislope-tmscs* nil)
+(defparameter *multislope-tmscs-experiment* nil)
 
 (defclass multislope-tmscs-analyzer (environment reinforcement-program)
   ((history
@@ -82,7 +93,7 @@
      :type (integer 0 *))
    (initial-history-depth
      :accessor initial-history-depth
-     :initform 200
+     :initform 50
      :initarg :initial-history-depth
      :type (integer 0 *)))
   (:documentation
@@ -206,9 +217,10 @@
     (ihs-value (nth-from-end time-step *multislope-hist*))))
 
 (defmethod get-situation ((analyzer multislope-tmscs-analyzer))
-  "This pushes the next series value onto the history."
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  "This pushes the next series value onto the history and returns the series."
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-function (incf number-of-situations)) history)
+    history))
 
 (defmethod classify-3 ((analyzer multislope-tmscs-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -258,9 +270,10 @@
   ;; Does this really make any sense in TMSCS?
   t)
 
-(defmethod terminate? ((multislope-tmscs-analyzer multislope-tmscs-analyzer))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (number-of-actions multislope-tmscs-analyzer)))
+(defmethod terminate? ((experiment multislope-tmscs-experiment))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer multislope-tmscs-analyzer) &rest initargs &key &allow-other-keys)
   "This fills HISTORY to INITIAL-HISTORY-DEPTH."
@@ -285,16 +298,6 @@
                 number-of-actions)
           *multislope-action-history*)))
 
-(defun simple-slope (list &key (key #'identity) (start 0) (end nil))
-  "This is the slope of LIST from START to END, using KEY on each element."
-  (assert (listp list))
-  (when (null end)
-    (setf end (1- (length list))))
-  (assert (not (= start end)))
-  (/ (- (funcall key (nth start list))
-        (funcall key (nth end list)))
-     (- start end)))
-
 (defclass multislope-tmscs-predicate (tms-predicate) ())
 (defmethod print-object ((predicate multislope-tmscs-predicate) stream)
   (format stream "~A -- ~A [~A,~A]"
@@ -303,22 +306,39 @@
 
 (defclass multislope-tmscs-classifier (tms-classifier) ())
 
-(load "multislope-tmscs-parameters")
-
-(defun start-multislope-tmscs-experiment ()
+(defun start-multislope-tmscs-experiment
+    (&optional (number-of-trials 10000) (run t))
   "This builds a multislope TMSCS experiment and starts it."
-  (defparameter *multislope-hist* nil)
-  (defparameter *multislope-action-history* nil)
-  (defparameter *multislope-tmscs-analyzer*
-    (make-instance 'multislope-tmscs-analyzer))
-  (defparameter *multislope-tmscs*
-    (make-instance 'tmscs
-                   :predicate-type 'multislope-tmscs-predicate
-                   :classifier-type 'multislope-tmscs-classifier
-                   :learning-parameters *multislope-tmscs-learning-parameters*))
-  (defparameter *multislope-tmscs-experiment*
-    (make-instance 'multislope-tmscs-experiment
-                   :environment *multislope-tmscs-analyzer*
-                   :reinforcement-program *multislope-tmscs-analyzer*
-                   :xcs *multislope-tmscs*))
-  (start *multislope-tmscs-experiment*))
+  (setf *multislope-hist* nil
+        *multislope-action-history* nil)
+  (setf *multislope-tmscs-analyzer*
+        (make-instance 'multislope-tmscs-analyzer))
+  (setf *multislope-tmscs*
+        (make-instance 'tmscs
+                       :predicate-type 'multislope-tmscs-predicate
+                       :classifier-type 'multislope-tmscs-classifier
+                       :learning-parameters *multislope-tmscs-learning-parameters*))
+  (setf *multislope-tmscs-experiment*
+        (make-instance 'multislope-tmscs-experiment
+                       :environment *multislope-tmscs-analyzer*
+                       :reinforcement-program *multislope-tmscs-analyzer*
+                       :xcs *multislope-tmscs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *multislope-tmscs-experiment*)
+    *multislope-tmscs-experiment*))
+
+(behavior 'multislope-classify
+  (let ((*multislope-hist* nil)
+        (*multislope-categories* 5))
+    (let ((a (make-instance 'multislope-tmscs-analyzer
+                            :initial-history-depth 8)))
+      (should-be-true
+        (member (classify a)
+                '(:strong-up :weak-up :steady :weak-down :strong-down))))))
+
+(behavior 'multislope-tmscs-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-multislope-tmscs-experiment 6 t))
+  (should= 6 (number-of-actions *multislope-tmscs-analyzer*))
+  (should-be-true (plusp (length (population *multislope-tmscs*)))))

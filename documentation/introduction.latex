@@ -85,13 +85,13 @@ If you are using Debian or a similar Linux distribution (including Ubuntu), you
 can run as root:
 
 \begin{lstlisting}[language=bash]
-apt-get install rlwrap sbcl libpq-dev texlive-full
+apt-get install rlwrap sbcl texlive-full
 \end{lstlisting}
 
 On Fedora or Red Hat:
 
 \begin{lstlisting}[language=bash]
-sudo dnf install sbcl rlwrap curl postgresql-devel texlive-scheme-full
+sudo dnf install sbcl rlwrap curl texlive-scheme-full
 \end{lstlisting}
 
 \section*{Getting \textsc{Emacs} and \textsc{Slime}}
@@ -108,10 +108,11 @@ apt-get install slime emacs emacs-goodies-el
 
 \section*{Quicklisp}
 
-Livermore depends on $\Sigma$~\cite{gore-sigma}, \texttt{md5}, and
-\texttt{clsql}.  $\Sigma$ supplies sequences, control, random sampling,
-probability, time-series types, and the \texttt{behavior} tests used throughout
-this library.  The usual way to obtain the dependencies is Quicklisp:
+Livermore depends on $\Sigma$~\cite{gore-sigma}, which supplies sequences,
+control, random sampling, probability, time-series types, and the
+\texttt{behavior} tests used throughout this library.  McCLIM is needed only
+for the optional \texttt{livermore/trade-chart} system.  The usual way to
+obtain the dependencies is Quicklisp:
 
 \begin{lstlisting}[language=bash]
 curl -O https://beta.quicklisp.org/quicklisp.lisp
@@ -137,7 +138,11 @@ Then, in the \textsc{Repl}:
 
 \begin{lstlisting}
 (asdf:load-system :livermore)
+(asdf:test-system :livermore)
 \end{lstlisting}
+
+\texttt{(use-package :livermore)} re-exports the core library.  Experiment
+starters such as \texttt{start-inde-tmscs-experiment} are also exported.
 
 A typical single-step experiment builds an environment, an XCS, and an
 \texttt{experiment}, then calls \texttt{start}:

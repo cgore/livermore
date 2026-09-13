@@ -185,7 +185,7 @@
 
 (defmethod get-situation ((analyzer animat-analyzer))
   "Get the current-situation which is represented by a 24-element
-   truth list, which contains the 3-element sensor codes for the 8
+   truth vector, which contains the 3-element sensor codes for the 8
    locations nearest the current location. The codes are arranged in
    counter-clockwise order starting from directly north. Boundaries
    wrap around to the other side."
@@ -193,18 +193,17 @@
                world
                x-location y-location
                world-width world-height) analyzer
-    (setf current-situation nil)
-    (dolist (delta
-             (list '(0 -1) '(1 -1) '(1 0)
-                   '(1 1) '(0 1) '(-1 1)
-                   '(-1 0) '(-1 -1)))
-      (let ((new-x (+ x-location (first delta)))
-            (new-y (+ y-location (second delta))))
-        (snap-index new-x world-width)
-        (snap-index new-y world-height)
-        (nconcf current-situation
-                (sensor-code (aref world new-x new-y)))))
-    current-situation))
+    (let ((bits nil))
+      (dolist (delta
+               (list '(0 -1) '(1 -1) '(1 0)
+                     '(1 1) '(0 1) '(-1 1)
+                     '(-1 0) '(-1 -1)))
+        (let ((new-x (+ x-location (first delta)))
+              (new-y (+ y-location (second delta))))
+          (snap-index new-x world-width)
+          (snap-index new-y world-height)
+          (nconcf bits (sensor-code (aref world new-x new-y)))))
+      (setf current-situation (coerce bits 'vector)))))
 
 (defmethod execute-action ((analyzer animat-analyzer) (action integer))
   "Moves the animat in the given direction. Edges wrap around to the
@@ -276,7 +275,8 @@
           t
           nil))))
 
-(defun start-animat-experiment (file-name)
+(defun start-animat-experiment
+    (file-name &optional (number-of-trials 10000) (run t))
   "This builds an animat experiment from the maze in FILE-NAME and starts
   it."
   (setf *animat-analyzer*
@@ -289,8 +289,11 @@
         (make-instance 'animat-experiment
                        :environment *animat-analyzer*
                        :reinforcement-program *animat-analyzer*
-                       :xcs *animat-xcs*))
-  (start *animat-experiment*))
+                       :xcs *animat-xcs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *animat-experiment*)
+    *animat-experiment*))
 
 (behavior 'sensor-code
   (should-equal '(t t nil) (sensor-code :F))
@@ -322,7 +325,8 @@
             (y-location analyzer) 1)
       (let ((sit (get-situation analyzer)))
         (should= 24 (length sit))
-        (should-equal sit (current-situation analyzer))))
+        (should-be-a 'vector sit)
+        (should-equalp sit (current-situation analyzer))))
     (spec "rocks block movement, open cells and food do not"
       (setf (x-location analyzer) 1
             (y-location analyzer) 1
@@ -342,3 +346,12 @@
       (setf (y-location analyzer) 3)
       (should-be-true (end-of-problem? analyzer))
       (should= 1000 (get-reward analyzer)))))
+
+(behavior 'animat-xcs-experiment
+  (let ((maze (asdf:system-relative-pathname
+               "livermore" "data/animat-data/easy.txt")))
+    (let ((*standard-output* (make-broadcast-stream)))
+      (start-animat-experiment maze 2 t))
+    (should-be-a 'animat-experiment *animat-experiment*)
+    (should-be-true (plusp (number-of-problems *animat-analyzer*)))
+    (should-be-true (plusp (length (population *animat-xcs*))))))

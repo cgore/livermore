@@ -35,6 +35,7 @@
 
 (defpackage :livermore/tmscs
   (:use :common-lisp
+        :sigma/behave
         :sigma/control
         :sigma/numeric
         :sigma/probability
@@ -45,21 +46,29 @@
         :livermore/learning-parameters
         :livermore/xcs
         :livermore/xcsr)
-  (:export :tms-classifier
-           :match?
-           :tms-predicate
-           :initial
-           :final
+  (:export :covering-score
+           :duplicate
            :field
-           :operation
-           :tmscs-learning-parameters
+           :field-path
+           :final
+           :identical?
+           :initial
+           :match?
            :maximum-environment-condition-length
-           :maximum-temporal-mutation
            :maximum-position-mutation
-           :valid-operations
+           :maximum-temporal-mutation
+           :more-general?
+           :operate
+           :operation
+           :path
+           :simple-slope
+           :tms-classifier
+           :tms-predicate
+           :tmscs
+           :tmscs-learning-parameters
            :valid-fields
-           :visible-time-range
-           :tmscs))
+           :valid-operations
+           :visible-time-range))
 (in-package :livermore/tmscs)
 
 
@@ -157,6 +166,7 @@
    (visible-time-range
      :accessor visible-time-range
      :initform '(0 100)
+     :initarg :visible-time-range
      :type list
      :documentation
      "This is the range in time that is visible to the classifiers.  None of
@@ -165,8 +175,19 @@
      system is allowed to start."))
   (:documentation "These are the learning parameters for a TMSCS problem."))
 
+(defun simple-slope (sequence &key (key #'identity) (start 0) (end nil))
+  "The slope of SEQUENCE from START to END, using KEY on each element.
+  This is the operator used by the thesis time-series experiments."
+  (assert (plusp (length sequence)))
+  (when (null end)
+    (setf end (1- (length sequence))))
+  (assert (/= start end))
+  (/ (- (funcall key (elt sequence start))
+        (funcall key (elt sequence end)))
+     (- start end)))
+
 (defmethod print-object ((tms-predicate tms-predicate) stream)
-  (format stream (string-concatenate "(xcs:tms-predicate"
+  (format stream (string-concatenate "(livermore/tmscs:tms-predicate"
                                      " :operation ~A"
                                      " :field ~A"
                                      " :initial ~A"
@@ -307,8 +328,12 @@
                 valid-operations
                 visible-time-range) parameters
     (flet ((random-point ()
-              (cons (random-in-ranges visible-time-range)
-                    (mapcar #'random (rest (tms-dimensions situation))))))
+              (let ((dims (tms-dimensions situation)))
+                (cons (random-in-range
+                        (first visible-time-range)
+                        (min (second visible-time-range)
+                             (1- (first dims))))
+                      (mapcar #'random (rest dims))))))
       (let* ((initial (random-point))
              (final (do ((final (random-point)
                                 (random-point)))
@@ -435,3 +460,82 @@
                   (prediction-error q) new-prediction-error
                   (fitness p) new-fitness
                   (fitness q) new-fitness)))))))
+
+(behavior 'simple-slope
+  (should= 1 (simple-slope '(0 1 2 3)))
+  (should= 1 (simple-slope #(0 1 2 3)))
+  (should= -1 (simple-slope '(3 2 1 0)))
+  (should= 10 (simple-slope '(0 10) :end 1))
+  (should= 10 (simple-slope '((0) (10)) :key #'first)))
+
+(behavior 'tms-predicate
+  (let* ((series '(0.0 1.0 2.0 3.0 4.0))
+         (p (tms-predicate :initial '(0) :final '(4)
+                           :field #'identity
+                           :operation #'simple-slope
+                           :lower 0.5 :upper 1.5)))
+    (spec "path follows the raster line"
+      (should-equal '((0) (1) (2) (3) (4)) (path p)))
+    (spec "operate is the slope of the series along the path"
+      (should= 1 (operate p series)))
+    (spec "match? a series whose slope is in range"
+      (should-be-true (match? p series))
+      (should-be-false (match? p '(0.0 0.0 0.0 0.0 0.0))))
+    (spec "identical? and duplicate"
+      (let ((copy (duplicate p)))
+        (should-be-true (identical? p copy))
+        (should-not-eq p copy)
+        (should-be-false (identical? p (tms-predicate :initial '(0) :final '(3)
+                                                     :lower 0.5 :upper 1.5))))))
+  (spec "a wider range is more general when the path contains the specific path"
+    (let ((general (tms-predicate :initial '(0) :final '(4)
+                                  :lower 0.0 :upper 2.0))
+          (specific (tms-predicate :initial '(1) :final '(3)
+                                   :lower 0.5 :upper 1.5)))
+      (should-be-true (match? general specific))
+      (should-be-true (more-general? general specific))
+      (should-be-false (more-general? specific general))
+      (should-be-false (more-general? general general)))))
+
+(behavior 'tms-classifier
+  (let* ((series '(0.0 1.0 2.0 3.0 4.0))
+         (p (tms-predicate :initial '(0) :final '(4)
+                           :operation #'simple-slope
+                           :lower 0.5 :upper 1.5))
+         (c (make-instance 'tms-classifier
+                           :environment-condition (list p)
+                           :action :uptrending)))
+    (should-be-true (match? c series))
+    (should-be-false (match? c '(5.0 4.0 3.0 2.0 1.0)))))
+
+(behavior 'tmscs-learning-parameters
+  (let ((lp (make-instance 'tmscs-learning-parameters
+                           :minimum-number-of-actions 2
+                           :valid-operations (list #'simple-slope))))
+    (should-be-a 'tmscs-learning-parameters lp)
+    (should-be-a 'xcsr-learning-parameters lp)
+    (should= 1 (maximum-environment-condition-length lp))
+    (should= 5 (maximum-temporal-mutation lp))
+    (should= 5 (maximum-position-mutation lp))
+    (should-equal '(0 100) (visible-time-range lp))
+    (should-eq #'identity (first (valid-fields lp))))
+  (spec "visible-time-range is an initarg"
+    (should-equal '(0 50)
+                  (visible-time-range
+                    (make-instance 'tmscs-learning-parameters
+                                   :minimum-number-of-actions 2
+                                   :valid-operations (list #'simple-slope)
+                                   :visible-time-range '(0 50))))))
+
+(behavior 'cover-tms-predicate
+  (let* ((series '(0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0))
+         (lp (make-instance 'tmscs-learning-parameters
+                            :minimum-number-of-actions 2
+                            :valid-operations (list #'simple-slope)
+                            :valid-fields (list #'identity)
+                            :visible-time-range '(0 9)
+                            :initial-spread-limit 0.5))
+         (p (cover (make-instance 'tms-predicate) series lp)))
+    (should-be-a 'tms-predicate p)
+    (should-be-true (match? p series))
+    (should-be-true (< (first (initial p)) (first (final p))))))

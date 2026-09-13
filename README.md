@@ -26,13 +26,13 @@ modification, are permitted provided that the following conditions are met:
 ### Debian/Ubuntu/etc.
 
 ```shell
-apt-get install rlwrap sbcl libpq-dev texlive-full
+apt-get install rlwrap sbcl texlive-full
 ```
 
 ### Red Hat/Fedora/etc.
 
 ```shell
-sudo dnf install sbcl rlwrap curl postgresql-devel texlive-scheme-full
+sudo dnf install sbcl rlwrap curl texlive-scheme-full
 ```
 
 ## Initial Quicklisp Setup
@@ -47,18 +47,32 @@ sbcl --load quicklisp.lisp \
 ```
 
 ```lisp
-(ql:quickload '("clx"
-                "md5"
-                "mcclim"
-                "clsql"
-                "clsql-postgresql"
-                "clsql-postgresql-socket"))
+(ql:quickload "sigma")
 ```
+
+McCLIM is only needed for the optional `livermore/trade-chart` system.
 
 # How To Use
 
+Clone this repository and [sigma](https://github.com/cgore/sigma) where ASDF can see them, then:
+
 ```lisp
-(load "trade-chart")
-;; Wait a very long time for everything to compile ...
-;; Have fun!
+(asdf:load-system :livermore)
+(asdf:test-system :livermore)
+```
+
+`(use-package :livermore)` re-exports the core library. Experiment starters such as `start-inde-tmscs-experiment` and `start-stocks-tsc-experiment` are also exported; pass a small trial count to run them quickly:
+
+```lisp
+(livermore:start-inde-tmscs-experiment 20)
+(livermore:start-multiplexer-experiment 2 50)
+```
+
+The stock-market TSC from the MS thesis lives in `livermore/stocks-tsc` and uses the bundled `^dji` table. A full 1500-day run is `start-stocks-tsc-experiment`; the tests run a short synthetic series and check that the published DJI window still loads.
+
+The McCLIM chart is optional:
+
+```lisp
+(asdf:load-system :livermore/trade-chart)
+(livermore/trade-chart:demo)
 ```

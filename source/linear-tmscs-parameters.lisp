@@ -32,7 +32,15 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/linear-tmscs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/tmscs
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*linear-tmscs-learning-parameters*
+           :*stat-report*))
+(in-package :livermore/linear-tmscs-parameters)
 
 (defparameter *stat-report* nil)
 (defparameter *linear-tmscs-learning-parameters*
@@ -58,3 +66,8 @@
                  :GA-subsumption? nil
                  :action-set-subsumption? nil
                  :possible-actions '(nil t)))
+
+(behavior 'linear-tmscs-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *linear-tmscs-learning-parameters*)
+  (should-equal '(nil t)
+                (possible-actions *linear-tmscs-learning-parameters*)))

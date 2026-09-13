@@ -32,7 +32,17 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/inde-tmscs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/tmscs
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*inde-flip*
+           :*inde-perturbation*
+           :*inde-tmscs-learning-parameters*
+           :*stat-report*))
+(in-package :livermore/inde-tmscs-parameters)
 
 (defparameter *stat-report* nil)
 (defparameter *inde-tmscs-learning-parameters*
@@ -60,3 +70,9 @@
                  :possible-actions '(:uptrending :downtrending)))
 (defparameter *inde-perturbation* 1.2)
 (defparameter *inde-flip* 0.2)
+
+(behavior 'inde-tmscs-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *inde-tmscs-learning-parameters*)
+  (should-equal '(:uptrending :downtrending)
+                (possible-actions *inde-tmscs-learning-parameters*))
+  (should= 0.35 (exploration-probability *inde-tmscs-learning-parameters*)))

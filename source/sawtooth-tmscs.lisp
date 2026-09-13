@@ -32,26 +32,33 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "statistics")
-(load "tmscs")
-(in-package "XCS")
-(use-package "STATISTICS")
-(export '(sawtooth-tmscs-analyzer
-           history
-           action-history
-           initial-history-depth
-           sawtooth-tmscs-experiment
-           get-situation
-           classify
-           correct-action
-           end-of-problem?
-           terminate?
-           start-sawtooth-tmscs-experiment
-           *sawtooth-tmscs-analyzer*
-           *sawtooth-tmscs-learning-parameters*
-           *sawtooth-tmscs*
-           *sawtooth-tmscs-experiment*))
+(defpackage :livermore/sawtooth-tmscs
+  (:use :common-lisp
+        :livermore/sawtooth-tmscs-parameters
+        :livermore/statistics
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric)
+  (:export :*sawtooth-tmscs*
+           :*sawtooth-tmscs-analyzer*
+           :*sawtooth-tmscs-experiment*
+           :classify
+           :correct-action
+           :end-of-problem?
+           :get-situation
+           :history
+           :initial-history-depth
+           :sawtooth-tmscs-analyzer
+           :sawtooth-tmscs-experiment
+           :start-sawtooth-tmscs-experiment
+           :terminate?))
+(in-package :livermore/sawtooth-tmscs)
+
+(defparameter *sawtooth-tmscs-analyzer* nil)
+(defparameter *sawtooth-tmscs* nil)
+(defparameter *sawtooth-tmscs-experiment* nil)
 
 (defclass sawtooth-tmscs-analyzer (environment reinforcement-program)
   ((history
@@ -79,7 +86,7 @@
      :type (integer 0 *))
    (initial-history-depth
      :accessor initial-history-depth
-     :initform 200
+     :initform 50
      :initarg :initial-history-depth
      :type (integer 0 *)))
   (:documentation
@@ -130,9 +137,10 @@
   (sin (* time-step pi 1/25)))
 
 (defmethod get-situation ((analyzer sawtooth-tmscs-analyzer))
-  "This pushes the next sine value onto the history."
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  "This pushes the next sine value onto the history and returns the series."
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-function (incf number-of-situations)) history)
+    history))
 
 (defmethod classify ((analyzer sawtooth-tmscs-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -160,9 +168,10 @@
   ;; Does this really make any sense in TMSCS?
   t)
 
-(defmethod terminate? ((sawtooth-tmscs-analyzer sawtooth-tmscs-analyzer))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (number-of-actions sawtooth-tmscs-analyzer)))
+(defmethod terminate? ((experiment sawtooth-tmscs-experiment))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer sawtooth-tmscs-analyzer) &rest initargs &key &allow-other-keys)
   "This fills HISTORY to INITIAL-HISTORY-DEPTH."
@@ -181,17 +190,6 @@
     (when (correct-action? sawtooth-tmscs-analyzer)
       (incf number-of-correct-actions))))
 
-(defun simple-slope (sequence &key (key #'identity) (start 0) (end nil))
-  "This is the slope of SEQUENCE from START to END, using KEY on each
-  element."
-  (assert (sequence? sequence))
-  (when (null end)
-    (setf end (1- (length sequence))))
-  (assert (not (= start end)))
-  (/ (- (funcall key (elt sequence start))
-        (funcall key (elt sequence end)))
-     (- start end)))
-
 (defclass sawtooth-tmscs-predicate (tms-predicate) ())
 (defmethod print-object ((predicate sawtooth-tmscs-predicate) stream)
   (format stream "~A -- ~A [~A,~A]"
@@ -200,20 +198,28 @@
 
 (defclass sawtooth-tmscs-classifier (tms-classifier) ())
 
-(load "sawtooth-tmscs-parameters")
-
-(defun start-sawtooth-tmscs-experiment ()
+(defun start-sawtooth-tmscs-experiment
+    (&optional (number-of-trials 10000) (run t))
   "This builds a sawtooth TMSCS experiment and starts it."
-  (defparameter *sawtooth-tmscs-analyzer*
-    (make-instance 'sawtooth-tmscs-analyzer))
-  (defparameter *sawtooth-tmscs*
-    (make-instance 'tmscs
-                   :predicate-type 'sawtooth-tmscs-predicate
-                   :classifier-type 'sawtooth-tmscs-classifier
-                   :learning-parameters *sawtooth-tmscs-learning-parameters*))
-  (defparameter *sawtooth-tmscs-experiment*
-    (make-instance 'sawtooth-tmscs-experiment
-                   :environment *sawtooth-tmscs-analyzer*
-                   :reinforcement-program *sawtooth-tmscs-analyzer*
-                   :xcs *sawtooth-tmscs*))
-  (start *sawtooth-tmscs-experiment*))
+  (setf *sawtooth-tmscs-analyzer*
+        (make-instance 'sawtooth-tmscs-analyzer))
+  (setf *sawtooth-tmscs*
+        (make-instance 'tmscs
+                       :predicate-type 'sawtooth-tmscs-predicate
+                       :classifier-type 'sawtooth-tmscs-classifier
+                       :learning-parameters *sawtooth-tmscs-learning-parameters*))
+  (setf *sawtooth-tmscs-experiment*
+        (make-instance 'sawtooth-tmscs-experiment
+                       :environment *sawtooth-tmscs-analyzer*
+                       :reinforcement-program *sawtooth-tmscs-analyzer*
+                       :xcs *sawtooth-tmscs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *sawtooth-tmscs-experiment*)
+    *sawtooth-tmscs-experiment*))
+
+(behavior 'sawtooth-tmscs-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-sawtooth-tmscs-experiment 6 t))
+  (should= 6 (number-of-actions *sawtooth-tmscs-analyzer*))
+  (should-be-true (plusp (length (population *sawtooth-tmscs*)))))

@@ -35,7 +35,8 @@
 (defpackage :livermore/animat-xcs-parameters
   (:use :common-lisp
         :livermore/learning-parameters
-        :livermore/xcs)
+        :livermore/xcs
+        :sigma/behave)
   (:export :*animat-learning-parameters*))
 (in-package :livermore/animat-xcs-parameters)
 
@@ -61,3 +62,12 @@
                  :possible-actions '(0 1 2 3 4 5 6 7)
                  :GA-subsumption? t 
                  :action-set-subsumption? t))
+
+(behavior 'animat-learning-parameters
+  (should-be-a 'learning-parameters *animat-learning-parameters*)
+  (should= 400 (maximum-total-numerosity *animat-learning-parameters*))
+  (should= 0.2 (learning-rate *animat-learning-parameters*))
+  (should= 8 (minimum-number-of-actions *animat-learning-parameters*))
+  (should-equal '(0 1 2 3 4 5 6 7)
+                (possible-actions *animat-learning-parameters*))
+  (should= 8 (length (possible-actions *animat-learning-parameters*))))

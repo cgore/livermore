@@ -32,32 +32,44 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "statistics")
-(load "tmscs")
-(load "stocks")
-(load "time")
-(in-package "XCS")
-(use-package '("STATISTICS" "STOCKS" "TIME"))
-(export '(stocks-tsc-analyzer
-           table
-           history
-           action-history
-           money-history
-           stats-history
-           number-of-situations
-           initial-history-depth
-           stocks-tsc-experiment
-           get-situation
-           classify
-           correct-action
-           correct-action?
-           incorrect-action?
-           end-of-problem?
-           terminate?
-           start-stocks-tsc-experiment
-           start-stocks-tsc-experiment-stats
-          :*table*))
+(defpackage :livermore/stocks-tsc
+  (:use :common-lisp
+        :livermore/statistics
+        :livermore/stocks
+        :livermore/stocks-tsc-parameters
+        :livermore/time
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/string)
+  (:export :*table*
+           :action-history
+           :classify
+           :correct-action
+           :correct-action?
+           :end-of-problem?
+           :get-reward.a1
+           :get-reward.a2
+           :get-reward.b
+           :get-reward.c
+           :get-reward.d-opt
+           :get-reward.d-pess
+           :get-situation
+           :history
+           :incorrect-action?
+           :initial-history-depth
+           :load-*table*
+           :money-history
+           :number-of-situations
+           :start-stocks-tsc-experiment
+           :stats-history
+           :stocks-tsc-analyzer
+           :stocks-tsc-experiment
+           :stocks-tsc-experiment-run
+           :table
+           :terminate?))
+(in-package :livermore/stocks-tsc)
 
 (defparameter *table* nil)
 
@@ -77,7 +89,7 @@
     :type list)
    (money-history
     :accessor money-history
-    :initform (list *initial-money*)
+    :initform (list *stocks-tsc-initial-money*)
     :initarg :money-history
     :type list)
    (stats-history
@@ -107,7 +119,7 @@
     :type (integer 0 *))
    (initial-history-depth
     :accessor initial-history-depth
-    :initform 200
+    :initform *stock-starting-index*
     :initarg :initial-history-depth
     :type (integer 0 *))))
 
@@ -125,7 +137,7 @@
                   number-of-actions
                   number-of-up-steps) environment
       (with-slots (population match-set action-set) xcs
-        (let* ((b&h (buy-and-hold (table environment) *initial-money*
+        (let* ((b&h (buy-and-hold (table environment) *stocks-tsc-initial-money*
                                   :end (1+ (number-of-situations environment))))
                (stats-history-entry 
                  (list (correct-action environment)
@@ -183,18 +195,19 @@
                            :key 'fitness
                            :pre-string "~&  A F :: "))))))))
 
-(defun situation-function (time-step)
-  (elt-record *table* time-step))
+(defmethod situation-at ((analyzer stocks-tsc-analyzer) time-step)
+  (elt-record (table analyzer) time-step))
 
 (defmethod get-situation ((analyzer stocks-tsc-analyzer))
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-at analyzer (incf number-of-situations)) history)
+    history))
 
 (defmethod current-situation ((analyzer stocks-tsc-analyzer))
-  (situation-function (number-of-situations analyzer)))
+  (situation-at analyzer (number-of-situations analyzer)))
 
 (defmethod next-situation ((analyzer stocks-tsc-analyzer))
-  (situation-function (1+ (number-of-situations analyzer))))
+  (situation-at analyzer (1+ (number-of-situations analyzer))))
 
 (defmethod classify.3 ((analyzer stocks-tsc-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -229,7 +242,14 @@
   (if (going-up? analyzer) :stock :bank))
 
 (defmethod classify ((analyzer stocks-tsc-analyzer))
-  (funcall *classification-method* analyzer))
+  (case *classification-method*
+    (:going-up (classify.going-up? analyzer))
+    (:three (classify.3 analyzer))
+    (:money-ratio-opt (classify.money-ratio.opt analyzer))
+    (:money-ratio-pess (classify.money-ratio.pess analyzer))
+    (t (if (functionp *classification-method*)
+         (funcall *classification-method* analyzer)
+         (classify.going-up? analyzer)))))
 
 (defmethod current-action ((analyzer stocks-tsc-analyzer))
   (first (first (action-history analyzer))))
@@ -282,7 +302,7 @@
          correct-down)
         ((and (incorrect-action? analyzer) (going-up? analyzer))
          incorrect-up)
-        ((and (incorrect-action? analyzer) (going-up? analyzer))
+        ((and (incorrect-action? analyzer) (not (going-up? analyzer)))
          incorrect-down)
         (t 0.0)))
 
@@ -293,14 +313,23 @@
   (get-reward.d analyzer 750.0 1000.0 200.0 10.0))
 
 (defmethod get-reward ((analyzer stocks-tsc-analyzer))
-  (funcall *reward-method* analyzer))
+  (if (functionp *reward-method*)
+    (funcall *reward-method* analyzer)
+    (ecase *reward-method*
+      (:a1 (get-reward.a1 analyzer))
+      (:a2 (get-reward.a2 analyzer))
+      (:b (get-reward.b analyzer))
+      (:c (get-reward.c analyzer))
+      (:d-opt (get-reward.d-opt analyzer))
+      (:d-pess (get-reward.d-pess analyzer)))))
 
 (defmethod end-of-problem? ((stocks-tsc-analyzer stocks-tsc-analyzer))
   ;; Does this really make any sense in TMSCS?
   nil) ; T previously
 
 (defmethod terminate? ((experiment stocks-tsc-experiment))
-  (<= *stock-termination-actions* (number-of-actions (environment experiment))))
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer stocks-tsc-analyzer) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
@@ -333,27 +362,18 @@
                 number-of-actions
                 number-of-correct-actions
                 number-of-up-steps) analyzer
+    (push (list action nil 0 0) action-history)
     (incf number-of-actions)
     (when (correct-action? analyzer)
       (incf number-of-correct-actions))
     (when (going-up? analyzer)
       (incf number-of-up-steps))
-    (push (list action
+    (setf (first action-history)
+          (list action
                 (correct-action? analyzer)
                 number-of-correct-actions
-                number-of-actions)
-          action-history)
+                number-of-actions))
     (push (new-money analyzer) money-history)))
-
-(defun simple-slope (list &key (key #'identity) (start 0) (end nil))
-  "This function returns the simple slope of the line."
-  (assert (listp list))
-  (when (null end)
-    (setf end (1- (length list))))
-  (assert (not (= start end)))
-  (/ (- (funcall key (nth start list))
-        (funcall key (nth end list)))
-     (- start end)))
 
 (defclass stocks-tsc-predicate (tms-predicate) ())
 (defmethod print-object ((predicate stocks-tsc-predicate) stream)
@@ -363,14 +383,19 @@
 
 (defclass stocks-tsc-classifier (tms-classifier) ())
 
-(load "stocks-tsc-parameters")
-
-(defun load-*table* (stock-ticker)
+(defun load-*table* (&optional (stock-ticker *stock-ticker*))
   (setf *table* (load-table stock-ticker)))
-(load-*table* *stock-ticker*)
 
-(defun stocks-tsc-experiment ()
-  (let* ((analyzer (make-instance 'stocks-tsc-analyzer :table *table*))
+(defun start-stocks-tsc-experiment
+    (&key (table *table*)
+          (ticker *stock-ticker*)
+          (number-of-trials *stock-termination-actions*)
+          (run t))
+  "This builds a TSC experiment on historical stock data and starts it.
+  This is the stock-market experiment from section 4.3 of the thesis."
+  (unless table
+    (setf table (load-*table* ticker)))
+  (let* ((analyzer (make-instance 'stocks-tsc-analyzer :table table))
          (parameters *stocks-tsc-learning-parameters*)
          (stocks-tsc (make-instance 'tmscs
                                     :predicate-type 'stocks-tsc-predicate
@@ -379,12 +404,18 @@
          (experiment (make-instance 'stocks-tsc-experiment
                                     :environment analyzer
                                     :reinforcement-program analyzer
-                                    :xcs stocks-tsc)))
+                                    :xcs stocks-tsc
+                                    :number-of-trials number-of-trials)))
     (format t "~&Starting stock-tsc experiment, stock=~A, reward method=~A.~%"
-            *stock-ticker* *reward-method*)
-    (describe parameters)
-    (start experiment)
-    (list experiment parameters (stats-history analyzer))))
+            ticker *reward-method*)
+    (if run
+      (progn
+        (start experiment)
+        (list experiment parameters (stats-history analyzer)))
+      experiment)))
+
+(defun stocks-tsc-experiment-run (&rest args)
+  (apply #'start-stocks-tsc-experiment args))
 
 ;; This is a list of the current reward methods that we are interested in investigating.
 (defparameter *reward-methods* 
@@ -406,7 +437,7 @@
               Parameters:~%~A~3%"
               reward-method (date-time-string) *stocks-tsc-learning-parameters*))
     (dotimes (i n)
-      (let ((run-result (stocks-tsc-experiment)))
+      (let ((run-result (stocks-tsc-experiment-run)))
         (with-open-file (output "stocks-tsc-reward-stats"
                                 :direction :output
                                 :if-exists :append
@@ -430,7 +461,7 @@
               Parameters:~%~A~3%"
               parameter-name value *stocks-tsc-learning-parameters*)
       (dotimes (i n)
-        (let ((run-result (stocks-tsc-experiment)))
+        (let ((run-result (stocks-tsc-experiment-run)))
           (format output
                   "Run ~A completed~%~
                   ~3%Experiment history:~%~A~2%"
@@ -449,3 +480,62 @@
   (let ((method (first (nth method-nth *parameter-methods*)))
         (value (nth value-nth (nth method-nth *parameter-methods*))))
     (stocks-tsc-parameter-stats method value)))
+
+(defun %synthetic-price-table (n)
+  (let* ((d0 (encode-universal-time 0 0 0 2 1 1995 0))
+         (day (* 24 60 60)))
+    (make-instance 'table
+                   :ticker-symbol "TEST"
+                   :records
+                   (loop for i from 0 below n
+                         collect (livermore/stocks::%test-record
+                                   (+ d0 (* i day))
+                                   (+ 100.0 (sin (/ i 3.0))))))))
+
+(behavior 'stocks-tsc-reward-methods
+  (let* ((table (%synthetic-price-table 20))
+         (analyzer (make-instance 'stocks-tsc-analyzer
+                                  :table table
+                                  :initial-history-depth 5)))
+    (setf (slot-value analyzer 'action-history)
+          (list (list :stock t 1 1)))
+    (should-be-a 'number (get-reward.a1 analyzer))
+    (should-be-a 'number (get-reward.a2 analyzer))
+    (should-be-a 'number (get-reward.b analyzer))
+    (should-be-a 'number (get-reward.c analyzer))
+    (should-be-a 'number (get-reward.d-opt analyzer))
+    (should-be-a 'number (get-reward.d-pess analyzer))
+    (let ((*reward-method* :a2))
+      (should-be-a 'number (get-reward analyzer)))))
+
+(behavior 'stocks-tsc-experiment
+  "A short TSC run on synthetic prices, the same machinery as thesis §4.3."
+  (let* ((table (%synthetic-price-table 40))
+         (*stock-starting-index* 8)
+         (*single-step-output?* nil)
+         (*standard-output* (make-broadcast-stream)))
+    (let ((result (start-stocks-tsc-experiment
+                   :table table
+                   :number-of-trials 5
+                   :run t)))
+      (should-be-a 'list result)
+      (let ((analyzer (environment (first result))))
+        (should= 5 (number-of-actions analyzer))
+        (should-be-true (plusp (length (money-history analyzer))))
+        (should-be-true
+          (plusp (length (population (xcs (first result))))))))))
+
+(behavior 'thesis-dji-table-window
+  "The thesis DJI series is loadable and the published window exists."
+  (let ((table (load-table "^dji")))
+    (let ((start-bar (elt-record table 100))
+          (end-bar (elt-record table 1600)))
+      (should= 1991 (time-year (opening-time start-bar)))
+      (should= 1 (time-month (opening-time start-bar)))
+      (should= 11 (time-date (opening-time start-bar)))
+      (should= 1996 (time-year (opening-time end-bar)))
+      (should= 12 (time-month (opening-time end-bar)))
+      (should= 16 (time-date (opening-time end-bar)))
+      (let ((b&h (buy-and-hold table 1000000.0 :start 100 :end 1600)))
+        (should-be-true (> b&h 1000000.0))
+        (should-be-true (< 2.0 (/ b&h 1000000.0) 3.5))))))

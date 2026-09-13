@@ -40,7 +40,8 @@
         :livermore/stocks-xcs-parameters
         :livermore/time
         :livermore/xcs
-        :livermore/xcs-analyzer)
+        :livermore/xcs-analyzer
+        :sigma/behave)
   (:export :*analyzer*
            :*correct-actions-history*
            :*experiment*
@@ -296,25 +297,34 @@
   (records (table (environment stocks-experiment))))
 
 (defmethod terminate? ((stocks-experiment stocks-experiment))
-  "This predicate is true at the last record or when MONEY is not positive."
-  (with-slots (current-index money) (environment stocks-experiment)
+  "This predicate is true at the last record, when MONEY is not positive,
+  or when NUMBER-OF-TRIALS actions have been taken."
+  (with-slots (current-index money actions) (environment stocks-experiment)
     (or (= current-index
            (1- (length (records stocks-experiment))))
-        (not (plusp money)))))
+        (not (plusp money))
+        (>= actions (number-of-trials stocks-experiment)))))
 
 (defun load-*table* (stock-ticker)
   "This loads STOCK-TICKER into *TABLE*."
   (setf *table* (load-table stock-ticker)))
-(load-*table* *initial-stock-ticker*)
 
-(defun start-stocks-xcs-experiment ()
+(defun start-stocks-xcs-experiment
+    (&key (ticker *initial-stock-ticker*)
+          (number-of-trials 10000)
+          (run t))
+  (unless *table*
+    (load-*table* ticker))
   (setf *analyzer* (make-instance 'stocks-xcs-analyzer :table *table*))
   (setf *xcs* (make-instance 'xcs :learning-parameters *learning-parameters*))
   (setf *experiment* (make-instance 'stocks-experiment
                                     :environment *analyzer*
                                     :reinforcement-program *analyzer*
-                                    :xcs *xcs*))
+                                    :xcs *xcs*
+                                    :number-of-trials number-of-trials))
   (setf *correct-actions-history* nil)
+  (unless run
+    (return-from start-stocks-xcs-experiment *experiment*))
   (start *experiment*)
   (format t "~&~34~ RESULTS ~34~~%")
   (let* ((start (- (length (records *table*))
@@ -351,3 +361,54 @@
       (:actions ,(actions *analyzer*))
       (:correct-actions/actions ,(/ (correct-actions *analyzer*)
                                     (actions *analyzer*))))))
+
+(defun %test-stock-table (n)
+  "A synthetic rising-then-falling table of N daily bars."
+  (let* ((d0 (encode-universal-time 0 0 0 2 1 1995 0))
+         (day (* 24 60 60))
+         (records (loop for i from 0 below n
+                        for close = (if (< i (/ n 2))
+                                      (+ 100.0 i)
+                                      (- 100.0 (- i (/ n 2))))
+                        collect (livermore/stocks::%test-record
+                                  (+ d0 (* i day)) close))))
+    (make-instance 'table :ticker-symbol "TEST" :records records)))
+
+(behavior 'stocks-xcs-analyzer
+  (let* ((table (%test-stock-table 20))
+         (analyzer (make-instance 'stocks-xcs-analyzer
+                                  :table table
+                                  :initial-index 5
+                                  :current-index 5)))
+    (should-eq table (table analyzer))
+    (should= 5 (current-index analyzer))
+    (should-be-a 'table-record (current-record analyzer))
+    (spec "should-have-bought-stock? follows the rising half"
+      (setf (current-index analyzer) 6)
+      (should-be-true (should-have-bought-stock? analyzer)))
+    (spec "buy-stock? treats :hold as the previous action"
+      (setf (current-action analyzer) :hold
+            (previous-action analyzer) :stock)
+      (should-be-true (buy-stock? analyzer))
+      (setf (current-action analyzer) :bank)
+      (should-be-false (buy-stock? analyzer)))))
+
+(behavior 'stocks-xcs-experiment
+  (let* ((table (%test-stock-table 80))
+         (analyzer (make-instance 'stocks-xcs-analyzer
+                                  :table table
+                                  :initial-index 40
+                                  :current-index 40))
+         (xcs (make-instance 'xcs
+                             :learning-parameters *learning-parameters*))
+         (experiment (make-instance 'stocks-experiment
+                                    :environment analyzer
+                                    :reinforcement-program analyzer
+                                    :xcs xcs
+                                    :number-of-trials 5)))
+    (let ((*standard-output* (make-broadcast-stream))
+          (*stocks-xcs-output* (make-broadcast-stream)))
+      (start experiment))
+    (should= 5 (actions analyzer))
+    (should-be-true (plusp (length (population xcs))))
+    (should-be-true (>= (money analyzer) 0))))

@@ -32,32 +32,45 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcs")
-(in-package "XCS")
-(use-package '("COMMON-LISP" "UTILITIES" "MULTIPLEXER"))
-(export '(monk-attributes?
-           random-monk-attributes
-           monk-1?
-           monk-2?
-           monk-3-no-noise?
-           monk-3?
-           monk-analyzer
-           current-situation
-           current-action
-           actions
-           correct-actions
-           monk-problem
-           monk?
-           random-situation
-           get-situation
-           correct-action
-           correct-action?
-           execute-action
-           get-reward
-           end-of-problem?
-           start-monk))
-(load "monk-xcs-parameters.lisp")
+(defpackage :livermore/monk-xcs
+  (:use :common-lisp
+        :livermore/monk-xcs-parameters
+        :livermore/xcs
+        :livermore/xcs-set-predicate
+        :livermore/xcs-ternary-predicate
+        :sigma/behave
+        :sigma/probability
+        :sigma/random)
+  (:export :*monk-analyzer*
+           :*monk-experiment*
+           :*monk-xcs*
+           :actions
+           :correct-action
+           :correct-action?
+           :correct-actions
+           :current-action
+           :current-situation
+           :end-of-problem?
+           :execute-action
+           :get-reward
+           :get-situation
+           :monk-1?
+           :monk-2?
+           :monk-3-no-noise?
+           :monk-3?
+           :monk-analyzer
+           :monk-analyzer-ternary
+           :monk-attributes?
+           :monk-problem
+           :monk?
+           :random-monk-attributes
+           :random-situation
+           :start-monk))
+(in-package :livermore/monk-xcs)
+
+(defparameter *monk-analyzer* nil)
+(defparameter *monk-experiment* nil)
+(defparameter *monk-xcs* nil)
 
 (defun monk-attributes? (attributes)
   "This predicate is true when ATTRIBUTES is a six-element Monk feature
@@ -87,7 +100,7 @@
           for attribute in attributes
           and bits in '(2 2 1 2 2 1)
           do (setf result (append result (to-bits attribute bits)))
-          finally return result)))
+          finally (return result))))
 
 (defun random-monk-attributes ()
   "This returns a random legal six-element Monk feature vector."
@@ -112,14 +125,14 @@
 (defun monk-3-no-noise? (attributes)
   "This is basically the Monk's third problem, just without any noise added."
   (assert (monk-attributes? attributes))
-  (or (and (= 3 (fifth  attribute))
-           (= 1 (fourth attribute)))
-      (and (not (= 4 (fifth  attribute)))
-           (not (= 3 (second attribute))))))
+  (or (and (= 3 (fifth  attributes))
+           (= 1 (fourth attributes)))
+      (and (not (= 4 (fifth  attributes)))
+           (not (= 3 (second attributes))))))
 
 (defun monk-3? (attributes)
-  "This is basically the Monk's third problem."
-  (if-probability 0.05
+  "This is the Monk's third problem, with 5% class noise."
+  (if (probability? 0.05)
     (not (monk-3-no-noise? attributes))
     (monk-3-no-noise? attributes)))
 
@@ -150,7 +163,10 @@
    attribute lists."))
 
 (defclass monk-analyzer-ternary (monk-analyzer)
-  ()
+  ((current-attributes
+    :accessor current-attributes
+    :initarg :current-attributes
+    :documentation "The six-element Monk vector before ternary encoding."))
   (:documentation
    "A Monk analyzer that presents situations as a binary encoding."))
 
@@ -163,8 +179,10 @@
   (random-monk-attributes))
 
 (defmethod random-situation ((analyzer monk-analyzer-ternary))
-  "This returns a random Monk attribute list encoded as truth values."
-  (monk-attributes-to-truth-values (random-monk-attributes)))
+  "This returns a random Monk attribute list encoded as a truth vector."
+  (setf (current-attributes analyzer) (random-monk-attributes))
+  (coerce (monk-attributes-to-truth-values (current-attributes analyzer))
+          'vector))
 
 (defmethod get-situation ((analyzer monk-analyzer))
   "This sets and returns a new random situation."
@@ -175,40 +193,85 @@
   "This is the Boolean label of the current situation under MONK-PROBLEM."
   (monk? analyzer (current-situation analyzer)))
 
+(defmethod correct-action ((analyzer monk-analyzer-ternary))
+  "This is the Boolean label of the stored Monk attributes."
+  (monk? analyzer (current-attributes analyzer)))
+
 (defmethod correct-action? ((analyzer monk-analyzer))
   "This method predicate returns true only if the analyzed chose the correct
    action for its current action."
-  (= (current-action analyzer)
-     (correct-action analyzer)))
+  (equal (current-action analyzer)
+         (correct-action analyzer)))
 
 (defmethod execute-action ((analyzer monk-analyzer) action)
-  "This does nothing.  The Monk problems are single-step."
-  )
+  "This records ACTION and updates the correctness counts."
+  (setf (current-action analyzer) action)
+  (incf (actions analyzer))
+  (when (correct-action? analyzer)
+    (incf (correct-actions analyzer))))
 
 (defmethod get-reward ((analyzer monk-analyzer))
   "This reward method is rather simplistic, but will probably do."
   (if (correct-action? analyzer) 100 -200))
 
 (defmethod end-of-problem? ((analyzer monk-analyzer))
-  "This predicate is true after more than 1000 actions."
-  (< 1000 (actions analyzer)))
+  "This predicate is always true.  Each Monk trial is a single step."
+  t)
 
-(defun start-monk (&optional (address-width 2))
-  "This builds Monk experiments for set predicates and ternary predicates
-  and starts the set-predicate experiment."
-  (defparameter *monk-analyzer* (make-instance 'monk-analyzer))
-  (defparameter *monk-analyzer-ternary* (make-instance 'monk-analyzer-ternary))
-  (defparameter *monk-xcs*
-    (make-instance 'xcs
-                   :learning-parameters *monk-learning-parameters*
-                   :predicate-type 'set-predicate))
-  (defparameter *monk-xcs-ternary*
-    (make-instance 'xcs
-                   :learning-parameters *monk-learning-parameters*
-                   :predicate-type 'ternary-predicate))
-  (defparameter *monk-experiment*
-    (make-instance 'experiment
-                   :environment *monk-analyzer*
-                   :reinforcement-program *monk-analyzer*
-                   :xcs *monk-xcs*))
-  (start *monk-experiment*))
+(defun start-monk (&optional (number-of-trials 10000) (run t))
+  "This builds a ternary-predicate Monk-1 experiment and starts it."
+  (setf *monk-analyzer* (make-instance 'monk-analyzer-ternary))
+  (setf *monk-xcs*
+        (make-instance 'xcs
+                       :learning-parameters *monk-learning-parameters*
+                       :predicate-type 'ternary-predicate))
+  (setf *monk-experiment*
+        (make-instance 'experiment
+                       :environment *monk-analyzer*
+                       :reinforcement-program *monk-analyzer*
+                       :xcs *monk-xcs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *monk-experiment*)
+    *monk-experiment*))
+
+(behavior 'monk-attributes
+  (should-be-true (monk-attributes? '(1 1 1 1 1 1)))
+  (should-be-true (monk-attributes? '(3 3 2 3 4 2)))
+  (should-be-false (monk-attributes? '(1 1 1 1 1)))
+  (should-be-false (monk-attributes? '(1 1 1 1 5 1)))
+  (dotimes (i 20)
+    (should-be-true (monk-attributes? (random-monk-attributes)))))
+
+(behavior 'monk-problems
+  (spec "monk-1 is true when a1 = a2 or a5 = 1"
+    (should-be-true (monk-1? '(1 1 1 1 2 1)))
+    (should-be-true (monk-1? '(1 2 1 1 1 1)))
+    (should-be-false (monk-1? '(1 2 1 1 2 1))))
+  (spec "monk-2 is true when exactly two attributes are 1"
+    (should-be-true (monk-2? '(1 1 2 2 2 2)))
+    (should-be-false (monk-2? '(1 2 2 2 2 2)))
+    (should-be-false (monk-2? '(1 1 1 2 2 2))))
+  (spec "monk-3 without noise"
+    (should-be-true (monk-3-no-noise? '(1 1 1 1 3 1)))
+    (should-be-true (monk-3-no-noise? '(2 1 1 2 2 1)))
+    (should-be-false (monk-3-no-noise? '(1 3 1 2 4 1))))
+  (spec "monk-3 with noise still returns a boolean"
+    (dotimes (i 8)
+      (should-be-true (member (monk-3? '(1 1 1 1 3 1)) '(t nil))))))
+
+(behavior 'monk-ternary-encoding
+  (should-equal '(nil nil nil nil nil nil nil nil nil nil)
+                (monk-attributes-to-truth-values '(1 1 1 1 1 1)))
+  (let ((bits (monk-attributes-to-truth-values '(3 3 2 3 4 2))))
+    (should= 10 (length bits))
+    (should-equal '(t nil t nil t t nil t t t) bits)))
+
+(behavior 'monk-xcs-experiment
+  (let ((experiment (start-monk 8 nil)))
+    (should-be-a 'experiment experiment)
+    (should-be-a 'monk-analyzer-ternary *monk-analyzer*)
+    (let ((sit (get-situation *monk-analyzer*)))
+      (should= 10 (length sit))
+      (should-be-true (every #'ternary-value? sit))
+      (should-be-true (member (correct-action *monk-analyzer*) '(t nil))))))

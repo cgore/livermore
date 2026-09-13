@@ -32,7 +32,15 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/sawtooth-tmscs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/tmscs
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*sawtooth-tmscs-learning-parameters*
+           :*stat-report*))
+(in-package :livermore/sawtooth-tmscs-parameters)
 
 (defparameter *stat-report* nil)
 (defparameter *sawtooth-tmscs-learning-parameters*
@@ -58,3 +66,8 @@
                  :GA-subsumption? nil
                  :action-set-subsumption? nil
                  :possible-actions '(nil t)))
+
+(behavior 'sawtooth-tmscs-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *sawtooth-tmscs-learning-parameters*)
+  (should-equal '(nil t)
+                (possible-actions *sawtooth-tmscs-learning-parameters*)))

@@ -125,7 +125,7 @@
   "This method generates a ternary predicate that covers the specified
   situation element, which must be a ternary value."
   (with-slots (covering-probability) learning-parameters
-    (map (type-of situation)
+    (map (if (listp situation) 'list (type-of situation))
          #'(lambda (situation-element)
              (assert (typep situation-element 'ternary-value))
              (make-instance 'ternary-predicate
@@ -212,6 +212,7 @@
                             (make-instance 'learning-parameters
                                            :covering-probability 0.0
                                            :minimum-number-of-actions 1))))
+        (should-be-true (listp covered))
         (should-equalp sit (map 'list #'value covered))
         (should-be-true (every #'match? covered sit))))
     (spec "covering-probability 1 produces don't-cares"
@@ -221,7 +222,16 @@
                                            :covering-probability 1.0
                                            :minimum-number-of-actions 1))))
         (should-be-true (every #'covering? covered))
-        (should-be-true (every #'match? covered sit))))))
+        (should-be-true (every #'match? covered sit))))
+    (spec "a vector situation covers as a vector"
+      (let ((covered (cover (ternary-predicate :#)
+                            #(t nil)
+                            (make-instance 'learning-parameters
+                                           :covering-probability 0.0
+                                           :minimum-number-of-actions 1))))
+        (should-be-a 'vector covered)
+        (should= 2 (length covered))
+        (should-be-true (every #'match? covered #(t nil)))))))
 
 (behavior 'mutate-ternary-predicate
   (let ((lp-always (make-instance 'learning-parameters

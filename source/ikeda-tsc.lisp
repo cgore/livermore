@@ -32,31 +32,41 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require :asdf)
-(asdf:load-system "cgore-utilities")
-
-(load "statistics")
-(load "tmscs")
-(in-package "XCS")
-(use-package "STATISTICS")
-(export '(ikeda-tmscs-analyzer
-           history
-           action-history
-           initial-history-depth
-           ikeda-tmscs-experiment
-           get-situation
-           classify
-           correct-action
-           end-of-problem?
-           terminate?
-           start-ikeda-tmscs-experiment
-           *ikeda-tmscs-analyzer*
-           *ikeda-tmscs-learning-parameters*
-           *ikeda-tmscs*
-           *ikeda-tmscs-experiment*))
+(defpackage :livermore/ikeda-tsc
+  (:use :common-lisp
+        :livermore/ikeda-tsc-parameters
+        :livermore/statistics
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence)
+  (:export :*ikeda-action-history*
+           :*ikeda-hist*
+           :*ikeda-tmscs*
+           :*ikeda-tmscs-analyzer*
+           :*ikeda-tmscs-experiment*
+           :classify
+           :correct-action
+           :end-of-problem?
+           :get-situation
+           :history
+           :ikeda-step
+           :ikeda-tmscs-analyzer
+           :ikeda-tmscs-experiment
+           :ikeda-x
+           :start-ikeda-tmscs-experiment
+           :terminate?))
+(in-package :livermore/ikeda-tsc)
 (defstruct ihs heading steps multiplier value)
 (defparameter *ikeda-hist* nil)
 (defparameter *ikeda-action-history* nil)
+(defparameter *ikeda-tmscs-analyzer* nil)
+(defparameter *ikeda-tmscs* nil)
+(defparameter *ikeda-tmscs-experiment* nil)
 
 (defclass ikeda-tmscs-analyzer (environment reinforcement-program)
   ((history
@@ -84,7 +94,7 @@
      :type (integer 0 *))
    (initial-history-depth
      :accessor initial-history-depth
-     :initform 200
+     :initform 50
      :initarg :initial-history-depth
      :type (integer 0 *)))
   (:documentation
@@ -207,25 +217,23 @@
            (new-situation))
     (ihs-value (nth-from-end time-step *ikeda-hist*))))
 
-(defun ikeda-function (initial length)
-  (assert (numberp initial))
-  (assert (typep length '(integer 0 *)))
-  (let ((data (list initial))) ; This data is stored in reverse order.
-    (lambda (n)
-      (while (< (1+ (length data)) n)
-        (push (make-array 
-                (1+ (* 0.9 (car data)
-                       (exp (- (* 
+(defun ikeda-step (x y &optional (u 0.9))
+  "One iteration of the Ikeda map with parameter U, typically 0.9."
+  (let ((tn (- 0.4 (/ 6.0 (+ 1.0 (* x x) (* y y))))))
+    (values (+ 1.0 (* u (- (* x (cos tn)) (* y (sin tn)))))
+            (* u (+ (* x (sin tn)) (* y (cos tn)))))))
 
-(defun ikeda (n z0)
-  (assert (numberp n))
-  (assert (numberp z0))
-  (if (= n 0)
+(defun ikeda-x (n &optional (x0 0.1) (y0 0.1) (u 0.9))
+  "The x-coordinate of the Ikeda map after N steps from (X0, Y0)."
+  (let ((x x0) (y y0))
+    (dotimes (i n x)
+      (multiple-value-setq (x y) (ikeda-step x y u)))))
 
 (defmethod get-situation ((analyzer ikeda-tmscs-analyzer))
-  "This pushes the next series value onto the history."
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  "This pushes the next series value onto the history and returns the series."
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-function (incf number-of-situations)) history)
+    history))
 
 (defmethod classify ((analyzer ikeda-tmscs-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -255,9 +263,10 @@
   ;; Does this really make any sense in TMSCS?
   t)
 
-(defmethod terminate? ((ikeda-tmscs-analyzer ikeda-tmscs-analyzer))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (number-of-actions ikeda-tmscs-analyzer)))
+(defmethod terminate? ((experiment ikeda-tmscs-experiment))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer ikeda-tmscs-analyzer) &rest initargs &key &allow-other-keys)
   "This fills HISTORY to INITIAL-HISTORY-DEPTH."
@@ -282,16 +291,6 @@
                 number-of-actions)
           *ikeda-action-history*)))
 
-(defun simple-slope (list &key (key #'identity) (start 0) (end nil))
-  "This is the slope of LIST from START to END, using KEY on each element."
-  (assert (listp list))
-  (when (null end)
-    (setf end (1- (length list))))
-  (assert (not (= start end)))
-  (/ (- (funcall key (nth start list))
-        (funcall key (nth end list)))
-     (- start end)))
-
 (defclass ikeda-tmscs-predicate (tms-predicate) ())
 (defmethod print-object ((predicate ikeda-tmscs-predicate) stream)
   (format stream "~A -- ~A [~A,~A]"
@@ -300,22 +299,36 @@
 
 (defclass ikeda-tmscs-classifier (tms-classifier) ())
 
-(load "ikeda-tmscs-parameters")
-
-(defun start-ikeda-tmscs-experiment ()
+(defun start-ikeda-tmscs-experiment
+    (&optional (number-of-trials 10000) (run t))
   "This builds an Ikeda TMSCS experiment and starts it."
-  (defparameter *ikeda-hist* nil)
-  (defparameter *ikeda-action-history* nil)
-  (defparameter *ikeda-tmscs-analyzer*
-    (make-instance 'ikeda-tmscs-analyzer))
-  (defparameter *ikeda-tmscs*
-    (make-instance 'tmscs
-                   :predicate-type 'ikeda-tmscs-predicate
-                   :classifier-type 'ikeda-tmscs-classifier
-                   :learning-parameters *ikeda-tmscs-learning-parameters*))
-  (defparameter *ikeda-tmscs-experiment*
-    (make-instance 'ikeda-tmscs-experiment
-                   :environment *ikeda-tmscs-analyzer*
-                   :reinforcement-program *ikeda-tmscs-analyzer*
-                   :xcs *ikeda-tmscs*))
-  (start *ikeda-tmscs-experiment*))
+  (setf *ikeda-hist* nil
+        *ikeda-action-history* nil)
+  (setf *ikeda-tmscs-analyzer*
+        (make-instance 'ikeda-tmscs-analyzer))
+  (setf *ikeda-tmscs*
+        (make-instance 'tmscs
+                       :predicate-type 'ikeda-tmscs-predicate
+                       :classifier-type 'ikeda-tmscs-classifier
+                       :learning-parameters *ikeda-tmscs-learning-parameters*))
+  (setf *ikeda-tmscs-experiment*
+        (make-instance 'ikeda-tmscs-experiment
+                       :environment *ikeda-tmscs-analyzer*
+                       :reinforcement-program *ikeda-tmscs-analyzer*
+                       :xcs *ikeda-tmscs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *ikeda-tmscs-experiment*)
+    *ikeda-tmscs-experiment*))
+
+(behavior 'ikeda-map
+  (multiple-value-bind (x y) (ikeda-step 0.1 0.1)
+    (should-be-a 'float x y))
+  (should-be-a 'float (ikeda-x 10))
+  (should= 0.1 (ikeda-x 0)))
+
+(behavior 'ikeda-tmscs-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-ikeda-tmscs-experiment 6 t))
+  (should= 6 (number-of-actions *ikeda-tmscs-analyzer*))
+  (should-be-true (plusp (length (population *ikeda-tmscs*)))))

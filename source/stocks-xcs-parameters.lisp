@@ -36,7 +36,8 @@
 (defpackage :livermore/stocks-xcs-parameters
   (:use :common-lisp
         :livermore/learning-parameters
-        :livermore/xcs)
+        :livermore/xcs
+        :sigma/behave)
   (:export :*stock-starting-index*
            :*reward-method*
            :*valid-actions*
@@ -45,11 +46,6 @@
            :*stocks-xcs-output*
            :*stocks-xcs-report-days*))
 (in-package :livermore/stocks-xcs-parameters)
-
-;;; Use this function to reload the parameters.
-;; (defun rlp-stocks ()
-;;   (load "stocks-xcs-parameters.lisp"))
-;; (export 'rlp-stocks)
 
 (defparameter *stock-starting-index* 100)
 (defparameter *reward-method* :correctness)
@@ -67,3 +63,14 @@
 (defparameter *initial-stock-ticker* "^dji")
 (defparameter *stocks-xcs-output* t)
 (defparameter *stocks-xcs-report-days* 1)
+
+(behavior 'stocks-xcs-parameters
+  (should= 100 *stock-starting-index*)
+  (should-eq :correctness *reward-method*)
+  (should-equal '(:stock :bank :hold) *valid-actions*)
+  (should-string= "^dji" *initial-stock-ticker*)
+  (should-be-a 'learning-parameters *learning-parameters*)
+  (should= (length *valid-actions*)
+           (minimum-number-of-actions *learning-parameters*))
+  (should-equal *valid-actions*
+                (possible-actions *learning-parameters*)))

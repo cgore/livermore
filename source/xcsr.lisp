@@ -46,6 +46,7 @@
            :covering-maximum
            :duplicate
            :identical?
+           :initial-spread-limit
            :lower
            :match?
            :more-general?
@@ -103,7 +104,7 @@
    (initial-spread-limit
      :accessor initial-spread-limit
      :initform 0.5
-     :initarg :initial-first-spread-limit
+     :initarg :initial-spread-limit
      :type positive-float
      :documentation
        "This is s_0 in Wilson's XCSR article.  It is the maximim initial spread
@@ -112,7 +113,8 @@
 
 (defclass xcsr (xcs)
   ((predicate-type
-     :initform 'range-predicate)
+     :initform 'range-predicate
+     :initarg :predicate-type)
    (learning-parameters
      :type xcsr-learning-parameters))
   (:documentation
@@ -180,11 +182,11 @@
   "This method generates a range predicate that covers the specified situation
   element, which must be a float."
   (with-slots (problem-range initial-spread-limit) parameters
-    (map (type-of situation)
+    (map (if (listp situation) 'list (type-of situation))
          #'(lambda (situation-element)
              (when (< situation-element (first problem-range))
                (setf (first problem-range) situation-element))
-             (when (> (second problem-range) situation-element)
+             (when (> situation-element (second problem-range))
                (setf (second problem-range) situation-element))
              (let ((spread (random-in-range 0.0 initial-spread-limit)))
                (make-instance 'range-predicate
@@ -247,7 +249,49 @@
       (should-be-false (identical? unit wide))
       (let ((copy (duplicate unit)))
         (should-be-true (identical? unit copy))
-        (should-not-eq unit copy)))))
+        (should-not-eq unit copy)))
+    (spec "swapped bounds are normalized"
+      (let ((swapped (make-instance 'range-predicate :lower 1.0 :upper 0.0)))
+        (should= 0.5 (spread swapped))
+        (should= 0.5 (center swapped))
+        (should-be-true (match? swapped 0.25))))))
+
+(behavior 'xcsr-learning-parameters
+  (let ((lp (make-instance 'xcsr-learning-parameters
+                           :minimum-number-of-actions 2)))
+    (should-be-a 'xcsr-learning-parameters lp)
+    (should-equal '(0.0 1.0) (problem-range lp))
+    (should= 0.1 (covering-maximum lp))
+    (should= 0.10 (mutation-maximum lp))
+    (should= 0.5 (initial-spread-limit lp)))
+  (spec "initargs override defaults"
+    (let ((lp (make-instance 'xcsr-learning-parameters
+                             :minimum-number-of-actions 2
+                             :problem-range '(-10.0 10.0)
+                             :initial-spread-limit 0.25)))
+      (should-equal '(-10.0 10.0) (problem-range lp))
+      (should= 0.25 (initial-spread-limit lp)))))
+
+(behavior 'cover-range-predicate
+  (let* ((lp (make-instance 'xcsr-learning-parameters
+                            :minimum-number-of-actions 2
+                            :initial-spread-limit 0.0
+                            :problem-range '(0.0 1.0)))
+         (covered (cover (make-instance 'range-predicate)
+                         #(0.3 0.7)
+                         lp)))
+    (should= 2 (length covered))
+    (should-be-true (every (lambda (p) (typep p 'range-predicate)) covered))
+    (should-be-true (match? (elt covered 0) 0.3))
+    (should-be-true (match? (elt covered 1) 0.7)))
+  (spec "covering expands problem-range to include the situation"
+    (let* ((lp (make-instance 'xcsr-learning-parameters
+                              :minimum-number-of-actions 2
+                              :initial-spread-limit 0.0
+                              :problem-range '(0.0 1.0))))
+      (cover (make-instance 'range-predicate) #(1.5) lp)
+      (should= 0.0 (first (problem-range lp)))
+      (should= 1.5 (second (problem-range lp))))))
 
 ;; TODO: In Wilson's XCSR paper, he allows crossover to occur in the middle of an
 ;; allele, since he represented the environment condition as a list of the form

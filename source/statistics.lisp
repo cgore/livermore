@@ -172,3 +172,10 @@
 (behavior 'unbiased-sample-standard-deviation
   (should= 0 (unbiased-sample-standard-deviation '(4 4 4)))
   (should= 1 (unbiased-sample-standard-deviation '(1 2 3))))
+
+(behavior 'stat-report
+  (let ((text (stat-report nil '(1 2 3))))
+    (should-be-true (search "Mean:" text))
+    (should-be-true (search "sdev:" text))
+    (should-be-true (search "min:" text))
+    (should-be-true (search "max:" text))))

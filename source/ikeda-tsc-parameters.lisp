@@ -32,10 +32,20 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/ikeda-tsc-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/tmscs
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*ikeda-flip*
+           :*ikeda-perturbation*
+           :*ikeda-tmscs-learning-parameters*
+           :*stat-report*))
+(in-package :livermore/ikeda-tsc-parameters)
 
 (defparameter *stat-report* nil)
-(defparameter *inde-tmscs-learning-parameters*
+(defparameter *ikeda-tmscs-learning-parameters*
   (make-instance 'tmscs-learning-parameters
                  :valid-operations (list #'simple-slope)
                  :minimum-number-of-actions 2
@@ -58,5 +68,10 @@
                  :GA-subsumption? nil
                  :action-set-subsumption? nil
                  :possible-actions '(:uptrending :downtrending)))
-(defparameter *inde-perturbation* 1.2)
-(defparameter *inde-flip* 0.2)
+(defparameter *ikeda-perturbation* 1.2)
+(defparameter *ikeda-flip* 0.2)
+
+(behavior 'ikeda-tmscs-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *ikeda-tmscs-learning-parameters*)
+  (should-equal '(:uptrending :downtrending)
+                (possible-actions *ikeda-tmscs-learning-parameters*)))

@@ -34,8 +34,6 @@
 
 (defpackage :livermore/xcs
   (:use :common-lisp
-        #+cmu :EXTENSIONS
-        #+sbcl :sb-ext
         :livermore/learning-parameters
         :livermore/xcs-predicate
         :livermore/xcs-set-predicate
@@ -43,7 +41,6 @@
         :sigma/behave
         :sigma/control
         :sigma/numeric
-        :sigma/os
         :sigma/probability
         :sigma/random
         :sigma/sequence)
@@ -51,6 +48,10 @@
            :match?
            :more-general?
            :cover
+           :covering-score
+           :covering?
+           :duplicate
+           :identical?
            :mutate
            :range-predicate
            :lower
@@ -107,6 +108,7 @@
            :action
            :number-of-situations
            :experiment
+           :number-of-trials
            :single-step-output
            :environment
            :reinforcement-program
@@ -119,6 +121,7 @@
            :actions-in
            :start
            :run
+           :action-count
            :get-situation
            :generate-match-set
            :generate-covering-classifier
@@ -432,6 +435,25 @@
 (defgeneric terminate? (experiment)
   (:documentation
    "This predicate is true when the experiment should stop."))
+(defgeneric action-count (environment)
+  (:documentation "How many actions ENVIRONMENT has taken."))
+
+(defmethod single-step-output ((experiment experiment))
+  "Default: produce no per-step output.")
+
+(defmethod action-count ((env environment))
+  (cond ((and (slot-exists-p env 'number-of-actions)
+              (slot-boundp env 'number-of-actions))
+         (slot-value env 'number-of-actions))
+        ((and (slot-exists-p env 'actions)
+              (slot-boundp env 'actions))
+         (slot-value env 'actions))
+        (t 0)))
+
+(defmethod terminate? ((experiment experiment))
+  "Default: stop after NUMBER-OF-TRIALS actions on the environment."
+  (>= (action-count (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod could-subsume? ((classifier classifier)
                            (learning-parameters learning-parameters))

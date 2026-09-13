@@ -32,24 +32,17 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require 'asdf)
-(require 'clx)
-(require 'clim)
-
-(unless (find-package 'utilities) (load "utilities/utilities"))
-(unless (find-package 'time) (load "time"))
-(unless (find-package 'stocks) (load "stocks"))
-(unless (find-package 'trade-chart)
-  (defpackage :trade-chart
-    (:use :clim-lisp ; N.B.: use this instead of common-lisp for McCLIM.
-          :clim
-          :clim-extensions
-          :utilities
-          :stocks)
-    (:export :make-trade-chart :trade-chart :demo)))
-(in-package :trade-chart)
-
-(asdf:oos 'asdf:load-op 'mcclim)
+(defpackage :livermore/trade-chart
+  (:use :clim-lisp
+        :clim
+        :clim-extensions
+        :livermore/stocks
+        :livermore/time
+        :sigma/behave)
+  (:export :demo
+           :make-trade-chart
+           :trade-chart))
+(in-package :livermore/trade-chart)
 
 (define-application-frame trade-chart ()
   ((x0 :accessor x0 :initarg :x0)
@@ -307,3 +300,8 @@
 (defun demo ()
   "This opens a yearly chart of the Dow Jones Industrial Average."
   (trade-chart (load-table '^dji :preferred-records #'yearly-records)))
+
+(behavior 'make-trade-chart
+  (let ((table (load-table "^dji" :preferred-records #'yearly-records)))
+    (should-be-true (plusp (length (records table))))
+    (should-be-true (make-trade-chart table))))

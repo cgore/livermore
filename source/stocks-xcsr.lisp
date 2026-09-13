@@ -32,67 +32,145 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcs")
-(load "xcs-analyzer")
-(load "threshold")
-(in-package "XCS")
-(use-package '("COMMON-LISP" "UTILITIES" "THRESHOLD"))
-(export '(stocks-xcsr-analyzer
-           current-situation
-           random-situation
-           get-situation
-           correct-action
-           get-reward
-           end-of-problem?
-           terminate?
-           start-stocks-xcsr-experiment))
-(load "stocks-xcsr-parameters.lisp")
+(defpackage :livermore/stocks-xcsr
+  (:use :common-lisp
+        :livermore/stocks
+        :livermore/stocks-xcsr-parameters
+        :livermore/xcs
+        :livermore/xcs-analyzer
+        :livermore/xcsr
+        :sigma/behave)
+  (:export :*stocks-xcsr*
+           :*stocks-xcsr-analyzer*
+           :*stocks-xcsr-experiment*
+           :correct-action
+           :current-situation
+           :end-of-problem?
+           :get-situation
+           :start-stocks-xcsr-experiment
+           :stocks-xcsr-analyzer
+           :stocks-xcsr-experiment
+           :window))
+(in-package :livermore/stocks-xcsr)
+
+(defparameter *stocks-xcsr-analyzer* nil)
+(defparameter *stocks-xcsr* nil)
+(defparameter *stocks-xcsr-experiment* nil)
 
 (defclass stocks-xcsr-analyzer (analyzer)
-  ((problem-range-lower
-     :accessor problem-range-lower
-     :initform 0.0
-     :initarg :problem-range-lower
-     :type float)
-   (problem-range-upper
-     :accessor problem-range-upper
-     :initform 1.0
-     :initarg :problem-range-upper
-     :type float)
-   (current-situation
-     :accessor current-situation
-     :initarg :current-situation
-     :type list)))
+  ((table
+    :accessor table
+    :initarg :table
+    :documentation "The price table this analyzer walks.")
+   (window
+    :accessor window
+    :initform 6
+    :initarg :window
+    :type (integer 1 *)
+    :documentation "How many recent daily returns form the situation.")
+   (current-index
+    :accessor current-index
+    :initform 10
+    :initarg :current-index
+    :type integer)))
 
 (defclass stocks-xcsr-experiment (experiment)
   ())
 
-(defmethod get-situation ((threshold-analyzer threshold-analyzer))
-  (incf (number-of-situations threshold-analyzer))
-  (setf (current-situation threshold-analyzer)
-        (random-situation threshold-analyzer)))
+(defmethod current-record ((analyzer stocks-xcsr-analyzer))
+  (elt-record (table analyzer) (current-index analyzer)))
 
-(defmethod correct-action ((threshold-analyzer threshold-analyzer))
-  (threshold-indicator (thresholds threshold-analyzer)
-                       (current-situation threshold-analyzer)))
+(defmethod next-record ((analyzer stocks-xcsr-analyzer))
+  (elt-record (table analyzer) (1+ (current-index analyzer))))
+
+(defmethod get-situation ((analyzer stocks-xcsr-analyzer))
+  "A vector of the last WINDOW daily returns ending at CURRENT-INDEX."
+  (with-slots (table window current-index current-situation
+               number-of-situations) analyzer
+    (when (plusp number-of-situations)
+      (incf current-index))
+    (incf number-of-situations)
+    (setf current-situation
+          (coerce
+           (loop for i from (- current-index window) below current-index
+                 collect (/ (adjusted-closing-price (elt-record table (1+ i)))
+                            (adjusted-closing-price (elt-record table i))))
+           'vector))))
+
+(defmethod correct-action ((analyzer stocks-xcsr-analyzer))
+  "This is :STOCK when tomorrow's adjusted close is higher than today's."
+  (if (> (adjusted-closing-price (next-record analyzer))
+         (adjusted-closing-price (current-record analyzer)))
+    :stock
+    :bank))
+
+(defmethod end-of-problem? ((analyzer stocks-xcsr-analyzer))
+  t)
+
+(defmethod terminate? ((experiment stocks-xcsr-experiment))
+  (let ((analyzer (environment experiment)))
+    (or (>= (actions analyzer) (number-of-trials experiment))
+        (>= (current-index analyzer)
+            (- (length (records (table analyzer))) 2)))))
 
 (defun start-stocks-xcsr-experiment
-  (&key (problem-length 6) (problem-range-lower 0.0) (problem-range-upper 1.0))
-  (defparameter *stocks-xcsr-analyzer*
-    (make-instance 'stocks-xcsr-analyzer
-                   :thresholds
-                     (let ((result nil))
-                       (dotimes (i problem-length result)
-                         (push (random-in-range problem-range-lower
-                                                problem-range-upper)
-                               result)))))
-  (defparameter *stocks-xcsr*
-    (make-instance 'xcsr
-                   :learning-parameters *stocks-xcsr-learning-parameters*))
-  (defparameter *stocks-xcsr-experiment*
-    (make-instance 'stocks-xcsr-experiment
-                   :environment *stocks-xcsr-analyzer*
-                   :reinforcement-program *stocks-xcsr-analyzer*
-                   :xcs *stocks-xcsr*))
-  (start *stocks-xcsr-experiment*))
+    (&key (table nil)
+          (ticker "^dji")
+          (number-of-trials 10000)
+          (run t))
+  "This builds an XCSR experiment on TABLE (or TICKER) and starts it."
+  (let ((price-table (or table (load-table ticker))))
+    (setf *stocks-xcsr-analyzer*
+          (make-instance 'stocks-xcsr-analyzer
+                         :table price-table
+                         :current-index 10))
+    (setf *stocks-xcsr*
+          (make-instance 'xcsr
+                         :predicate-type 'range-predicate
+                         :learning-parameters *stocks-xcsr-learning-parameters*))
+    (setf *stocks-xcsr-experiment*
+          (make-instance 'stocks-xcsr-experiment
+                         :environment *stocks-xcsr-analyzer*
+                         :reinforcement-program *stocks-xcsr-analyzer*
+                         :xcs *stocks-xcsr*
+                         :number-of-trials number-of-trials))
+    (if run
+      (start *stocks-xcsr-experiment*)
+      *stocks-xcsr-experiment*)))
+
+(behavior 'stocks-xcsr-analyzer
+  (let* ((d0 (encode-universal-time 0 0 0 2 1 1995 0))
+         (day (* 24 60 60))
+         (table (make-instance 'table
+                               :ticker-symbol "TEST"
+                               :records
+                               (loop for i from 0 below 20
+                                     collect (livermore/stocks::%test-record
+                                               (+ d0 (* i day))
+                                               (+ 100.0 i)))))
+         (analyzer (make-instance 'stocks-xcsr-analyzer
+                                  :table table
+                                  :window 4
+                                  :current-index 8)))
+    (let ((sit (get-situation analyzer)))
+      (should= 4 (length sit))
+      (should-be-true (every #'numberp (coerce sit 'list))))
+    (should-eq :stock (correct-action analyzer))
+    (should-be-true (end-of-problem? analyzer))))
+
+(behavior 'stocks-xcsr-experiment
+  (let* ((d0 (encode-universal-time 0 0 0 2 1 1995 0))
+         (day (* 24 60 60))
+         (table (make-instance 'table
+                               :ticker-symbol "TEST"
+                               :records
+                               (loop for i from 0 below 30
+                                     collect (livermore/stocks::%test-record
+                                               (+ d0 (* i day))
+                                               (+ 100.0 (sin i)))))))
+    (let ((*standard-output* (make-broadcast-stream)))
+      (start-stocks-xcsr-experiment :table table :number-of-trials 5 :run nil))
+    (should-be-a 'xcsr *stocks-xcsr*)
+    (let ((sit (get-situation *stocks-xcsr-analyzer*)))
+      (should-be-a 'vector sit)
+      (should= 6 (length sit)))))

@@ -32,23 +32,31 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcs")
-(load "xcs-analyzer")
-(load "multiplexer")
-(in-package "XCS")
-(use-package '("COMMON-LISP" "UTILITIES" "MULTIPLEXER"))
-(export '(multiplexer-analyzer
-           current-situation
-           address-width
-           multiplexer-experiment
-           random-situation
-           get-situation
-           get-reward
-           end-of-problem?
-           terminate?
-           start-multiplexer-experiment))
-(load "multiplexer-xcs-parameters.lisp")
+(defpackage :livermore/multiplexer-xcs
+  (:use :common-lisp
+        :livermore/multiplexer
+        :livermore/multiplexer-xcs-parameters
+        :livermore/xcs
+        :livermore/xcs-analyzer
+        :sigma/behave)
+  (:export :*multiplexer-analyzer*
+           :*multiplexer-experiment*
+           :*multiplexer-xcs*
+           :address-width
+           :current-situation
+           :end-of-problem?
+           :get-reward
+           :get-situation
+           :multiplexer-analyzer
+           :multiplexer-experiment
+           :random-situation
+           :start-multiplexer-experiment
+           :terminate?))
+(in-package :livermore/multiplexer-xcs)
+
+(defparameter *multiplexer-analyzer* nil)
+(defparameter *multiplexer-experiment* nil)
+(defparameter *multiplexer-xcs* nil)
 
 (defclass multiplexer-analyzer (analyzer)
   ((current-situation
@@ -101,20 +109,44 @@
   t)
 
 (defmethod terminate? ((multiplexer-experiment multiplexer-experiment))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (actions (environment multiplexer-experiment))))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (actions (environment multiplexer-experiment))
+      (number-of-trials multiplexer-experiment)))
 
-(defun start-multiplexer-experiment (&optional (address-width 2))
+(defun start-multiplexer-experiment
+    (&optional (address-width 2) (number-of-trials 10000) (run t))
   "This builds a multiplexer experiment of ADDRESS-WIDTH and starts it."
-  (defparameter *multiplexer-analyzer*
-    (make-instance 'multiplexer-analyzer
-                   :address-width address-width))
-  (defparameter *multiplexer-xcs*
-    (make-instance 'xcs
-                   :learning-parameters *multiplexer-learning-parameters*))
-  (defparameter *multiplexer-experiment*
-    (make-instance 'multiplexer-experiment
-                   :environment *multiplexer-analyzer*
-                   :reinforcement-program *multiplexer-analyzer*
-                   :xcs *multiplexer-xcs*))
-  (start *multiplexer-experiment*))
+  (setf *multiplexer-analyzer*
+        (make-instance 'multiplexer-analyzer
+                       :address-width address-width))
+  (setf *multiplexer-xcs*
+        (make-instance 'xcs
+                       :learning-parameters *multiplexer-learning-parameters*))
+  (setf *multiplexer-experiment*
+        (make-instance 'multiplexer-experiment
+                       :environment *multiplexer-analyzer*
+                       :reinforcement-program *multiplexer-analyzer*
+                       :xcs *multiplexer-xcs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *multiplexer-experiment*)
+    *multiplexer-experiment*))
+
+(behavior 'multiplexer-analyzer
+  (let ((a (make-instance 'multiplexer-analyzer :address-width 2)))
+    (should= 2 (address-width a))
+    (should= 6 (length (random-situation a)))
+    (let ((sit (get-situation a)))
+      (should= 6 (length sit))
+      (should-equalp sit (truth-vector (current-situation a))))
+    (should-be-true (end-of-problem? a))
+    (setf (current-situation a) #*110001)
+    (should= 1 (correct-action a))))
+
+(behavior 'multiplexer-xcs-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-multiplexer-experiment 2 8 t))
+  (should= 8 (actions *multiplexer-analyzer*))
+  (should-be-true (plusp (length (population *multiplexer-xcs*))))
+  (should-be-true (<= (correct-actions *multiplexer-analyzer*)
+                      (actions *multiplexer-analyzer*))))

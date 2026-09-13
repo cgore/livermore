@@ -35,7 +35,8 @@
 
 (defpackage :livermore/xcs-analyzer
   (:use :common-lisp
-        :livermore/xcs)
+        :livermore/xcs
+        :sigma/behave)
   (:export :action-history
            :actions
            :analyzer
@@ -132,12 +133,12 @@
       (push (correct-action? analyzer) odd-action-history)
       (push (correct-action? analyzer) even-action-history))
     (push (correct-action? analyzer) action-history)
-    (let ((ca50 (count t action-history :end 50))
-          (ca50len (min 50 (length action-history)))
-          (cao50 (count t odd-action-history :end 50))
-          (cao50len (min 50 (length odd-action-history)))
-          (cae50 (count t even-action-history :end 50))
-          (cae50len (min 50 (length even-action-history))))
+    (let* ((ca50len (min 50 (length action-history)))
+           (cao50len (min 50 (length odd-action-history)))
+           (cae50len (min 50 (length even-action-history)))
+           (ca50 (count t action-history :end ca50len))
+           (cao50 (count t odd-action-history :end cao50len))
+           (cae50 (count t even-action-history :end cae50len)))
       (format t "~&~D/~D = ~,3F% (50: ~D/~D=~D% 50odd: ~D/~D=~D% 50even: ~D/~D=~D%): ~A --> ~A, ~A choice."
               correct-actions
               actions
@@ -155,3 +156,40 @@
               current-situation
               action
               (if (correct-action? analyzer) "correct" "incorrect")))))
+
+(defclass %constant-analyzer (analyzer)
+  ((expected
+    :accessor expected
+    :initarg :expected
+    :initform t)))
+
+(defmethod correct-action ((analyzer %constant-analyzer))
+  (expected analyzer))
+
+(behavior 'analyzer
+  (let ((a (make-instance '%constant-analyzer :expected t)))
+    (should-be-a 'analyzer a)
+    (should= 0 (actions a))
+    (should= 0 (correct-actions a))
+    (should= 0 (number-of-situations a))
+    (spec "a correct action pays 1000"
+      (let ((*standard-output* (make-broadcast-stream)))
+        (setf (current-situation a) '(t))
+        (execute-action a t))
+      (should= 1 (actions a))
+      (should= 1 (correct-actions a))
+      (should-eq t (current-action a))
+      (should-be-true (correct-action? a))
+      (should= 1000.0 (get-reward a))
+      (should-equal '(t) (action-history a))
+      (should-equal '(t) (odd-action-history a))
+      (should-be-null (even-action-history a)))
+    (spec "an incorrect action pays 0"
+      (let ((*standard-output* (make-broadcast-stream)))
+        (execute-action a nil))
+      (should= 2 (actions a))
+      (should= 1 (correct-actions a))
+      (should-be-false (correct-action? a))
+      (should= 0.0 (get-reward a))
+      (should-equal '(nil t) (action-history a))
+      (should-equal '(nil) (even-action-history a)))))

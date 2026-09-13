@@ -44,7 +44,7 @@
 (in-package :livermore/system)
 
 (defparameter version-major 1)
-(defparameter version-minor 0)
+(defparameter version-minor 1)
 (defparameter version-revision 0)
 
 (defun version-list ()
@@ -58,10 +58,7 @@
   :version #.(version-string)
   :author "Christopher Mark Gore <cgore@cgore.com>"
   :license "BSD-3-Clause"
-  :depends-on ("md5"
-               "clsql" ; https://github.com/sharplispers/clsql
-               "clsql-postgresql-socket"
-               "sigma")
+  :depends-on ("sigma")
   :homepage "https://github.com/cgore/livermore"
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
@@ -80,42 +77,136 @@
                       (reload system)))
 
   :components ((:module "source"
-                :components ((:file "animat-xcs-parameters"     :depends-on ("learning-parameters"
-                                                                             "xcs"))
-                             (:file "animat-xcs"                :depends-on ("xcs"
-                                                                             "animat-xcs-parameters"))
-                             (:file "csv")
-                             (:file "learning-parameters")
-                             (:file "multiplexer")
-                             (:file "statistics")
-                             (:file "stock-ticker-descriptions")
-                             (:file "stocks"                    :depends-on ("csv"
-                                                                             "statistics"
-                                                                             "stock-ticker-descriptions"
-                                                                             "time"))
-                             (:file "stocks-xcs"                :depends-on ("statistics"
-                                                                             "time"
-                                                                             "xcs"
-                                                                             "xcs-analyzer"
-                                                                             "stocks-xcs-parameters"))
-                             (:file "stocks-xcs-parameters"     :depends-on ("learning-parameters"
-                                                                             "xcs"))
-                             (:file "threshold")
-                             (:file "thesis-stats"              :depends-on ("statistics"))
-                             (:file "time")
-                             (:file "tmscs"                     :depends-on ("learning-parameters"
-                                                                             "xcs"
-                                                                             "xcsr"))
-                             (:file "xcs-predicate"             :depends-on ("learning-parameters"))
-                             (:file "xcs-set-predicate"         :depends-on ("learning-parameters"
-                                                                             "xcs-predicate"))
-                             (:file "xcs-ternary-predicate"     :depends-on ("learning-parameters"
-                                                                             "xcs-predicate"))
-                             (:file "whitley-test-functions")
-                             (:file "xcs"                       :depends-on ("learning-parameters"
-                                                                             "xcs-predicate"
-                                                                             "xcs-set-predicate"
-                                                                             "xcs-ternary-predicate"))
-                             (:file "xcs-analyzer"              :depends-on ("xcs"))
-                             (:file "xcsr"                      :depends-on ("learning-parameters"
-                                                                             "xcs"))))))
+                :components
+                ((:file "csv")
+                 (:file "learning-parameters")
+                 (:file "multiplexer")
+                 (:file "statistics")
+                 (:file "stock-ticker-descriptions")
+                 (:file "time")
+                 (:file "threshold")
+                 (:file "thesis-stats"              :depends-on ("statistics"))
+                 (:file "whitley-test-functions")
+                 (:file "xcs-predicate"             :depends-on ("learning-parameters"))
+                 (:file "xcs-set-predicate"         :depends-on ("learning-parameters"
+                                                                 "xcs-predicate"))
+                 (:file "xcs-ternary-predicate"     :depends-on ("learning-parameters"
+                                                                 "xcs-predicate"))
+                 (:file "xcs"                       :depends-on ("learning-parameters"
+                                                                 "xcs-predicate"
+                                                                 "xcs-set-predicate"
+                                                                 "xcs-ternary-predicate"))
+                 (:file "xcs-analyzer"              :depends-on ("xcs"))
+                 (:file "xcsr"                      :depends-on ("learning-parameters"
+                                                                 "xcs"))
+                 (:file "tmscs"                     :depends-on ("learning-parameters"
+                                                                 "xcs"
+                                                                 "xcsr"))
+                 (:file "stocks"                    :depends-on ("csv"
+                                                                 "statistics"
+                                                                 "stock-ticker-descriptions"
+                                                                 "time"))
+                 (:file "animat-xcs-parameters"     :depends-on ("learning-parameters"
+                                                                 "xcs"))
+                 (:file "animat-xcs"                :depends-on ("xcs"
+                                                                 "animat-xcs-parameters"))
+                 (:file "stocks-xcs-parameters"     :depends-on ("learning-parameters"
+                                                                 "xcs"))
+                 (:file "stocks-xcs"                :depends-on ("statistics"
+                                                                 "stocks"
+                                                                 "stocks-xcs-parameters"
+                                                                 "time"
+                                                                 "xcs"
+                                                                 "xcs-analyzer"))
+                 (:file "multiplexer-xcs-parameters" :depends-on ("learning-parameters"
+                                                                  "xcs"))
+                 (:file "multiplexer-xcs"           :depends-on ("multiplexer"
+                                                                 "multiplexer-xcs-parameters"
+                                                                 "xcs"
+                                                                 "xcs-analyzer"))
+                 (:file "monk-xcs-parameters"       :depends-on ("learning-parameters"
+                                                                 "xcs"))
+                 (:file "monk-xcs"                  :depends-on ("monk-xcs-parameters"
+                                                                 "xcs"
+                                                                 "xcs-set-predicate"
+                                                                 "xcs-ternary-predicate"))
+                 (:file "linear-tmscs-parameters"   :depends-on ("tmscs"))
+                 (:file "linear-tmscs"              :depends-on ("linear-tmscs-parameters"
+                                                                 "statistics"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "inde-tmscs-parameters"     :depends-on ("tmscs"))
+                 (:file "inde-tmscs"                :depends-on ("inde-tmscs-parameters"
+                                                                 "statistics"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "sawtooth-tmscs-parameters" :depends-on ("tmscs"))
+                 (:file "sawtooth-tmscs"            :depends-on ("sawtooth-tmscs-parameters"
+                                                                 "statistics"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "multislope-tmscs-parameters" :depends-on ("tmscs"))
+                 (:file "multislope-tmscs"          :depends-on ("multislope-tmscs-parameters"
+                                                                 "statistics"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "ikeda-tsc-parameters"      :depends-on ("tmscs"))
+                 (:file "ikeda-tsc"                 :depends-on ("ikeda-tsc-parameters"
+                                                                 "statistics"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "threshold-xcsr-parameters" :depends-on ("xcsr"))
+                 (:file "threshold-xcsr"            :depends-on ("threshold"
+                                                                 "threshold-xcsr-parameters"
+                                                                 "xcs"
+                                                                 "xcs-analyzer"
+                                                                 "xcsr"))
+                 (:file "stocks-xcsr-parameters"    :depends-on ("xcsr"))
+                 (:file "stocks-xcsr"               :depends-on ("stocks"
+                                                                 "stocks-xcsr-parameters"
+                                                                 "xcs"
+                                                                 "xcs-analyzer"
+                                                                 "xcsr"))
+                 (:file "stocks-tsc-parameters"     :depends-on ("stocks"
+                                                                 "tmscs"))
+                 (:file "stocks-tsc"                :depends-on ("statistics"
+                                                                 "stocks"
+                                                                 "stocks-tsc-parameters"
+                                                                 "time"
+                                                                 "tmscs"
+                                                                 "xcs"))
+                 (:file "livermore"                 :depends-on ("animat-xcs"
+                                                                 "csv"
+                                                                 "ikeda-tsc"
+                                                                 "inde-tmscs"
+                                                                 "learning-parameters"
+                                                                 "linear-tmscs"
+                                                                 "monk-xcs"
+                                                                 "multiplexer"
+                                                                 "multiplexer-xcs"
+                                                                 "multislope-tmscs"
+                                                                 "sawtooth-tmscs"
+                                                                 "statistics"
+                                                                 "stock-ticker-descriptions"
+                                                                 "stocks"
+                                                                 "stocks-tsc"
+                                                                 "stocks-xcs"
+                                                                 "stocks-xcsr"
+                                                                 "thesis-stats"
+                                                                 "threshold"
+                                                                 "threshold-xcsr"
+                                                                 "time"
+                                                                 "tmscs"
+                                                                 "whitley-test-functions"
+                                                                 "xcs"
+                                                                 "xcs-analyzer"
+                                                                 "xcsr"))))))
+
+(defsystem "livermore/trade-chart"
+  :description "McCLIM candlestick/bar chart for Livermore stock tables."
+  :version #.(version-string)
+  :author "Christopher Mark Gore <cgore@cgore.com>"
+  :license "BSD-3-Clause"
+  :depends-on ("livermore" "mcclim")
+  :components ((:module "source"
+                :components ((:file "trade-chart")))))

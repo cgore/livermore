@@ -62,13 +62,23 @@
         (current-column nil)
         (quoted? nil)
         (last-character nil))
-    (flet ((push-column nil
-                        (push
-                          (let* ((s (concatenate 'string
-                                                 (reverse current-column)))
-                                 (r (read-from-string s)))
-                            ;; We want to parse numbers inline.
-                            (if (numberp r) r s))
+    (labels ((parse-field (s)
+             ;; Parse a field as a number only when the whole field is a
+             ;; number.  Dates such as "18-Aug-06" must remain strings.
+             (if (zerop (length s))
+               s
+               (handler-case
+                 (multiple-value-bind (value pos)
+                     (read-from-string s)
+                   (if (and (numberp value)
+                            (= pos (length s)))
+                     value
+                     s))
+                 (error () s))))
+           (push-column nil
+                        (push (parse-field
+                                (concatenate 'string
+                                             (reverse current-column)))
                               current-row)
                         (setf current-column nil))
            (push-row nil
@@ -150,3 +160,34 @@
                   (parse-character-list (coerce "1,2.5" 'list)))
     (should-equal '(("hello, world" 2))
                   (parse-character-list (coerce "\"hello, world\",2" 'list)))))
+
+(behavior 'parse-character-list-dates
+  (spec "Yahoo Finance dates are not numbers"
+    (should-equal '(("18-Aug-06" 11333.76 11437.66))
+                  (parse-character-list
+                    (coerce "18-Aug-06,11333.76,11437.66" 'list))))
+  (spec "a leading numeric token in a non-numeric field stays a string"
+    (should-equal '(("18-Aug-06"))
+                  (parse-character-list (coerce "18-Aug-06" 'list)))))
+
+(behavior 'parse-stream
+  (should-equal '(("a" "b") (1 2))
+                (parse-stream (make-string-input-stream "a,b
+1,2
+"))))
+
+(behavior 'parse-file
+  (let ((path (merge-pathnames
+               (make-pathname :name "csv-parse-file-test" :type "csv")
+               (uiop:temporary-directory))))
+    (unwind-protect
+         (progn
+           (with-open-file (out path :direction :output
+                                :if-exists :supersede
+                                :if-does-not-exist :create)
+             (write-string "a,b
+1,2
+" out))
+           (should-equal '(("a" "b") (1 2)) (parse-file path)))
+      (when (probe-file path)
+        (delete-file path)))))

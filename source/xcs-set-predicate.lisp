@@ -165,6 +165,18 @@
   "This covers a single SITUATION as a one-element member list."
   (cover set-predicate (list situation) covering-probability))
 
+(defmethod cover ((set-predicate set-predicate)
+                  situation
+                  (lp learning-parameters))
+  "Cover using the covering probability from LP."
+  (cover set-predicate situation (covering-probability lp)))
+
+(defmethod mutate ((set-predicate set-predicate)
+                   situation
+                   (lp learning-parameters))
+  "Mutate using the mutation probability from LP."
+  (mutate set-predicate situation (mutation-probability lp)))
+
 (defmethod mutate ((set-predicate set-predicate)
                    situation
                    (mutation-probability float))

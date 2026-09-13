@@ -32,21 +32,36 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/stocks-tsc-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/stocks
+        :livermore/tmscs
+        :sigma/behave)
+  (:export :*classification-method*
+           :*reward-method*
+           :*single-step-output?*
+           :*stat-report*
+           :*stock-starting-index*
+           :*stock-termination-actions*
+           :*stock-ticker*
+           :*stocks-tsc-initial-money*
+           :*stocks-tsc-learning-parameters*
+           :*valid-actions*
+           :*valid-actions-2*
+           :*valid-actions-3*))
+(in-package :livermore/stocks-tsc-parameters)
 
 (defparameter *single-step-output?* t)
 (defparameter *stat-report* nil)
 (defparameter *stock-starting-index* 100)
-(defparameter *stock-termination-actions* 1500) ; this is the number of actions
-(defparameter *reward-method* #'get-reward.a2) ; This should be get-reward.a2
-(defparameter *classification-method* 'classify.going-up?)
-(defmethod classify ((analyzer stocks-tsc-analyzer))
-  "We classify the next point as either up or down from our current point."
-  (if (going-up? analyzer) :stock :bank))
+(defparameter *stock-termination-actions* 1500)
+(defparameter *reward-method* :a2)
+(defparameter *classification-method* :going-up)
 (defparameter *valid-actions-3* '(:stock :bank :hold))
 (defparameter *valid-actions-2* '(:stock :bank))
 (defparameter *valid-actions* *valid-actions-2*)
-(defparameter *initial-money* 1000000.00)
+(defparameter *stocks-tsc-initial-money* 1000000.00)
 (defparameter *stocks-tsc-learning-parameters*
   (make-instance 'tmscs-learning-parameters
                  :maximum-environment-condition-length 10
@@ -55,25 +70,30 @@
                                      #'opening-price
                                      #'trading-volume)
                  :minimum-number-of-actions (length *valid-actions*)
-                 :maximum-total-numerosity 1000 ; N = 400
-                 :learning-rate 0.2 ; beta = 0.2
-                 :discount-factor 0.71 ; gamma = 0.71
-                 :GA-threshold 25 ; theta = 25
-                 :equal-error-threshold 20.0 ; epsilon_0 = 10.0
-                 :multiplier-parameter 0.1 ; alpha = 0.1
-                 :crossover-probability 0.9 ; chi = 0.9
-                 :mutation-probability 0.04 ; mu = 0.04
+                 :maximum-total-numerosity 1000
+                 :learning-rate 0.2
+                 :discount-factor 0.71
+                 :GA-threshold 25
+                 :equal-error-threshold 20.0
+                 :multiplier-parameter 0.1
+                 :crossover-probability 0.9
+                 :mutation-probability 0.04
                  :exploration-probability 0.2
-                 :fitness-fraction-threshold 0.1 ; delta = 0.1
-                 ; phi = 0.5, covering multiplier
-                 :covering-probability 0.33 ; P_# = 0.33
-                 :initial-prediction 10.0 ; p_I = 10.0
-                 :initial-prediction-error 0.0 ; epsilon_I = 0.0
-                 :initial-fitness 0.01 ; F_I = 0.01
+                 :fitness-fraction-threshold 0.1
+                 :covering-probability 0.33
+                 :initial-prediction 10.0
+                 :initial-prediction-error 0.0
+                 :initial-fitness 0.01
                  :minimum-number-of-actions (length *valid-actions*)
                  :GA-subsumption? t
                  :action-set-subsumption? nil
                  :possible-actions *valid-actions*))
 (defparameter *stock-ticker* "^dji")
-(defparameter *stocks-xcs-output* t)
-(defparameter *stocks-xcs-report-days* 1)
+
+(behavior 'stocks-tsc-learning-parameters
+  (should-be-a 'tmscs-learning-parameters *stocks-tsc-learning-parameters*)
+  (should-eq :a2 *reward-method*)
+  (should= 100 *stock-starting-index*)
+  (should= 1500 *stock-termination-actions*)
+  (should-equal '(:stock :bank) *valid-actions*)
+  (should= 1000000.00 *stocks-tsc-initial-money*))

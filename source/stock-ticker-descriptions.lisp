@@ -34,7 +34,8 @@
 
 
 (defpackage :livermore/stock-ticker-descriptions
-  (:use :common-lisp)
+  (:use :common-lisp
+        :sigma/behave)
   (:export :*dow-jones-indices*
            :*nyse-indices*
            :*nasdaq-indices*
@@ -219,3 +220,25 @@
 (defmethod stock-description ((symbol symbol))
   "This looks up SYMBOL by its name."
   (stock-description (symbol-name symbol)))
+
+(behavior 'stock-description
+  (should-string= "Apple Computer, Inc." (stock-description "aapl"))
+  (should-string= "Apple Computer, Inc." (stock-description "AAPL"))
+  (should-string= "Apple Computer, Inc." (stock-description 'aapl))
+  (should-string= "Dow Jones 30 Industrial Average" (stock-description "^dji"))
+  (should-be-null (stock-description "not-a-ticker")))
+
+(behavior 'dow-components
+  (should= 30 (length *^dji-components*))
+  (should-be-true (member "ibm" *^dji-components* :test #'string-equal))
+  (should-be-true (member "msft" *^dji-components* :test #'string-equal))
+  (should-be-true
+    (every (lambda (ticker)
+             (stock-description ticker))
+           *^dji-components*)))
+
+(behavior 'ticker-tables
+  (should-be-true (assoc "^dji" *dow-jones-indices* :test #'string-equal))
+  (should-be-true (assoc "^ixic" *nasdaq-indices* :test #'string-equal))
+  (should-be-true (assoc "^gspc" *standard-and-poors-indices* :test #'string-equal))
+  (should-be-true (assoc "^tnx" *us-treasury-indices* :test #'string-equal)))

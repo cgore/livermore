@@ -32,22 +32,33 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(load "utilities/utilities")
-(load "xcsr")
-(load "xcs-analyzer")
-(load "threshold")
-(in-package "XCS")
-(use-package '("COMMON-LISP" "UTILITIES" "THRESHOLD"))
-(export '(threshold-analyzer
-           current-situation
-           random-situation
-           get-situation
-           correct-action
-           get-reward
-           end-of-problem?
-           terminate?
-           start-threshold-experiment))
-(load "threshold-xcsr-parameters.lisp")
+(defpackage :livermore/threshold-xcsr
+  (:use :common-lisp
+        :livermore/threshold
+        :livermore/threshold-xcsr-parameters
+        :livermore/xcs
+        :livermore/xcs-analyzer
+        :livermore/xcsr
+        :sigma/behave
+        :sigma/random)
+  (:export :*threshold-analyzer*
+           :*threshold-experiment*
+           :*threshold-xcsr*
+           :correct-action
+           :current-situation
+           :end-of-problem?
+           :get-reward
+           :get-situation
+           :random-situation
+           :start-threshold-experiment
+           :terminate?
+           :threshold-analyzer
+           :threshold-experiment))
+(in-package :livermore/threshold-xcsr)
+
+(defparameter *threshold-analyzer* nil)
+(defparameter *threshold-experiment* nil)
+(defparameter *threshold-xcsr* nil)
 
 (defclass threshold-analyzer (analyzer)
    ((thresholds
@@ -84,12 +95,12 @@
   (length (thresholds threshold-analyzer)))
 
 (defmethod random-situation ((threshold-analyzer threshold-analyzer))
-  "This returns a random point in the problem range."
-  (let ((result nil))
-    (dotimes (i (problem-length threshold-analyzer) result)
-      (push (random-in-range (problem-range-lower threshold-analyzer)
-                             (problem-range-upper threshold-analyzer))
-            result))))
+  "This returns a random point in the problem range as a vector."
+  (let ((n (problem-length threshold-analyzer)))
+    (map-into (make-array n)
+              (lambda ()
+                (random-in-range (problem-range-lower threshold-analyzer)
+                                 (problem-range-upper threshold-analyzer))))))
 
 (defmethod get-situation ((threshold-analyzer threshold-analyzer))
   "This stores and returns a new random situation."
@@ -100,25 +111,63 @@
 (defmethod correct-action ((threshold-analyzer threshold-analyzer))
   "This is true when the current situation meets the threshold."
   (threshold-indicator (thresholds threshold-analyzer)
-                       (current-situation threshold-analyzer)))
+                       (coerce (current-situation threshold-analyzer) 'list)))
+
+(defmethod end-of-problem? ((threshold-analyzer threshold-analyzer))
+  "This predicate is always true.  Each threshold trial is a single step."
+  t)
 
 (defun start-threshold-experiment
-  (&key (problem-length 6) (problem-range-lower 0.0) (problem-range-upper 1.0))
+    (&key (problem-length 6)
+          (problem-range-lower 0.0)
+          (problem-range-upper 1.0)
+          (number-of-trials 10000)
+          (run t))
   "This builds a threshold XCSR experiment of PROBLEM-LENGTH and starts it."
-  (defparameter *threshold-analyzer*
-    (make-instance 'threshold-analyzer
-                   :thresholds
-                     (let ((result nil))
-                       (dotimes (i problem-length result)
-                         (push (random-in-range problem-range-lower
-                                                problem-range-upper)
-                               result)))))
-  (defparameter *threshold-xcsr*
-    (make-instance 'xcsr
-                   :learning-parameters *threshold-learning-parameters*))
-  (defparameter *threshold-experiment*
-    (make-instance 'threshold-experiment
-                   :environment *threshold-analyzer*
-                   :reinforcement-program *threshold-analyzer*
-                   :xcs *threshold-xcsr*))
-  (start *threshold-experiment*))
+  (setf *threshold-analyzer*
+        (make-instance 'threshold-analyzer
+                       :problem-range-lower problem-range-lower
+                       :problem-range-upper problem-range-upper
+                       :thresholds
+                       (let ((result nil))
+                         (dotimes (i problem-length result)
+                           (push (random-in-range problem-range-lower
+                                                  problem-range-upper)
+                                 result)))))
+  (setf *threshold-xcsr*
+        (make-instance 'xcsr
+                       :predicate-type 'range-predicate
+                       :learning-parameters *threshold-learning-parameters*))
+  (setf *threshold-experiment*
+        (make-instance 'threshold-experiment
+                       :environment *threshold-analyzer*
+                       :reinforcement-program *threshold-analyzer*
+                       :xcs *threshold-xcsr*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *threshold-experiment*)
+    *threshold-experiment*))
+
+(behavior 'threshold-analyzer
+  (let ((a (make-instance 'threshold-analyzer
+                          :thresholds '(0.5 0.5)
+                          :problem-range-lower 0.0
+                          :problem-range-upper 1.0)))
+    (should= 2 (problem-length a))
+    (should= 2 (length (random-situation a)))
+    (should-be-a 'vector (random-situation a))
+    (setf (current-situation a) '(0.9 0.9))
+    (should-be-true (correct-action a))
+    (setf (current-situation a) '(0.1 0.1))
+    (should-be-false (correct-action a))
+    (should-be-true (end-of-problem? a))))
+
+(behavior 'threshold-xcsr-experiment
+  (let ((*standard-output* (make-broadcast-stream)))
+    (start-threshold-experiment :problem-length 2 :number-of-trials 6 :run nil))
+  (should-be-a 'xcsr *threshold-xcsr*)
+  (should-be-a 'threshold-analyzer *threshold-analyzer*)
+  (let ((sit (get-situation *threshold-analyzer*)))
+    (should-be-a 'vector sit)
+    (should= 2 (length sit))
+    (should-be-true (member (correct-action *threshold-analyzer*) '(t nil)))))

@@ -32,31 +32,42 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(require :asdf)
-(asdf:load-system "cgore-utilities")
-
-(load "statistics")
-(load "tmscs")
-(in-package "XCS")
-(use-package "STATISTICS")
-(export '(inde-tmscs-analyzer
-           history
-           action-history
-           initial-history-depth
-           inde-tmscs-experiment
-           get-situation
-           classify
-           correct-action
-           end-of-problem?
-           terminate?
-           start-inde-tmscs-experiment
-           *inde-tmscs-analyzer*
-           *inde-tmscs-learning-parameters*
-           *inde-tmscs*
-           *inde-tmscs-experiment*))
+(defpackage :livermore/inde-tmscs
+  (:use :common-lisp
+        :livermore/inde-tmscs-parameters
+        :livermore/statistics
+        :livermore/tmscs
+        :livermore/xcs
+        :sigma/behave
+        :sigma/control
+        :sigma/numeric
+        :sigma/probability
+        :sigma/random
+        :sigma/sequence)
+  (:export :*inde-action-history*
+           :*inde-hist*
+           :*inde-tmscs*
+           :*inde-tmscs-analyzer*
+           :*inde-tmscs-experiment*
+           :classify
+           :correct-action
+           :end-of-problem?
+           :get-situation
+           :history
+           :ihs
+           :initial-history-depth
+           :inde-tmscs-analyzer
+           :inde-tmscs-experiment
+           :situation-function
+           :start-inde-tmscs-experiment
+           :terminate?))
+(in-package :livermore/inde-tmscs)
 (defstruct ihs heading steps multiplier value)
 (defparameter *inde-hist* nil)
 (defparameter *inde-action-history* nil)
+(defparameter *inde-tmscs-analyzer* nil)
+(defparameter *inde-tmscs* nil)
+(defparameter *inde-tmscs-experiment* nil)
 
 (defclass inde-tmscs-analyzer (environment reinforcement-program)
   ((history
@@ -84,7 +95,7 @@
      :type (integer 0 *))
    (initial-history-depth
      :accessor initial-history-depth
-     :initform 200
+     :initform 50
      :initarg :initial-history-depth
      :type (integer 0 *)))
   (:documentation
@@ -208,9 +219,10 @@
     (ihs-value (nth-from-end time-step *inde-hist*))))
 
 (defmethod get-situation ((analyzer inde-tmscs-analyzer))
-  "This pushes the next series value onto the history."
-  (with-slots (number-of-situations history initial-history-depth) analyzer
-    (push (situation-function (incf number-of-situations)) history)))
+  "This pushes the next series value onto the history and returns the series."
+  (with-slots (number-of-situations history) analyzer
+    (push (situation-function (incf number-of-situations)) history)
+    history))
 
 (defmethod classify ((analyzer inde-tmscs-analyzer))
   "We classify the next point as either up or down from our current point."
@@ -240,9 +252,10 @@
   ;; Does this really make any sense in TMSCS?
   t)
 
-(defmethod terminate? ((inde-tmscs-analyzer inde-tmscs-analyzer))
-  "This predicate is true after 10000 actions."
-  (<= 10000 (number-of-actions inde-tmscs-analyzer)))
+(defmethod terminate? ((experiment inde-tmscs-experiment))
+  "This predicate is true after NUMBER-OF-TRIALS actions."
+  (>= (number-of-actions (environment experiment))
+      (number-of-trials experiment)))
 
 (defmethod initialize-instance :after ((analyzer inde-tmscs-analyzer) &rest initargs &key &allow-other-keys)
   "This fills HISTORY to INITIAL-HISTORY-DEPTH."
@@ -267,16 +280,6 @@
                 number-of-actions)
           *inde-action-history*)))
 
-(defun simple-slope (list &key (key #'identity) (start 0) (end nil))
-  "This is the slope of LIST from START to END, using KEY on each element."
-  (assert (listp list))
-  (when (null end)
-    (setf end (1- (length list))))
-  (assert (not (= start end)))
-  (/ (- (funcall key (nth start list))
-        (funcall key (nth end list)))
-     (- start end)))
-
 (defclass inde-tmscs-predicate (tms-predicate) ())
 (defmethod print-object ((predicate inde-tmscs-predicate) stream)
   (format stream "~A -- ~A [~A,~A]"
@@ -285,22 +288,51 @@
 
 (defclass inde-tmscs-classifier (tms-classifier) ())
 
-(load "inde-tmscs-parameters")
+(defun start-inde-tmscs-experiment
+    (&optional (number-of-trials 10000) (run t))
+  "This builds an independent TMSCS experiment and starts it.
+  This is thesis section 4.2, increasing/decreasing method 4."
+  (setf *inde-hist* nil
+        *inde-action-history* nil)
+  (setf *inde-tmscs-analyzer*
+        (make-instance 'inde-tmscs-analyzer))
+  (setf *inde-tmscs*
+        (make-instance 'tmscs
+                       :predicate-type 'inde-tmscs-predicate
+                       :classifier-type 'inde-tmscs-classifier
+                       :learning-parameters *inde-tmscs-learning-parameters*))
+  (setf *inde-tmscs-experiment*
+        (make-instance 'inde-tmscs-experiment
+                       :environment *inde-tmscs-analyzer*
+                       :reinforcement-program *inde-tmscs-analyzer*
+                       :xcs *inde-tmscs*
+                       :number-of-trials number-of-trials))
+  (if run
+    (start *inde-tmscs-experiment*)
+    *inde-tmscs-experiment*))
 
-(defun start-inde-tmscs-experiment ()
-  "This builds an independent TMSCS experiment and starts it."
-  (defparameter *inde-hist* nil)
-  (defparameter *inde-action-history* nil)
-  (defparameter *inde-tmscs-analyzer*
-    (make-instance 'inde-tmscs-analyzer))
-  (defparameter *inde-tmscs*
-    (make-instance 'tmscs
-                   :predicate-type 'inde-tmscs-predicate
-                   :classifier-type 'inde-tmscs-classifier
-                   :learning-parameters *inde-tmscs-learning-parameters*))
-  (defparameter *inde-tmscs-experiment*
-    (make-instance 'inde-tmscs-experiment
-                   :environment *inde-tmscs-analyzer*
-                   :reinforcement-program *inde-tmscs-analyzer*
-                   :xcs *inde-tmscs*))
-  (start *inde-tmscs-experiment*))
+(behavior 'inde-situation-function
+  (let ((*inde-hist* nil)
+        (*inde-flip* 0.0))
+    (should-be-a 'number (situation-function 0))
+    (should-be-a 'number (situation-function 20))
+    (should= 21 (length *inde-hist*))
+    (should-be-true (every #'ihs-p *inde-hist*))))
+
+(behavior 'inde-tmscs-analyzer
+  (let ((*inde-hist* nil))
+    (let ((a (make-instance 'inde-tmscs-analyzer :initial-history-depth 10)))
+      (should= 10 (length (history a)))
+      (should-be-true (member (classify a) '(:uptrending :downtrending)))
+      (should-be-true (end-of-problem? a)))))
+
+(behavior 'inde-tmscs-experiment
+  "Thesis section 4.2: a short increasing/decreasing TMSCS run."
+  (let ((*standard-output* (make-broadcast-stream))
+        (*inde-flip* 0.1))
+    (start-inde-tmscs-experiment 8 t))
+  (should= 8 (number-of-actions *inde-tmscs-analyzer*))
+  (should-be-true (plusp (length (population *inde-tmscs*))))
+  (should-be-true (<= (number-of-correct-actions *inde-tmscs-analyzer*)
+                      (number-of-actions *inde-tmscs-analyzer*)))
+  (should= 8 (length *inde-action-history*)))

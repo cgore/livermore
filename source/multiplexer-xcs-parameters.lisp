@@ -32,7 +32,14 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package "XCS")
+(defpackage :livermore/multiplexer-xcs-parameters
+  (:use :common-lisp
+        :livermore/learning-parameters
+        :livermore/xcs
+        :sigma/behave)
+  (:export :*multiplexer-learning-parameters*))
+(in-package :livermore/multiplexer-xcs-parameters)
+
 ;; see http://www.boston.quik.com/sw/pd/imp-notes.html for some corrections.
 (defparameter *multiplexer-learning-parameters*
   (make-instance 'learning-parameters
@@ -55,3 +62,9 @@
                  :possible-actions '(0 1)
                  :GA-subsumption? nil
                  :action-set-subsumption? t))
+
+(behavior 'multiplexer-learning-parameters
+  (should-be-a 'learning-parameters *multiplexer-learning-parameters*)
+  (should= 400 (maximum-total-numerosity *multiplexer-learning-parameters*))
+  (should= 2 (minimum-number-of-actions *multiplexer-learning-parameters*))
+  (should-equal '(0 1) (possible-actions *multiplexer-learning-parameters*)))
