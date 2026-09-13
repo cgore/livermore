@@ -47,6 +47,7 @@
            :*stock-ticker*
            :*stocks-tsc-initial-money*
            :*stocks-tsc-learning-parameters*
+           :*stocks-tsc-learning-parameters-long*
            :*valid-actions*
            :*valid-actions-2*
            :*valid-actions-3*))
@@ -88,10 +89,48 @@
                  :GA-subsumption? t
                  :action-set-subsumption? nil
                  :possible-actions *valid-actions*))
+
+;;; First try for a ~4000-day window (1990-2006), not the 1500-day thesis run.
+;;; Larger working memory, slower GA/prediction updates, less exploration.
+;;; Leave action-set-subsumption off; it can hang XCSR-style loops.
+(defparameter *stocks-tsc-learning-parameters-long*
+  (make-instance 'tmscs-learning-parameters
+                 :maximum-environment-condition-length 15
+                 :visible-time-range '(0 100)
+                 :valid-operations (list #'simple-slope)
+                 :valid-fields (list #'closing-price
+                                     #'opening-price
+                                     #'trading-volume)
+                 :minimum-number-of-actions (length *valid-actions*)
+                 :maximum-total-numerosity 5000
+                 :learning-rate 0.1
+                 :discount-factor 0.71
+                 :GA-threshold 75
+                 :deletion-threshold 50
+                 :equal-error-threshold 20.0
+                 :multiplier-parameter 0.1
+                 :crossover-probability 0.8
+                 :mutation-probability 0.03
+                 :exploration-probability 0.1
+                 :fitness-fraction-threshold 0.1
+                 :covering-probability 0.33
+                 :initial-prediction 10.0
+                 :initial-prediction-error 0.0
+                 :initial-fitness 0.01
+                 :minimum-subsumption-experience 40
+                 :GA-subsumption? t
+                 :action-set-subsumption? nil
+                 :possible-actions *valid-actions*))
+
 (defparameter *stock-ticker* "^dji")
 
 (behavior 'stocks-tsc-learning-parameters
   (should-be-a 'tmscs-learning-parameters *stocks-tsc-learning-parameters*)
+  (should-be-a 'tmscs-learning-parameters *stocks-tsc-learning-parameters-long*)
+  (should= 5000 (maximum-total-numerosity *stocks-tsc-learning-parameters-long*))
+  (should= 75 (GA-threshold *stocks-tsc-learning-parameters-long*))
+  (should= 0.1 (exploration-probability *stocks-tsc-learning-parameters-long*))
+  (should-be-false (action-set-subsumption? *stocks-tsc-learning-parameters-long*))
   (should-eq :a2 *reward-method*)
   (should= 100 *stock-starting-index*)
   (should= 1500 *stock-termination-actions*)
