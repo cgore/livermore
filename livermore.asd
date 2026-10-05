@@ -58,7 +58,7 @@
   :version #.(version-string)
   :author "Christopher Mark Gore <cgore@cgore.com>"
   :license "BSD-3-Clause"
-  :depends-on ("sigma")
+  :depends-on ("sigma" "fare-csv")
   :homepage "https://github.com/cgore/livermore"
   :source-control (:git "https://github.com/cgore/livermore.git")
   :bug-tracker "https://github.com/cgore/livermore/issues"
@@ -78,8 +78,7 @@
 
   :components ((:module "source"
                 :components
-                ((:file "csv")
-                 (:file "learning-parameters")
+                ((:file "learning-parameters")
                  (:file "multiplexer")
                  (:file "statistics")
                  (:file "stock-ticker-descriptions")
@@ -102,8 +101,7 @@
                  (:file "tmscs"                     :depends-on ("learning-parameters"
                                                                  "xcs"
                                                                  "xcsr"))
-                 (:file "stocks"                    :depends-on ("csv"
-                                                                 "statistics"
+                 (:file "stocks"                    :depends-on ("statistics"
                                                                  "stock-ticker-descriptions"
                                                                  "time"))
                  (:file "animat-xcs-parameters"     :depends-on ("learning-parameters"
@@ -176,7 +174,6 @@
                                                                  "tmscs"
                                                                  "xcs"))
                  (:file "livermore"                 :depends-on ("animat-xcs"
-                                                                 "csv"
                                                                  "ikeda-tsc"
                                                                  "inde-tmscs"
                                                                  "learning-parameters"

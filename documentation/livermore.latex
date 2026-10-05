@@ -149,8 +149,6 @@
 
 \input{multiplexer-package.latex}
 
-\input{csv-package.latex}
-
 \input{stocks-package.latex}
 
 \input{stock-ticker-descriptions-package.latex}

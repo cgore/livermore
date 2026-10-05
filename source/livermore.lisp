@@ -66,7 +66,6 @@
            :start-stocks-tsc-experiment)
   ;; :reexport only exports names; :mix imports the actual symbols.
   (:mix :livermore/system
-        :livermore/csv
         :livermore/learning-parameters
         :livermore/multiplexer
         :livermore/statistics
@@ -81,7 +80,6 @@
         :livermore/tmscs
         :livermore/stocks)
   (:reexport :livermore/system
-             :livermore/csv
              :livermore/learning-parameters
              :livermore/multiplexer
              :livermore/statistics

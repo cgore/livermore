@@ -38,7 +38,7 @@ LATEX_FILES=livermore.latex copyright.latex introduction.latex			\
 	  xcs-set-predicate-package.latex xcs-package.latex			\
 	  xcsr-package.latex xcs-analyzer-package.latex tmscs-package.latex	\
 	  statistics-package.latex time-package.latex				\
-	  threshold-package.latex multiplexer-package.latex csv-package.latex	\
+	  threshold-package.latex multiplexer-package.latex			\
 	  stocks-package.latex stock-ticker-descriptions-package.latex		\
 	  stocks-xcs-package.latex animat-xcs-package.latex			\
 	  whitley-test-functions-package.latex

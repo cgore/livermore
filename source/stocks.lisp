@@ -643,6 +643,29 @@ Finance's style of tickers for now."
   "This is the long name of TABLE's ticker."
   (stock-description (ticker-symbol table)))
 
+(defun interpret-csv-field (field)
+  "This reads FIELD as a number when the whole field is a number.  A date such
+as \"18-Aug-06\" stays a string."
+  (if (zerop (length field))
+      field
+      (handler-case
+          (multiple-value-bind (value position)
+              (read-from-string field)
+            (if (and (numberp value)
+                     (= position (length field)))
+                value
+                field))
+        (error () field))))
+
+(defun read-yahoo-csv (pathname)
+  "This reads PATHNAME as RFC 4180 CSV.  A field that is entirely a number is
+returned as that number.  Every other field is a string.  The first row is
+kept, whether or not it is a header."
+  (fare-csv:with-rfc4180-csv-syntax ()
+    (mapcar (lambda (row)
+              (mapcar #'interpret-csv-field row))
+            (fare-csv:read-csv-file pathname))))
+
 (defun parse-yahoo-finance-stock-csv-record (record)
   "This reads in a line from a Yahoo! Finance CSV file about a stock and returns
 an equivalent stock table record."
@@ -676,7 +699,7 @@ an equivalent stock table record."
                  :preferred-records preferred-records
                  :records
                  (sort (mapcar #'parse-yahoo-finance-stock-csv-record
-                               (rest (livermore/csv:parse-file
+                               (rest (read-yahoo-csv
                                        (table-filename ticker-symbol))))
                        #'< :key #'opening-time)))
 
@@ -818,7 +841,7 @@ MAXIMUM of the stock table's records."
                      "http://quote.yahoo.com/d/quotes.csv"
                      "?s=" (canonical-ticker ticker-symbol)
                      "&f=sn")) ; format s: stock ticker n: stock name
-  (second (first (livermore/csv:parse-file (description-filename ticker-symbol)))))
+  (second (first (read-yahoo-csv (description-filename ticker-symbol)))))
 
 (defun description (ticker-symbol)
   "This is the long name of TICKER-SYMBOL from the local ticker table."
@@ -1398,3 +1421,35 @@ It is routinely used as a signal/trigger."
         ;; Thesis Table 4.2 published $2,745,309.50; allow for split-adjustment
         ;; and inclusive/exclusive index differences in the local CSV.
         (should-be-true (< 2.0 (/ b&h 1000000.0) 3.5))))))
+
+(behavior 'read-yahoo-csv
+  (labels ((parse (text)
+             (let ((path (merge-pathnames
+                          (make-pathname :name "livermore-yahoo-csv-test"
+                                         :type "csv")
+                          (uiop:temporary-directory))))
+               (unwind-protect
+                    (progn
+                      (with-open-file (out path :direction :output
+                                           :if-exists :supersede
+                                           :if-does-not-exist :create)
+                        (write-string text out))
+                      (read-yahoo-csv path))
+                 (when (probe-file path)
+                   (delete-file path))))))
+    (spec "numbers are read as numbers and dates stay strings"
+      (should-equal '(("18-Aug-06" 11333.76 11437.66))
+                    (parse "18-Aug-06,11333.76,11437.66"))
+      (should-equal '(("18-Aug-06"))
+                    (parse "18-Aug-06")))
+    (spec "quoted fields may contain the separator"
+      (should-equal '(("hello, world" 2))
+                    (parse "\"hello, world\",2")))
+    (spec "rows are kept with or without a trailing newline"
+      (should-equal '(("a" "b") (1 2))
+                    (parse "a,b
+1,2
+"))
+      (should-equal '(("a" "b") (1 2))
+                    (parse "a,b
+1,2")))))
